@@ -1,2 +1,0 @@
-# Dependencies for development and testing
-pytest>=7.0

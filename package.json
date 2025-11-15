@@ -1,0 +1,11 @@
+{
+  "name": "phanmemsoictc",
+  "version": "1.0.0",
+  "description": "Trình quản lý công việc đơn giản sử dụng Node.js và lưu trữ JSON",
+  "bin": {
+    "phanmemsoictc": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
