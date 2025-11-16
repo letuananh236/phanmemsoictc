@@ -1,0 +1,12 @@
+[
+  {
+    "id": "T001",
+    "name": "Bình thường",
+    "content": "Mô tả kết quả bình thường..."
+  },
+  {
+    "id": "T002",
+    "name": "Viêm nhẹ",
+    "content": "Mô tả kết quả viêm nhẹ..."
+  }
+]
