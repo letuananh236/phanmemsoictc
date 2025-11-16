@@ -19,7 +19,7 @@ project-root/
     index.html, styles.css, app.js, login.js, exam-form.js, capture.js,
     search-patient.js, search-exam.js, daily-lists.js, settings.js,
     doctors.js, result-templates.js, print.js, license-ui.js, storage.js,
-    assets/ (.gitkeep + logo-default.png được tạo tự động sau khi cài)
+    assets/ (.gitkeep + logo-default.svg mẫu văn bản, có thể thay logo riêng)
   data/
     settings.json, patients.json, exams.json, doctors.json,
     result-templates.json, license.json, images/
@@ -29,14 +29,14 @@ project-root/
 **Lưu ý về Git/GitHub**
 
 - Thư mục `data/images/` được đưa vào `.gitignore` (kèm file `.gitkeep`) để tránh đẩy các ảnh PNG dung lượng lớn lên GitHub và gặp lỗi "Binary file not supported".
-- File logo mặc định `public/assets/logo-default.png` không còn nằm trong Git mà sẽ được script `npm install` sinh tự động, nhờ đó repo chỉ chứa mã nguồn văn bản và không bị GitHub từ chối vì tệp nhị phân.
+- Logo mặc định nay là file SVG (`public/assets/logo-default.svg`) thuần văn bản nên vẫn nằm trong repo. Khi muốn dùng logo PNG/JPG của bệnh viện, chỉ cần chép file vào `public/assets/` và chỉnh `settings.json` → `logoFileName`. Nếu cần commit logo của riêng bạn, Git vẫn chấp nhận; còn nếu muốn giữ repo thuần văn bản, thêm đường dẫn logo đó vào `.gitignore` trước khi commit.
 - Khi cần sao lưu/khôi phục ảnh, hãy copy trực tiếp cả thư mục `data/images/` hoặc sử dụng API `/api/backup` và `/api/restore`.
 
 ## Khắc phục lỗi "Tệp nhị phân không được hỗ trợ"
 
 Nếu GitHub vẫn báo lỗi này, hãy kiểm tra hai vị trí sau:
 
-1. **`public/assets/logo-default.png`** – đây là file được script `scripts/create-logo.js` sinh ra sau `npm install`. Nếu trước đó bạn đã add file này lên Git, hãy xoá khỏi index bằng `git rm --cached public/assets/logo-default.png`, commit lại rồi push. `.gitignore` (dòng `public/assets/logo-default.png`) đảm bảo file không bị add trở lại.
+1. **`public/assets/`** – nếu bạn tự chép logo PNG/JPG vào đây và commit, GitHub có thể báo lỗi nếu file quá lớn. Có thể xử lý bằng cách dùng ảnh gọn nhẹ (<1 MB), hoặc loại khỏi index với `git rm --cached public/assets/<ten-logo>.png` nếu chỉ muốn dùng nội bộ.
 2. **`data/images/`** – mọi ảnh chụp từ màn hình Lấy hình sẽ nằm trong thư mục này. Cấu hình `.gitignore` đã bỏ qua toàn bộ thư mục (trừ `.gitkeep`). Nếu bạn thấy file PNG nào được liệt kê bởi `git status`, hãy chạy `git rm --cached data/images/<file>.png` hoặc xoá hẳn file đó rồi chụp lại sau khi push.
 
 Kiểm tra nhanh bằng lệnh `git ls-files | grep -E '\\.png|\\.jpg|\\.zip'`. Nếu lệnh này in ra bất kỳ đường dẫn nào khác ngoài `data/images/.gitkeep`, đó chính là tệp nhị phân gây lỗi khi push. Sau khi loại bỏ khỏi index, commit + push sẽ thành công.
@@ -53,7 +53,7 @@ cd phanmemsoictc
 npm install
 npm start
 ```
-Bước `npm install` tự chạy script tạo logo mặc định nên không còn tệp PNG nào phải lấy từ GitHub. Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt:
+Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/` và chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`, sau đó khởi động lại server.
 1. **F3 – Khám bệnh**: điền thông tin BN, phiếu khám, chọn bác sỹ, lưu phiếu. Nút “Lấy hình ảnh (F4)” chuyển sang màn hình camera.
 2. **F4 – Lấy hình**: bật camera, chụp, tick tối đa số ảnh cấu hình, bấm “Chấp nhận (F10)” để tải ảnh lên thư mục `data/images/` và đưa về form.
 3. **In phiếu**: tại Khám bệnh bấm “In phiếu” → `print.js` dựng trang A4 với logo bệnh viện, mô tả, ảnh.

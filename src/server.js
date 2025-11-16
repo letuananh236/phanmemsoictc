@@ -35,7 +35,7 @@ const defaultData = {
     fax: '',
     website: '',
     email: '',
-    logoFileName: 'logo-default.png',
+    logoFileName: 'logo-default.svg',
     patientCodePrefix: 'BN',
     examCodePrefix: 'HA',
     defaultImageCount: 4,

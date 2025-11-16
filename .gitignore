@@ -4,6 +4,3 @@ package-lock.json
 dist/
 data/images/
 !data/images/.gitkeep
-
-# Generated default logo
-public/assets/logo-default.png
