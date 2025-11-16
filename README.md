@@ -32,6 +32,15 @@ project-root/
 - File logo mặc định `public/assets/logo-default.png` không còn nằm trong Git mà sẽ được script `npm install` sinh tự động, nhờ đó repo chỉ chứa mã nguồn văn bản và không bị GitHub từ chối vì tệp nhị phân.
 - Khi cần sao lưu/khôi phục ảnh, hãy copy trực tiếp cả thư mục `data/images/` hoặc sử dụng API `/api/backup` và `/api/restore`.
 
+## Khắc phục lỗi "Tệp nhị phân không được hỗ trợ"
+
+Nếu GitHub vẫn báo lỗi này, hãy kiểm tra hai vị trí sau:
+
+1. **`public/assets/logo-default.png`** – đây là file được script `scripts/create-logo.js` sinh ra sau `npm install`. Nếu trước đó bạn đã add file này lên Git, hãy xoá khỏi index bằng `git rm --cached public/assets/logo-default.png`, commit lại rồi push. `.gitignore` (dòng `public/assets/logo-default.png`) đảm bảo file không bị add trở lại.
+2. **`data/images/`** – mọi ảnh chụp từ màn hình Lấy hình sẽ nằm trong thư mục này. Cấu hình `.gitignore` đã bỏ qua toàn bộ thư mục (trừ `.gitkeep`). Nếu bạn thấy file PNG nào được liệt kê bởi `git status`, hãy chạy `git rm --cached data/images/<file>.png` hoặc xoá hẳn file đó rồi chụp lại sau khi push.
+
+Kiểm tra nhanh bằng lệnh `git ls-files | grep -E '\\.png|\\.jpg|\\.zip'`. Nếu lệnh này in ra bất kỳ đường dẫn nào khác ngoài `data/images/.gitkeep`, đó chính là tệp nhị phân gây lỗi khi push. Sau khi loại bỏ khỏi index, commit + push sẽ thành công.
+
 ## Yêu cầu hệ thống
 - Node.js 18+.
 - Trình duyệt hiện đại hỗ trợ `MediaDevices.getUserMedia`.
