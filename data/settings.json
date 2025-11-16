@@ -1,0 +1,18 @@
+{
+  "hospitalName": "BỆNH VIỆN XYZ",
+  "departmentName": "Khoa Sản",
+  "address": "123 Đường ABC, Quận 1, TP.HCM",
+  "phone": "0123456789",
+  "fax": "",
+  "website": "",
+  "email": "",
+  "logoFileName": "logo-default.png",
+  "patientCodePrefix": "BN",
+  "examCodePrefix": "HA",
+  "defaultImageCount": 4,
+  "defaultDescription": "Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n",
+  "defaultResult": "",
+  "defaultConclusion": "",
+  "defaultDoctorAdvice": "",
+  "allowDeleteData": true
+}

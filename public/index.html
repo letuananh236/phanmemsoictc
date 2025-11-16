@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phần mềm soi cổ tử cung</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="./assets/logo-default.png" alt="Logo" class="brand-logo" />
+        <div class="brand-text">
+          <strong>BỆNH VIỆN XYZ</strong>
+          <span>Hệ thống khám soi cổ tử cung · Phiếu khám bệnh</span>
+        </div>
+      </div>
+      <nav class="menu" id="app-menu">
+        <button data-view="exam" class="menu-btn">Khám bệnh (F3)</button>
+        <button data-view="capture" class="menu-btn">Lấy hình ảnh (F4)</button>
+        <button data-view="search-patient" class="menu-btn">Tìm bệnh nhân (Ctrl+P)</button>
+        <button data-view="search-exam" class="menu-btn">Tìm phiếu khám (Ctrl+E)</button>
+        <button data-view="daily-lists" class="menu-btn">Danh sách trong ngày</button>
+        <button data-view="settings" class="menu-btn">Cấu hình</button>
+        <button data-view="doctors" class="menu-btn">Bác sỹ</button>
+        <button data-view="result-templates" class="menu-btn">Mẫu kết quả</button>
+        <button data-view="license" class="menu-btn">Bản quyền</button>
+        <button data-action="logout" class="menu-btn danger">Thoát</button>
+      </nav>
+    </header>
+
+    <main id="app-content" class="content"></main>
+
+    <section id="login-modal" class="modal hidden" aria-label="Đăng nhập hệ thống"></section>
+    <section id="license-modal" class="modal hidden" aria-label="Thông tin bản quyền"></section>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
