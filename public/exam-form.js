@@ -137,49 +137,59 @@ export function createExamFormView(appState) {
         </div>
         <form class="grid-2" id="exam-form">
           <div>
-            <div class="card">
+            <div class="card patient-card">
               <h3>Thông tin bệnh nhân</h3>
-              <div class="form-row">
-                <label>Mã BN</label>
-                <input name="patientId" readonly />
+              <div class="form-row inline-fields">
+                <div class="field short-field">
+                  <label>Mã BN</label>
+                  <input class="input-short" name="patientId" readonly />
+                </div>
+                <div class="field">
+                  <label>Họ tên *</label>
+                  <input name="patientName" required />
+                </div>
               </div>
-              <div class="form-row">
-                <label>Họ tên *</label>
-                <input name="patientName" required />
-              </div>
-              <div class="form-row">
-                <label>Tuổi *</label>
-                <input name="patientAge" type="number" min="0" required />
-              </div>
-              <div class="form-row">
-                <label>Giới tính</label>
-                <select name="patientGender">
-                  <option>Nam</option>
-                  <option>Nữ</option>
-                </select>
-              </div>
-              <div class="form-row">
-                <label>Địa chỉ</label>
-                <input name="patientAddress" />
-              </div>
-              <div class="form-row">
-                <label>Điện thoại</label>
-                <input name="patientPhone" />
-              </div>
-              <div class="form-row">
-                <label>Lý do khám</label>
-                <input name="patientReason" />
+              <div class="patient-columns">
+                <div class="patient-col">
+                  <div class="form-row">
+                    <label>Tuổi *</label>
+                    <input name="patientAge" type="number" min="0" required />
+                  </div>
+                  <div class="form-row">
+                    <label>Giới tính</label>
+                    <select name="patientGender">
+                      <option>Nam</option>
+                      <option>Nữ</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="patient-col">
+                  <div class="form-row">
+                    <label>Địa chỉ</label>
+                    <input name="patientAddress" />
+                  </div>
+                  <div class="form-row">
+                    <label>Điện thoại</label>
+                    <input name="patientPhone" />
+                  </div>
+                  <div class="form-row">
+                    <label>Lý do khám</label>
+                    <input name="patientReason" />
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="card">
+            <div class="card exam-details">
               <h3>Kết quả khám</h3>
-              <div class="form-row">
-                <label>Mã ID</label>
-                <input name="examId" />
-              </div>
-              <div class="form-row">
-                <label>Số phiếu</label>
-                <input name="examNumber" />
+              <div class="form-row inline-fields">
+                <div class="field short-field">
+                  <label>Mã ID</label>
+                  <input class="input-short" name="examId" />
+                </div>
+                <div class="field">
+                  <label>Số phiếu</label>
+                  <input name="examNumber" />
+                </div>
               </div>
               <div class="form-row">
                 <label>Ngày khám</label>

@@ -42,7 +42,6 @@ function setMenuEnabled(enabled) {
 
 async function loadSettings() {
   appState.settings = await storage.getSettings();
-  document.querySelector('.brand-text strong').textContent = appState.settings.hospitalName || 'BỆNH VIỆN';
 }
 
 async function checkLicense() {
