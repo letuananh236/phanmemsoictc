@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+  --primary: #c62828;
+  --border: #d0d0d0;
+  --text: #1b1b1b;
+  --muted: #666;
+  font-size: 12pt;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  color: var(--text);
+  margin: 0;
+  background: #f6f7fb;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  padding: 24mm;
+  display: flex;
+  flex-direction: column;
+  gap: 16mm;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.page__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.hospital-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.hospital-meta h1 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 18pt;
+  text-transform: uppercase;
+}
+
+.hospital-meta__logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  background: #fff;
+}
+
+.page__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+button,
+.upload-logo {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+button:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.upload-logo input {
+  display: none;
+}
+
+.form-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-title {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 14pt;
+  color: var(--primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font: inherit;
+  resize: vertical;
+}
+
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.camera-panel {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+#camera {
+  width: 320px;
+  height: 240px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #000;
+}
+
+.camera-panel__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+}
+
+.photo-gallery__placeholder {
+  margin: 0;
+  color: var(--muted);
+  grid-column: 1 / -1;
+}
+
+.photo-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.page__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.signature {
+  text-align: center;
+}
+
+.signature__line {
+  margin-top: 48px;
+  border-bottom: 1px solid var(--border);
+  width: 160px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.no-print {
+  /* Hidden when printing */
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .page {
+    box-shadow: none;
+    margin: 0;
+    padding: 20mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .photo-gallery img {
+    border-color: #999;
+  }
+}
