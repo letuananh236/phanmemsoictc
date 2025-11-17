@@ -44,21 +44,23 @@ export function authenticate(username, password) {
     return { status: 401, body: { error: 'invalid_credentials' } };
   }
 
+  const userPayload = {
+    id: user.UserID,
+    username: user.Username,
+    name: user.FullName || user.Username,
+    role: user.Role || 'USER'
+  };
+
   const license = summarizeLicense(ensureLicense());
   if (!isLicenseValid(license)) {
     console.info('[auth] license invalid or expired during login');
-    return { status: 403, body: { error: 'license_expired', license } };
+    return { status: 403, body: { error: 'license_expired', license, user: userPayload, config: getConfig() } };
   }
 
   return {
     status: 200,
     body: {
-      user: {
-        id: user.UserID,
-        username: user.Username,
-        name: user.FullName || user.Username,
-        role: user.Role || 'USER'
-      },
+      user: userPayload,
       license,
       config: getConfig()
     }

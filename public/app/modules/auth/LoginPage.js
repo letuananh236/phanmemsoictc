@@ -80,6 +80,20 @@ function LoginForm({ onAuthenticated }) {
         config: payload.config
       });
     } catch (err) {
+      if (err.status === 403 && err.body?.error === 'license_expired') {
+        const licenseInfo = summarizeLicense(err.body.license);
+        setError('Bản quyền đã hết hạn, vui lòng kích hoạt để tiếp tục.');
+        onAuthenticated({
+          user: err.body.user || { username: trimmedUsername, name: trimmedUsername },
+          license: licenseInfo,
+          config: err.body.config || {}
+        });
+        return;
+      }
+      if (err.status === 403 && err.body?.error === 'user_inactive') {
+        setError('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị.');
+        return;
+      }
       setError('Tài khoản hoặc mật khẩu không đúng');
     } finally {
       setLoading(false);
