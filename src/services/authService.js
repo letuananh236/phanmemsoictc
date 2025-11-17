@@ -1,24 +1,7 @@
+import { getDb } from '../dal/db.js';
 import { getConfig } from './configService.js';
 import { ensureLicense, isLicenseValid } from './licenseService.js';
-
-const FALLBACK_USER = {
-  username: 'admin',
-  password: '123',
-  name: 'Quản trị viên',
-  role: 'admin'
-};
-
-function sanitizeUser(raw = {}) {
-  if (typeof raw !== 'object' || raw === null) return { ...FALLBACK_USER };
-  const username = typeof raw.username === 'string' && raw.username.trim() ? raw.username.trim() : FALLBACK_USER.username;
-  const password = typeof raw.password === 'string' && raw.password.trim() ? raw.password.trim() : FALLBACK_USER.password;
-  const name =
-    typeof raw.name === 'string' && raw.name.trim()
-      ? raw.name.trim()
-      : username || FALLBACK_USER.name;
-  const role = raw.role || FALLBACK_USER.role;
-  return { username, password, name, role };
-}
+import { verifyPassword } from '../utils/password.js';
 
 function summarizeLicense(license) {
   const now = new Date();
@@ -33,21 +16,52 @@ function summarizeLicense(license) {
 }
 
 export function authenticate(username, password) {
-  const config = getConfig();
-  const expectedUser = sanitizeUser(config.authUser);
-
   const normalizedUsername = typeof username === 'string' ? username.trim() : '';
   const normalizedPassword = typeof password === 'string' ? password.trim() : '';
 
-  if (normalizedUsername !== expectedUser.username || normalizedPassword !== expectedUser.password) {
-    return null;
+  console.info(`[auth] login request for username="${normalizedUsername}"`);
+
+  const db = getDb();
+  const user = db
+    .prepare(
+      'SELECT UserID, Username, PasswordHash, FullName, Role, IsActive FROM Users WHERE LOWER(Username) = LOWER(@username)'
+    )
+    .get({ username: normalizedUsername });
+
+  console.info(`[auth] user lookup for "${normalizedUsername}": ${user ? 'found' : 'not_found'}`);
+
+  if (!user) {
+    return { status: 401, body: { error: 'invalid_credentials' } };
+  }
+
+  if (!user.IsActive) {
+    return { status: 403, body: { error: 'user_inactive' } };
+  }
+
+  const passwordOk = normalizedPassword ? verifyPassword(normalizedPassword, user.PasswordHash || '') : false;
+  if (!passwordOk) {
+    console.info(`[auth] password verification failed for username="${normalizedUsername}"`);
+    return { status: 401, body: { error: 'invalid_credentials' } };
   }
 
   const license = summarizeLicense(ensureLicense());
+  if (!isLicenseValid(license)) {
+    console.info('[auth] license invalid or expired during login');
+    return { status: 403, body: { error: 'license_expired', license } };
+  }
+
   return {
-    user: { username: expectedUser.username, name: expectedUser.name, role: expectedUser.role },
-    license,
-    config
+    status: 200,
+    body: {
+      user: {
+        id: user.UserID,
+        username: user.Username,
+        name: user.FullName || user.Username,
+        role: user.Role || 'USER'
+      },
+      license,
+      config: getConfig()
+    }
   };
 }
 

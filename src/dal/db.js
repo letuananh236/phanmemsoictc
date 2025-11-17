@@ -3,6 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { paths } from '../utils/paths.js';
 import { ensureDir } from '../utils/fs.js';
+import { hashPassword } from '../utils/password.js';
 
 ensureDir(paths.dataDir);
 ensureDir(paths.databaseDir);
@@ -12,6 +13,17 @@ ensureDir(paths.assetsDir);
 
 const db = new DatabaseSync(paths.databaseFile);
 db.exec('PRAGMA foreign_keys = ON;');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS Users (
+    UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Username TEXT UNIQUE NOT NULL,
+    PasswordHash TEXT NOT NULL,
+    FullName TEXT,
+    Role TEXT,
+    IsActive INTEGER DEFAULT 1
+  );
+`);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS Patients (
@@ -127,6 +139,20 @@ export function fromBoolean(value) {
 }
 
 export function ensureSeedData() {
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM Users').get().count;
+  if (userCount === 0) {
+    const defaultHash = hashPassword('admin123');
+    db.prepare(
+      'INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive) VALUES (@Username, @PasswordHash, @FullName, @Role, @IsActive)'
+    ).run({
+      Username: 'admin',
+      PasswordHash: defaultHash,
+      FullName: 'Quản trị hệ thống',
+      Role: 'ADMIN',
+      IsActive: 1
+    });
+  }
+
   const doctorCount = db.prepare('SELECT COUNT(*) as count FROM Doctors').get().count;
   if (doctorCount === 0) {
     db.prepare(

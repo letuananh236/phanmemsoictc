@@ -41,11 +41,7 @@ export async function handleApi(req, res, pathname) {
     }
     const body = await parseBody(req);
     const result = authenticate(body.username, body.password);
-    if (!result) {
-      sendJson(res, 401, { error: 'invalid_credentials' });
-      return;
-    }
-    sendJson(res, 200, result);
+    sendJson(res, result.status, result.body);
     return;
   }
 
