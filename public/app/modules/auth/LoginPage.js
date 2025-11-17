@@ -50,15 +50,30 @@ function LoginForm({ onAuthenticated }) {
       .getConfig()
       .then((cfg) => setLogo(cfg.logoFileName ? `/assets/${cfg.logoFileName}` : ''))
       .catch(() => {});
+    try {
+      const savedUser = window.localStorage.getItem('login.username');
+      if (savedUser) setUsername(savedUser);
+    } catch (_) {
+      /* ignore */
+    }
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
     setLoading(true);
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
     try {
-      const payload = await api.login({ username, password, remember });
+      const payload = await api.login({ username: trimmedUsername, password: trimmedPassword, remember });
       const licenseInfo = summarizeLicense(payload.license);
+      if (remember) {
+        try {
+          window.localStorage.setItem('login.username', trimmedUsername);
+        } catch (_) {
+          /* ignore */
+        }
+      }
       onAuthenticated({
         user: payload.user,
         license: licenseInfo,
