@@ -571,15 +571,19 @@ export async function bootstrap() {
 }
 
 const bootstrapPromise = bootstrap();
+const shouldStartServer =
+  !process.argv.includes('--test') && process.argv[1] && path.basename(process.argv[1]) === 'server.js';
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  bootstrapPromise.then(() => {
-    const server = createServer();
-    const port = Number.parseInt(process.env.PORT ?? '3000', 10);
-    server.listen(port, () => {
-      console.log(`Ứng dụng đang chạy tại http://localhost:${port}`);
+if (shouldStartServer) {
+  bootstrapPromise
+    .then(() => {
+      const server = createServer();
+      const port = Number.parseInt(process.env.PORT ?? '3000', 10);
+      server.listen(port, () => {
+        console.log(`Ứng dụng đang chạy tại http://localhost:${port}`);
+      });
+    })
+    .catch((error) => {
+      console.error('Không thể khởi động server:', error);
     });
-  }).catch((error) => {
-    console.error('Không thể khởi động server:', error);
-  });
 }
