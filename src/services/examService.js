@@ -55,6 +55,11 @@ export function listExams(filters = {}) {
     params.push(like, like, like);
   }
 
+  if (filters.patientId) {
+    conditions.push('e.PatientID = ?');
+    params.push(filters.patientId);
+  }
+
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const rows = db
     .prepare(

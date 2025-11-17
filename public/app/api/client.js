@@ -26,6 +26,22 @@ export const api = {
     const res = await fetch(`/patients${qs ? `?${qs}` : ''}`);
     return handleResponse(res);
   },
+  async getPatient(id) {
+    const res = await fetch(`/patients/${encodeURIComponent(id)}`);
+    return handleResponse(res);
+  },
+  async createPatient(payload) {
+    const res = await fetch('/patients', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) });
+    return handleResponse(res);
+  },
+  async updatePatient(id, payload) {
+    const res = await fetch(`/patients/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
   async listDoctors() {
     const res = await fetch('/doctors');
     return handleResponse(res);

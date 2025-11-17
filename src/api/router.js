@@ -1,5 +1,5 @@
 import { getConfig, setConfig } from '../services/configService.js';
-import { listPatients, savePatient, deletePatient } from '../services/patientService.js';
+import { listPatients, savePatient, deletePatient, getPatient } from '../services/patientService.js';
 import { listDoctors, saveDoctor, deleteDoctor } from '../services/doctorService.js';
 import { listTemplates, saveTemplate, deleteTemplate } from '../services/templateService.js';
 import { listExams, saveExam, deleteExam, getExam } from '../services/examService.js';
@@ -82,7 +82,8 @@ export async function handleApi(req, res, pathname) {
 
     if (normalized === '/patients') {
       if (req.method === 'GET') {
-        sendJson(res, 200, listPatients());
+        const query = Object.fromEntries(requestUrl.searchParams.entries());
+        sendJson(res, 200, listPatients({ search: query.search || '' }));
         return;
       }
       if (req.method === 'POST') {
@@ -94,6 +95,15 @@ export async function handleApi(req, res, pathname) {
 
     if (normalized.startsWith('/patients/')) {
       const id = decodeURIComponent(normalized.split('/').pop());
+      if (req.method === 'GET') {
+        const patient = getPatient(id);
+        if (!patient) {
+          sendJson(res, 404, { error: 'not_found' });
+          return;
+        }
+        sendJson(res, 200, patient);
+        return;
+      }
       if (req.method === 'PUT') {
         const body = await parseBody(req);
         sendJson(res, 200, savePatient({ ...body, id }));
@@ -112,6 +122,7 @@ export async function handleApi(req, res, pathname) {
         const filters = {
           date: query.date || query.examDate,
           doctorId: query.doctor || query.doctorId,
+          patientId: query.patientId,
           search: query.search || ''
         };
         sendJson(res, 200, listExams(filters));

@@ -34,9 +34,19 @@ function mapRow(row) {
   };
 }
 
-export function listPatients() {
+export function listPatients(filters = {}) {
   const db = getDb();
-  const rows = db.prepare('SELECT * FROM Patients ORDER BY CreatedAt DESC').all();
+  const conditions = [];
+  const params = [];
+
+  if (filters.search) {
+    const like = `%${filters.search}%`;
+    conditions.push('(FullName LIKE ? OR Phone LIKE ? OR PatientID LIKE ?)');
+    params.push(like, like, like);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const rows = db.prepare(`SELECT * FROM Patients ${whereClause} ORDER BY CreatedAt DESC`).all(...params);
   return rows.map(mapRow);
 }
 

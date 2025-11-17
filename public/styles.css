@@ -91,6 +91,14 @@ a { color: inherit; }
 .split-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
 .list-panel { min-height: 480px; }
 .detail-panel { min-height: 480px; }
+.patients-layout { grid-template-columns: 0.4fr 0.6fr; }
+.patients-list .table-wrapper.tall { max-height: 520px; }
+.patient-detail .patient-form-grid { grid-template-columns: 1fr 1fr; }
+.patient-detail textarea { min-height: 88px; }
+.search-row { display: flex; gap: 8px; align-items: center; }
+.success-banner { padding: 10px 12px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-radius: 10px; font-weight: 700; }
+.empty-cell { text-align: center; }
+.small { font-size: 13px; }
 
 .filters-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
 .status-pill { padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 14px; }
@@ -111,6 +119,11 @@ a { color: inherit; }
 .skeleton-block { width: 100%; height: 14px; background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%); border-radius: 6px; animation: shimmer 1.2s ease-in-out infinite; }
 .empty-state { padding: 18px; text-align: center; color: #6b7280; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; }
 .daily-actions { align-items: center; }
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); display: grid; place-items: center; z-index: 20; }
+.dialog { background: #fff; border-radius: 14px; width: min(720px, 90vw); padding: 16px; box-shadow: 0 18px 50px rgb(15 91 167 / 0.25); }
+.dialog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.history-table { max-height: 360px; overflow: auto; display: block; }
+.history-table thead, .history-table tbody, .history-table tr, .history-table th, .history-table td { display: table; width: 100%; table-layout: fixed; }
 
 @keyframes shimmer {
   0% { background-position: -200px 0; }
