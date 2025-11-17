@@ -13,6 +13,10 @@ async function handleResponse(res) {
 }
 
 export const api = {
+  async login(payload) {
+    const res = await fetch('/auth/login', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) });
+    return handleResponse(res);
+  },
   async listPatients(query = {}) {
     const qs = new URLSearchParams(query).toString();
     const res = await fetch(`/patients${qs ? `?${qs}` : ''}`);
@@ -24,6 +28,10 @@ export const api = {
   },
   async getConfig() {
     const res = await fetch('/system-config');
+    return handleResponse(res);
+  },
+  async getLicense() {
+    const res = await fetch('/license');
     return handleResponse(res);
   },
   async uploadLogo(file) {

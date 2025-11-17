@@ -81,6 +81,7 @@ export function createServer() {
       '/patients',
       '/examinations',
       '/exams',
+      '/auth',
       '/doctors',
       '/result-templates',
       '/system-config',

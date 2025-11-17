@@ -5,6 +5,7 @@ import { listTemplates, saveTemplate, deleteTemplate } from '../services/templat
 import { listExams, saveExam, deleteExam, getExam } from '../services/examService.js';
 import { saveExamImage } from '../services/imageService.js';
 import { activateLicense, ensureLicense, getLicense, isLicenseValid } from '../services/licenseService.js';
+import { authenticate, getLicenseSummary } from '../services/authService.js';
 import { createBackup, restoreBackup } from '../services/backupService.js';
 
 function sendJson(res, status, payload) {
@@ -32,9 +33,24 @@ function normalizePath(pathname) {
 
 export async function handleApi(req, res, pathname) {
   const normalized = normalizePath(pathname);
+  if (normalized === '/auth/login') {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'method_not_allowed' });
+      return;
+    }
+    const body = await parseBody(req);
+    const result = authenticate(body.username, body.password);
+    if (!result) {
+      sendJson(res, 401, { error: 'invalid_credentials' });
+      return;
+    }
+    sendJson(res, 200, result);
+    return;
+  }
+
   const license = ensureLicense();
-  if (!normalized.startsWith('/license') && !isLicenseValid(license)) {
-    sendJson(res, 403, { error: 'license_expired', license });
+  if (!normalized.startsWith('/license') && !normalized.startsWith('/auth') && !isLicenseValid(license)) {
+    sendJson(res, 403, { error: 'license_expired', license: getLicenseSummary() });
     return;
   }
 
@@ -199,7 +215,7 @@ export async function handleApi(req, res, pathname) {
 
     if (normalized === '/license') {
       if (req.method === 'GET') {
-        const current = getLicense();
+        const current = getLicenseSummary();
         sendJson(res, 200, { license: current, valid: isLicenseValid(current) });
         return;
       }
