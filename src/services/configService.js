@@ -17,6 +17,7 @@ const defaultConfig = {
   defaultResult: '',
   defaultConclusion: '',
   defaultDoctorAdvice: '',
+  defaultDoctorId: '',
   allowDeleteData: true,
   databasePath: paths.databaseFile
 };

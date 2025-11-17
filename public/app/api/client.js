@@ -46,6 +46,18 @@ export const api = {
     const res = await fetch('/doctors');
     return handleResponse(res);
   },
+  async createDoctor(payload) {
+    const res = await fetch('/doctors', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) });
+    return handleResponse(res);
+  },
+  async updateDoctor(id, payload) {
+    const res = await fetch(`/doctors/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
   async listExaminations(query = {}) {
     const qs = new URLSearchParams(query).toString();
     const res = await fetch(`/examinations${qs ? `?${qs}` : ''}`);
@@ -76,6 +88,10 @@ export const api = {
   },
   async getConfig() {
     const res = await fetch('/system-config');
+    return handleResponse(res);
+  },
+  async setConfig(payload) {
+    const res = await fetch('/system-config', { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(payload) });
     return handleResponse(res);
   },
   async getLicense() {

@@ -21,3 +21,8 @@ export function generateExamId() {
   const prefix = getConfigValue('examCodePrefix', 'HA');
   return nextCode('Examinations', 'ExamID', prefix);
 }
+
+export function generateDoctorId() {
+  const prefix = 'D';
+  return nextCode('Doctors', 'DoctorID', prefix);
+}
