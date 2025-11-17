@@ -136,6 +136,8 @@ export function createExamFormView(appState) {
           <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
         </div>
         <form class="grid-2" id="exam-form">
+          <input type="hidden" name="examId" />
+          <input type="hidden" name="examNumber" />
           <div>
             <div class="card patient-card">
               <h3>Thông tin bệnh nhân</h3>
@@ -181,16 +183,6 @@ export function createExamFormView(appState) {
             </div>
             <div class="card exam-details">
               <h3>Kết quả khám</h3>
-              <div class="form-row inline-fields">
-                <div class="field short-field">
-                  <label>Mã ID</label>
-                  <input class="input-short" name="examId" />
-                </div>
-                <div class="field">
-                  <label>Số phiếu</label>
-                  <input name="examNumber" />
-                </div>
-              </div>
               <div class="form-row">
                 <label>Ngày khám</label>
                 <input type="date" name="examDate" />

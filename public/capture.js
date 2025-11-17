@@ -139,7 +139,7 @@ export function createCaptureView(appState) {
             </div>
             <div class="form-row">
               <h4>Ảnh đã chọn</h4>
-              <div class="image-grid" id="selected-images"></div>
+              <div class="image-grid selected-grid" id="selected-images"></div>
             </div>
             <div class="form-row">
               <button type="button" id="accept-images">Chấp nhận (F10)</button>
