@@ -102,6 +102,22 @@ export const api = {
     const res = await fetch('/result-templates');
     return handleResponse(res);
   },
+  async createResultTemplate(payload) {
+    const res = await fetch('/result-templates', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) });
+    return handleResponse(res);
+  },
+  async updateResultTemplate(id, payload) {
+    const res = await fetch(`/result-templates/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
+  async deleteResultTemplate(id) {
+    const res = await fetch(`/result-templates/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return handleResponse(res);
+  },
   async uploadLogo(file) {
     const form = new FormData();
     form.append('logo', file);
