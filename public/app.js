@@ -62,8 +62,13 @@ function renderView(viewKey) {
   appState.currentView = viewKey;
   content.innerHTML = '';
   view.render(content);
+  const activeButton = menu.querySelector(`button[data-view="${viewKey}"]`);
+  const parentView = activeButton?.dataset.parent;
   menu.querySelectorAll('button').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.view === viewKey);
+    const isActive = btn.dataset.view === viewKey;
+    const isParentActive = parentView && btn.dataset.view === parentView;
+    btn.classList.toggle('active', isActive);
+    btn.classList.toggle('active-parent', isParentActive);
   });
 }
 
