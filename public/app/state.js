@@ -4,6 +4,7 @@ const defaultState = {
   clinic: { name: 'PHÒNG KHÁM SẢN PHỤ KHOA', dbPath: 'Data/Database/app.db' },
   license: { status: 'valid', daysLeft: 30, type: 'trial' },
   today: new Date().toISOString().slice(0, 10),
+  selectedExamId: null,
 };
 
 let subscribers = [];

@@ -66,21 +66,38 @@ export function renderShell() {
 
   const content = document.getElementById('app-content');
   const navButtons = root.querySelectorAll('.nav-item');
+
+  const setActive = (view) => {
+    navButtons.forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-view') === view));
+  };
+
+  const navigate = (view, extras = {}) => {
+    setState({ currentView: view, ...extras });
+    setActive(view);
+    renderView(view, content, navigate);
+  };
+
   navButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const view = btn.getAttribute('data-view');
-      setState({ currentView: view });
-      renderView(view, content);
-      navButtons.forEach((b) => b.classList.toggle('active', b === btn));
+      navigate(view);
     });
   });
 
-  renderView(state.currentView, content);
+  navigate(state.currentView);
 }
 
-function renderView(viewKey, container) {
+function renderView(viewKey, container, navigate) {
   const renderer = VIEW_RENDERERS[viewKey] || renderDaily;
-  const node = renderer(getState(), { navigate: (next) => setState({ currentView: next }) });
+  if (typeof renderView.cleanup === 'function') {
+    renderView.cleanup();
+    renderView.cleanup = null;
+  }
+  const result = renderer(getState(), { navigate });
+  const node = result?.node || result;
+  renderView.cleanup = result?.cleanup || null;
   container.innerHTML = '';
   container.appendChild(node);
 }
+
+renderView.cleanup = null;

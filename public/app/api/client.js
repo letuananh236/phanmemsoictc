@@ -1,11 +1,15 @@
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 async function handleResponse(res) {
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || 'Yêu cầu không thành công');
-  }
   const contentType = res.headers.get('content-type') || '';
+  if (!res.ok) {
+    const raw = await res.text();
+    const payload = contentType.includes('application/json') && raw ? JSON.parse(raw) : raw;
+    const err = new Error(payload?.error || payload?.message || raw || 'Yêu cầu không thành công');
+    err.status = res.status;
+    err.body = payload;
+    throw err;
+  }
   if (contentType.includes('application/json')) {
     return res.json();
   }
@@ -22,9 +26,17 @@ export const api = {
     const res = await fetch(`/patients${qs ? `?${qs}` : ''}`);
     return handleResponse(res);
   },
-  async listTodayVisits(query = {}) {
-    const res = await fetch(`/examinations?${new URLSearchParams(query)}`);
+  async listDoctors() {
+    const res = await fetch('/doctors');
     return handleResponse(res);
+  },
+  async listExaminations(query = {}) {
+    const qs = new URLSearchParams(query).toString();
+    const res = await fetch(`/examinations${qs ? `?${qs}` : ''}`);
+    return handleResponse(res);
+  },
+  async listTodayVisits(query = {}) {
+    return this.listExaminations(query);
   },
   async getConfig() {
     const res = await fetch('/system-config');

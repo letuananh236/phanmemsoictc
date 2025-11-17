@@ -3,28 +3,70 @@ import { generateExamId } from './codeService.js';
 import { listImages, clearImages, saveExamImage } from './imageService.js';
 
 function mapRow(row) {
+  const images = listImages(row.ExamID);
+  const status = row.Diagnosis
+    ? 'Đã soi'
+    : images.length > 0
+      ? 'Đang soi'
+      : 'Chưa soi';
+
   return {
     id: row.ExamID,
     examNumber: row.ExamNumber,
     date: row.ExamDateTime?.slice(0, 10),
+    time: row.ExamDateTime ? new Date(row.ExamDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
     patientId: row.PatientID,
+    patientName: row.PatientName,
+    patientDob: row.DOB,
+    patientPhone: row.Phone,
     doctorId: row.DoctorID,
-    doctorName: row.DoctorName,
+    doctorName: row.DoctorName || row.DoctorFullName,
     description: row.ColpoFindings,
     result: row.Diagnosis,
     treatmentSteps: row.ClinicalNotes,
     doctorAdvice: row.Recommendation,
     templateVersion: row.TemplateVersion,
     numImages: row.NumImages,
+    status,
     createdAt: row.CreatedAt,
     updatedAt: row.UpdatedAt,
-    images: listImages(row.ExamID)
+    images
   };
 }
 
-export function listExams() {
+export function listExams(filters = {}) {
   const db = getDb();
-  const rows = db.prepare('SELECT * FROM Examinations ORDER BY ExamDateTime DESC').all();
+  const conditions = [];
+  const params = [];
+
+  if (filters.date) {
+    conditions.push('date(e.ExamDateTime) = date(?)');
+    params.push(filters.date);
+  }
+
+  if (filters.doctorId) {
+    conditions.push('e.DoctorID = ?');
+    params.push(filters.doctorId);
+  }
+
+  if (filters.search) {
+    const like = `%${filters.search}%`;
+    conditions.push('(p.FullName LIKE ? OR p.Phone LIKE ? OR p.PatientID LIKE ?)');
+    params.push(like, like, like);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const rows = db
+    .prepare(
+      `SELECT e.*, p.FullName AS PatientName, p.DOB, p.Phone, d.FullName AS DoctorFullName
+       FROM Examinations e
+       LEFT JOIN Patients p ON e.PatientID = p.PatientID
+       LEFT JOIN Doctors d ON e.DoctorID = d.DoctorID
+       ${whereClause}
+       ORDER BY e.ExamDateTime DESC`
+    )
+    .all(...params);
+
   return rows.map(mapRow);
 }
 

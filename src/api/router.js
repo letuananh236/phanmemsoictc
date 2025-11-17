@@ -32,7 +32,8 @@ function normalizePath(pathname) {
 }
 
 export async function handleApi(req, res, pathname) {
-  const normalized = normalizePath(pathname);
+  const requestUrl = new URL(req.url, 'http://localhost');
+  const normalized = normalizePath(requestUrl.pathname);
   if (normalized === '/auth/login') {
     if (req.method !== 'POST') {
       sendJson(res, 405, { error: 'method_not_allowed' });
@@ -107,7 +108,13 @@ export async function handleApi(req, res, pathname) {
 
     if (normalized === '/examinations' || normalized === '/exams') {
       if (req.method === 'GET') {
-        sendJson(res, 200, listExams());
+        const query = Object.fromEntries(requestUrl.searchParams.entries());
+        const filters = {
+          date: query.date || query.examDate,
+          doctorId: query.doctor || query.doctorId,
+          search: query.search || ''
+        };
+        sendJson(res, 200, listExams(filters));
         return;
       }
       if (req.method === 'POST') {

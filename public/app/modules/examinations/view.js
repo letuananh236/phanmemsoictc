@@ -1,6 +1,8 @@
 import { el } from '../../components/common/dom.js';
 
-export function renderExaminations() {
+export function renderExaminations(state = {}) {
+  const examCode = state.selectedExamId || 'HA_____';
+  const patientCode = state.selectedPatientId || 'BN_____';
   const node = el(`
     <div class="exam-grid">
       <section class="panel exam-col patient-col">
@@ -9,8 +11,8 @@ export function renderExaminations() {
           <span class="muted">Tránh nhầm lẫn bằng cách hiển thị mã và thông tin ngắn gọn.</span>
         </div>
         <div class="badge-block">
-          <div class="badge">Mã BN: <strong>BN01234</strong></div>
-          <div class="badge">Mã phiếu: <strong>HA04567</strong></div>
+          <div class="badge">Mã BN: <strong>${patientCode}</strong></div>
+          <div class="badge">Mã phiếu: <strong>${examCode}</strong></div>
         </div>
         <div class="form-grid two-cols compact">
           <label class="field">
