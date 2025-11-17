@@ -8,6 +8,7 @@ ensureDir(paths.dataDir);
 ensureDir(paths.databaseDir);
 ensureDir(paths.imagesDir);
 ensureDir(paths.configDir);
+ensureDir(paths.assetsDir);
 
 const db = new DatabaseSync(paths.databaseFile);
 db.exec('PRAGMA foreign_keys = ON;');

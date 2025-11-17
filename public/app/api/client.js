@@ -94,6 +94,14 @@ export const api = {
     const res = await fetch('/system-config', { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(payload) });
     return handleResponse(res);
   },
+  async uploadLogo({ fileName, dataUrl }) {
+    const res = await fetch('/system-config/logo', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ fileName, dataUrl })
+    });
+    return handleResponse(res);
+  },
   async getLicense() {
     const res = await fetch('/license');
     return handleResponse(res);

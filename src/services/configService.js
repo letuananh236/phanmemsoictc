@@ -1,4 +1,7 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { paths } from '../utils/paths.js';
+import { ensureDir } from '../utils/fs.js';
 import { getDb } from '../dal/db.js';
 
 const defaultConfig = {
@@ -49,6 +52,30 @@ export function setConfig(partial) {
   // Always keep database path reference fresh
   stmt.run({ ConfigKey: 'databasePath', ConfigValue: JSON.stringify(paths.databaseFile) });
   return merged;
+}
+
+export function saveLogoFromData({ fileName, dataUrl }) {
+  if (!dataUrl || typeof dataUrl !== 'string') {
+    throw new Error('invalid_image');
+  }
+  const matches = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!matches) {
+    throw new Error('invalid_image');
+  }
+  const mime = matches[1];
+  const buffer = Buffer.from(matches[2], 'base64');
+  const fallbackExt = mime.split('/')[1] || 'png';
+  const safeBase = (fileName || 'logo')
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .slice(0, 80) || 'logo';
+  const finalName = `${safeBase}.${fallbackExt}`;
+  const targetDir = paths.assetsDir;
+  ensureDir(targetDir);
+  const targetPath = path.join(targetDir, finalName);
+  fs.writeFileSync(targetPath, buffer);
+  const config = setConfig({ logoFileName: finalName });
+  return { fileName: finalName, config };
 }
 
 export function getConfigValue(key, fallback) {

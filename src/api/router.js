@@ -1,4 +1,4 @@
-import { getConfig, setConfig } from '../services/configService.js';
+import { getConfig, saveLogoFromData, setConfig } from '../services/configService.js';
 import { listPatients, savePatient, deletePatient, getPatient } from '../services/patientService.js';
 import { listDoctors, saveDoctor, deleteDoctor } from '../services/doctorService.js';
 import { listTemplates, saveTemplate, deleteTemplate } from '../services/templateService.js';
@@ -66,6 +66,17 @@ export async function handleApi(req, res, pathname) {
         sendJson(res, 200, setConfig(body));
         return;
       }
+    }
+
+    if (normalized === '/system-config/logo' && req.method === 'POST') {
+      const body = await parseBody(req);
+      try {
+        const result = saveLogoFromData(body || {});
+        sendJson(res, 200, { logoFileName: result.fileName, config: result.config });
+      } catch (err) {
+        sendJson(res, 400, { error: 'invalid_logo', message: err?.message || 'Không thể lưu logo.' });
+      }
+      return;
     }
 
     if (normalized === '/settings') {

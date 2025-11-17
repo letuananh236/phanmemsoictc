@@ -9,6 +9,7 @@ const databaseDir = path.join(dataDir, 'Database');
 const imagesDir = path.join(dataDir, 'Images');
 const configDir = path.join(dataDir, 'Config');
 const publicDir = path.join(rootDir, 'public');
+const assetsDir = path.join(publicDir, 'assets');
 
 export const paths = {
   rootDir,
@@ -17,5 +18,6 @@ export const paths = {
   imagesDir,
   configDir,
   publicDir,
+  assetsDir,
   databaseFile: path.join(databaseDir, 'app.db')
 };
