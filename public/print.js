@@ -1,48 +1,98 @@
 export function openPrintPreview({ patient, exam, settings, images }) {
-  const printWindow = window.open('', '_blank');
-  const examImages = (images || []).slice(0, settings.defaultImageCount || 4);
-  const imageHtml = examImages
-    .map(
-      (image) => `
-        <div class="print-image">
-          <img src="${image.dataUrl || `/${image.path}`}" alt="Ảnh soi" />
-        </div>`
-    )
-    .join('');
-
+  const examImages = normalizeImages(images, settings.defaultImageCount || 4);
   const formattedDate = formatExamDate(exam?.date);
   const doctorName = exam?.doctorName || '';
   const reason = patient?.reason || '';
 
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+
+  const sheetHtml = renderPrintSheet({
+    patient,
+    exam,
+    settings,
+    formattedDate,
+    doctorName,
+    reason,
+    examImages,
+  });
+
   printWindow.document.write(`
     <html>
       <head>
-        <title>Phiếu kết quả</title>
+        <title>Xem trước phiếu khám</title>
         <style>
           @page {
             size: A4 portrait;
             margin: 1.5cm;
           }
-          body {
+          :root {
             font-family: 'Times New Roman', 'Times', serif;
-            font-size: 12px;
-            line-height: 1.5;
-            margin: 0;
             color: #111827;
+            line-height: 1.6;
           }
-          .print-container {
-            width: 100%;
+          body {
+            margin: 0;
+            background: #e5e7eb;
+            padding: 16px;
+          }
+          .print-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+          }
+          .print-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 12px;
+            position: sticky;
+            top: 0;
+            padding: 8px 0;
+            background: #e5e7eb;
+            z-index: 2;
+          }
+          .print-actions button {
+            border: 1px solid #cbd5e1;
+            background: #0f5ba7;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+          }
+          .print-actions button.secondary {
+            background: #6b7280;
+          }
+          .print-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #fff;
+            padding: 1.5cm;
+            box-shadow: 0 18px 45px rgb(0 0 0 / 0.18);
+            font-size: 12px;
           }
           header {
-            display: flex;
-            align-items: center;
+            display: grid;
+            grid-template-columns: 88px 1fr;
             gap: 16px;
+            align-items: center;
             padding-bottom: 12px;
-            border-bottom: 1px solid #111;
-            margin-bottom: 12px;
+            border-bottom: 1px solid #0f172a;
+            margin-bottom: 16px;
+          }
+          .print-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            padding: 6px;
           }
           .header-text {
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
           }
           .header-text .hospital-name,
           .header-text .department-name {
@@ -55,26 +105,21 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .header-text .department-name {
             font-size: 14px;
           }
-          .print-logo {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-          }
           .title {
             text-align: center;
             color: #b91c1c;
             font-size: 18px;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            margin: 8px 0 16px;
+            margin: 4px 0 18px;
           }
           .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
           }
           .info-table td {
-            padding: 4px 8px 4px 0;
+            padding: 5px 8px 5px 0;
             vertical-align: top;
           }
           .info-table tr td:first-child,
@@ -88,7 +133,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .result-block,
           .treatment-block,
           .advice-block {
-            margin-bottom: 12px;
+            margin-bottom: 14px;
           }
           .text-content {
             white-space: pre-wrap;
@@ -98,13 +143,27 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             display: flex;
             justify-content: center;
             gap: 12px;
-            margin: 12px 0 16px;
+            margin: 14px 0 18px;
           }
-          .print-image img {
+          .print-image {
             width: 190px;
             height: 130px;
-            object-fit: cover;
             border: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+          }
+          .print-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          .print-image.placeholder {
+            border-style: dashed;
+            color: #94a3b8;
+            font-style: italic;
+            font-size: 12px;
           }
           .section-heading {
             font-weight: 700;
@@ -112,7 +171,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin-bottom: 4px;
           }
           .signature-block {
-            margin-top: 24px;
+            margin-top: 26px;
             text-align: right;
           }
           .signature-block .doctor-title {
@@ -121,85 +180,47 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin-top: 8px;
           }
           .footer-note {
-            border-top: 1px solid #111;
-            margin-top: 24px;
+            border-top: 1px solid #111827;
+            margin-top: 26px;
             padding-top: 8px;
             font-style: italic;
             font-size: 11px;
           }
+          @media print {
+            body {
+              background: #fff;
+              padding: 0;
+            }
+            .print-wrapper,
+            .print-sheet {
+              box-shadow: none;
+              width: auto;
+              min-height: auto;
+              margin: 0;
+              padding: 0;
+            }
+            .print-sheet {
+              padding: 0;
+            }
+            .print-actions {
+              display: none;
+            }
+          }
         </style>
       </head>
       <body>
-        <div class="print-container">
-          <header>
-            <img class="print-logo" src="./assets/${settings.logoFileName}" alt="Logo bệnh viện" />
-            <div class="header-text">
-              <div class="hospital-name">${settings.hospitalName || ''}</div>
-              <div class="department-name">${settings.departmentName || ''}</div>
-              <div>${settings.address || ''}</div>
-              <div>${settings.phone || ''}${settings.website ? ' | ' + settings.website : ''}</div>
-            </div>
-          </header>
-          <div class="title">KẾT QUẢ SOI CỔ TỬ CUNG</div>
-
-          <table class="info-table">
-            <tr>
-              <td><span class="label">Mã số BN:</span> ${patient?.id || ''}</td>
-              <td><span class="label">Số bệnh án:</span> ${exam?.examNumber || ''}</td>
-            </tr>
-            <tr>
-              <td><span class="label">Họ và tên:</span> ${patient?.name || ''}</td>
-              <td>
-                <span class="label">Tuổi:</span> ${patient?.age || ''}
-                &nbsp;&nbsp;
-                <span class="label">Giới tính:</span> ${patient?.gender || ''}
-              </td>
-            </tr>
-            <tr>
-              <td><span class="label">Địa chỉ:</span> ${patient?.address || ''}</td>
-              <td><span class="label">ĐT liên hệ:</span> ${patient?.phone || ''}</td>
-            </tr>
-            <tr>
-              <td colspan="2"><span class="label">Lý do khám:</span> ${reason}</td>
-            </tr>
-          </table>
-
-          <div class="description-block">
-            <span class="label">Mô tả:</span>
-            <div class="text-content">${exam?.description || ''}</div>
+        <div class="print-wrapper">
+          <div class="print-actions">
+            <button class="secondary" onclick="window.close()">Đóng xem trước</button>
+            <button onclick="window.print()">In phiếu</button>
           </div>
-
-          <div class="print-images">${imageHtml}</div>
-
-          <div class="result-block">
-            <span class="label">Kết quả soi tử cung:</span>
-            <div class="text-content">${exam?.result || ''}</div>
-          </div>
-
-          <div class="treatment-block">
-            <div class="section-heading">Các bước điều trị:</div>
-            <div class="text-content">${exam?.treatmentSteps || ''}</div>
-          </div>
-
-          <div class="advice-block">
-            <div class="section-heading">Lời dặn của bác sỹ:</div>
-            <div class="text-content">${exam?.doctorAdvice || ''}</div>
-          </div>
-
-          <div class="signature-block">
-            <div>${formattedDate}</div>
-            <div class="doctor-title">Bác sỹ khám bệnh</div>
-            <div style="margin-top: 48px; font-weight: 700;">${doctorName}</div>
-          </div>
-
-          <div class="footer-note">Xin hãy giữ lại giấy khám này và mang đến cho lần khám tiếp theo.</div>
+          ${sheetHtml}
         </div>
       </body>
     </html>
   `);
   printWindow.document.close();
   printWindow.focus();
-  printWindow.print();
 }
 
 function formatExamDate(dateString) {
@@ -214,4 +235,94 @@ function formatExamDate(dateString) {
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const year = date.getFullYear();
   return `Ngày ${day} tháng ${month} năm ${year}`;
+}
+
+function normalizeImages(images = [], targetCount = 4) {
+  const list = (images || []).slice(0, targetCount);
+  while (list.length < targetCount) {
+    list.push(null);
+  }
+  return list;
+}
+
+function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
+  const imageRow = examImages
+    .map((image, index) => {
+      if (!image) {
+        return `<div class="print-image placeholder">Ảnh ${index + 1}</div>`;
+      }
+      return `
+        <div class="print-image">
+          <img src="${image.dataUrl || `/${image.path}`}" alt="Ảnh soi ${index + 1}" />
+        </div>`;
+    })
+    .join('');
+
+  return `
+    <div class="print-sheet">
+      <header>
+        <img class="print-logo" src="./assets/${settings.logoFileName}" alt="Logo bệnh viện" />
+        <div class="header-text">
+          <div class="hospital-name">${settings.hospitalName || ''}</div>
+          <div class="department-name">${settings.departmentName || ''}</div>
+          <div>${settings.address || ''}</div>
+          <div>${settings.phone || ''}${settings.website ? ' | ' + settings.website : ''}</div>
+        </div>
+      </header>
+
+      <div class="title">KẾT QUẢ SOI CỔ TỬ CUNG</div>
+
+      <table class="info-table">
+        <tr>
+          <td><span class="label">Mã số BN:</span> ${patient?.id || ''}</td>
+          <td><span class="label">Số bệnh án:</span> ${exam?.examNumber || ''}</td>
+        </tr>
+        <tr>
+          <td><span class="label">Họ và tên:</span> ${patient?.name || ''}</td>
+          <td>
+            <span class="label">Tuổi:</span> ${patient?.age || ''}
+            &nbsp;&nbsp;
+            <span class="label">Giới tính:</span> ${patient?.gender || ''}
+          </td>
+        </tr>
+        <tr>
+          <td><span class="label">Địa chỉ:</span> ${patient?.address || ''}</td>
+          <td><span class="label">ĐT liên hệ:</span> ${patient?.phone || ''}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><span class="label">Lý do khám:</span> ${reason}</td>
+        </tr>
+      </table>
+
+      <div class="description-block">
+        <span class="label">Mô tả:</span>
+        <div class="text-content">${exam?.description || ''}</div>
+      </div>
+
+      <div class="print-images">${imageRow}</div>
+
+      <div class="result-block">
+        <span class="label">Kết quả soi tử cung:</span>
+        <div class="text-content">${exam?.result || ''}</div>
+      </div>
+
+      <div class="treatment-block">
+        <div class="section-heading">Các bước điều trị:</div>
+        <div class="text-content">${exam?.treatmentSteps || ''}</div>
+      </div>
+
+      <div class="advice-block">
+        <div class="section-heading">Lời dặn của bác sỹ:</div>
+        <div class="text-content">${exam?.doctorAdvice || ''}</div>
+      </div>
+
+      <div class="signature-block">
+        <div>${formattedDate}</div>
+        <div class="doctor-title">Bác sỹ khám bệnh</div>
+        <div style="margin-top: 48px; font-weight: 700;">${doctorName}</div>
+      </div>
+
+      <div class="footer-note">Xin hãy giữ lại giấy khám này và mang đến cho lần khám tiếp theo.</div>
+    </div>
+  `;
 }
