@@ -6,7 +6,7 @@ import { listExams, saveExam, deleteExam, getExam } from '../services/examServic
 import { saveExamImage } from '../services/imageService.js';
 import { activateLicense, ensureLicense, getLicense, isLicenseValid } from '../services/licenseService.js';
 import { authenticate, getLicenseSummary } from '../services/authService.js';
-import { createBackup, restoreBackup } from '../services/backupService.js';
+import { createBackup, restoreBackup, listBackupHistory } from '../services/backupService.js';
 
 function sendJson(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -263,6 +263,14 @@ export async function handleApi(req, res, pathname) {
       if (req.method === 'POST' || req.method === 'GET') {
         const info = await createBackup();
         sendJson(res, 200, info);
+        return;
+      }
+    }
+
+    if (normalized === '/backup/history') {
+      if (req.method === 'GET') {
+        const list = listBackupHistory(20);
+        sendJson(res, 200, { items: list });
         return;
       }
     }

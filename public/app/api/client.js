@@ -139,5 +139,22 @@ export const api = {
     form.append('logo', file);
     const res = await fetch('/api/settings/logo', { method: 'POST', body: form });
     return handleResponse(res);
+  },
+  async getBackupHistory() {
+    const res = await fetch('/backup/history');
+    return handleResponse(res);
+  },
+  async createBackup() {
+    const res = await fetch('/backup/create', { method: 'POST' });
+    return handleResponse(res);
+  },
+  async restoreBackup(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const res = await fetch('/backup/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: arrayBuffer
+    });
+    return handleResponse(res);
   }
 };

@@ -267,6 +267,19 @@ a { color: inherit; }
 .preview-images.count-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .preview-thumb { height: 70px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #fff; display: grid; place-items: center; color: #475569; font-weight: 800; }
 
+.backup-page { display: grid; gap: 16px; }
+.backup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; align-items: start; }
+.backup-card { display: grid; gap: 14px; }
+.backup-card .panel-title { margin: 0; font-size: 18px; letter-spacing: 0.08em; }
+.backup-card .muted { color: #475569; margin: 0; }
+.backup-history .section-title { margin-bottom: 6px; font-weight: 700; color: #0f172a; }
+.restore-card { border: 1px solid #fecdd3; box-shadow: 0 10px 28px rgb(239 68 68 / 0.08); }
+.warning-text { color: #b91c1c; background: #fef2f2; padding: 10px 12px; border-radius: 10px; border: 1px solid #fecdd3; font-weight: 700; margin: 0; }
+.file-picker { display: grid; gap: 8px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; cursor: pointer; }
+.file-picker span { font-weight: 700; color: #0f172a; }
+.file-picker input { display: none; }
+.backup-page .btn.large { width: fit-content; min-width: 230px; justify-self: start; }
+
 @media (max-width: 1200px) {
   .app-body { grid-template-columns: 200px 1fr; }
   .exam-grid { grid-template-columns: 1fr; }

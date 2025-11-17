@@ -80,3 +80,19 @@ export async function restoreBackup(buffer) {
   await unzipData(buffer);
   return { success: true };
 }
+
+export function listBackupHistory(limit = 10) {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      'SELECT BackupID, BackupDateTime, BackupFilePath, BackupType, Note FROM BackupHistory ORDER BY datetime(BackupDateTime) DESC LIMIT ?'
+    )
+    .all(limit);
+  return rows.map((row) => ({
+    id: row.BackupID,
+    time: row.BackupDateTime,
+    path: row.BackupFilePath,
+    type: row.BackupType,
+    note: row.Note
+  }));
+}
