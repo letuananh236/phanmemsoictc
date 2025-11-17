@@ -1,0 +1,268 @@
+@page {
+  size: A4 portrait;
+  margin: 1.5cm;
+}
+
+:root {
+  font-family: 'Times New Roman', Times, serif;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  background: #e5e7eb;
+  padding: 16px;
+}
+
+.print-container {
+  max-width: 210mm;
+  margin: 0 auto;
+}
+
+.print-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+  position: sticky;
+  top: 0;
+  background: #e5e7eb;
+  padding: 8px 0;
+  z-index: 10;
+}
+
+.print-actions button {
+  border: 1px solid #cbd5e1;
+  background: #0f5ba7;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.print-actions .secondary {
+  background: #6b7280;
+}
+
+.print-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  padding: 0 1.5cm 1.4cm;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.16);
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+.sheet-header {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding-top: 18px;
+  padding-bottom: 10px;
+}
+
+.sheet-header .logo-box {
+  width: 86px;
+  height: 86px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sheet-header .logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-meta .facility {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.header-meta .department {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.header-meta .contact {
+  font-size: 12px;
+  color: #374151;
+}
+
+.divider {
+  border-bottom: 1px solid #111827;
+  margin: 4px 0 10px;
+}
+
+.print-title {
+  text-align: center;
+  font-weight: 800;
+  color: #b91c1c;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.info-row .label {
+  font-weight: 700;
+  min-width: 90px;
+  display: inline-block;
+}
+
+.info-row.full {
+  grid-column: 1 / -1;
+}
+
+.section {
+  margin-top: 10px;
+}
+
+.section .label {
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.section .body-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.image-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 16px;
+  flex-wrap: nowrap;
+}
+
+.image-box {
+  width: 190px;
+  height: 130px;
+  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.image-box .caption {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 10px;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.signature-block {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  align-items: start;
+}
+
+.signature-area {
+  text-align: center;
+  font-weight: 700;
+}
+
+.signature-area .date-line {
+  text-align: right;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.signature-stamp {
+  margin-top: 12px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signature-stamp img {
+  max-width: 160px;
+  max-height: 70px;
+  object-fit: contain;
+}
+
+.footer-note {
+  margin-top: 18px;
+  border-top: 1px solid #111827;
+  padding-top: 6px;
+  font-style: italic;
+  font-size: 11px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.loading, .error-box {
+  width: 210mm;
+  margin: 40px auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.error-box {
+  border: 1px solid #f97316;
+  color: #c2410c;
+}
+
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+  }
+  .print-actions { display: none; }
+  .print-sheet { box-shadow: none; margin: 0 auto; padding: 0 1.5cm 1.4cm; }
+}

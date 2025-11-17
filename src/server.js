@@ -77,6 +77,11 @@ export function createServer() {
       return;
     }
 
+    if (url.pathname === '/print' || url.pathname.startsWith('/print/')) {
+      serveStatic(res, '/print.html');
+      return;
+    }
+
     const apiPaths = [
       '/patients',
       '/examinations',
