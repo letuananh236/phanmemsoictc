@@ -15,6 +15,8 @@ export function createCaptureView(appState) {
     captureContext = event.detail;
   });
 
+  const PREFERRED_CAMERA_KEY = 'preferredCameraId';
+
   async function listCameras(selectEl) {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter((d) => d.kind === 'videoinput');
@@ -25,6 +27,11 @@ export function createCaptureView(appState) {
       option.textContent = device.label || `Camera ${selectEl.length + 1}`;
       selectEl.appendChild(option);
     });
+
+    const saved = localStorage.getItem(PREFERRED_CAMERA_KEY);
+    if (saved && videoDevices.some((d) => d.deviceId === saved)) {
+      selectEl.value = saved;
+    }
   }
 
   async function startCamera(deviceId) {
@@ -35,6 +42,9 @@ export function createCaptureView(appState) {
       video: deviceId ? { deviceId: { exact: deviceId } } : true,
       audio: false
     });
+    if (deviceId) {
+      localStorage.setItem(PREFERRED_CAMERA_KEY, deviceId);
+    }
     videoEl.srcObject = currentStream;
     await videoEl.play();
   }
@@ -125,16 +135,15 @@ export function createCaptureView(appState) {
       container = document.createElement('section');
       container.className = 'card capture-view';
       container.innerHTML = `
-        <div class="capture-layout">
+          <div class="capture-layout">
           <div class="capture-controls">
             <div class="form-row">
               <label>Chọn camera</label>
               <select id="camera-select"></select>
+              <small class="hint">Lưu tự động camera mặc định sau khi mở.</small>
             </div>
-            <div class="form-row">
-              <button type="button" id="start-camera">Bật camera</button>
-            </div>
-            <div class="form-row">
+            <div class="form-row split">
+              <button type="button" id="start-camera">Mở camera</button>
               <button type="button" id="capture-photo">Chụp hình</button>
             </div>
             <div class="form-row">
@@ -162,7 +171,14 @@ export function createCaptureView(appState) {
       selectedEl = container.querySelector('#selected-images');
 
       const selectEl = container.querySelector('#camera-select');
-      listCameras(selectEl);
+      listCameras(selectEl).then(() => {
+        const saved = localStorage.getItem(PREFERRED_CAMERA_KEY);
+        if (saved) {
+          startCamera(saved).catch(() => {
+            showToast('Không thể mở camera đã lưu, hãy chọn lại');
+          });
+        }
+      });
 
       container.querySelector('#start-camera').addEventListener('click', () => startCamera(selectEl.value));
       container.querySelector('#capture-photo').addEventListener('click', capturePhoto);
