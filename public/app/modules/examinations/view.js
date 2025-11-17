@@ -1,6 +1,6 @@
 import { React, ReactDOM } from '../../../vendor/react-lite.js';
 import { api } from '../../api/client.js';
-import { openPrintPreview } from '../../print.js';
+import { openPrintPreview } from '../../../print.js';
 
 const { createElement: h, useEffect, useMemo, useRef, useState } = React;
 
@@ -20,8 +20,15 @@ function ExaminationHeaderInfo({ patient, exam, doctors, onChange, disabled }) {
     h(
       'div',
       { className: 'panel-header spaced' },
-      h('div', null, h('p', { className: 'eyebrow' }, 'BỆNH NHÂN'), h('h2', { className: 'title-strong' }, patient?.name || 'Chưa chọn bệnh nhân'))),
-      h('div', { className: 'badge-stack' },
+      h(
+        'div',
+        null,
+        h('p', { className: 'eyebrow' }, 'BỆNH NHÂN'),
+        h('h2', { className: 'title-strong' }, patient?.name || 'Chưa chọn bệnh nhân')
+      ),
+      h(
+        'div',
+        { className: 'badge-stack' },
         h('span', { className: 'pill soft' }, `Mã BN: ${patient?.id || '---'}`),
         h('span', { className: 'pill' }, `Mã phiếu: ${exam?.id || '---'}`)
       )
@@ -29,7 +36,9 @@ function ExaminationHeaderInfo({ patient, exam, doctors, onChange, disabled }) {
     h(
       'div',
       { className: 'stacked' },
-      h('div', { className: 'grid two-cols gap' },
+      h(
+        'div',
+        { className: 'grid two-cols gap' },
         h(InfoRow, { label: 'Năm sinh', value: patient?.dob ? new Date(patient.dob).getFullYear() : '' }),
         h(InfoRow, {
           label: 'Tuổi',
@@ -47,19 +56,28 @@ function ExaminationHeaderInfo({ patient, exam, doctors, onChange, disabled }) {
       { className: 'panel-header tight' },
       h('div', null, h('p', { className: 'eyebrow' }, 'THÔNG TIN KHÁM'), h('h3', { className: 'title-medium' }, 'Chuẩn bị phiếu khám'))
     ),
-    h('div', { className: 'form-grid single' },
-      h('label', { className: 'field' }, h('span', null, 'Bác sĩ phụ trách'),
+    h(
+      'div',
+      { className: 'form-grid single' },
+      h(
+        'label',
+        { className: 'field' },
+        h('span', null, 'Bác sĩ phụ trách'),
         h(
           'select',
           {
             value: exam?.doctorId || '',
             disabled,
-            onchange: (e) => onChange({ doctorId: e.target.value, doctorName: doctors.find((d) => d.id === e.target.value)?.name || '' })
+            onchange: (e) =>
+              onChange({ doctorId: e.target.value, doctorName: doctors.find((d) => d.id === e.target.value)?.name || '' })
           },
           [h('option', { value: '' }, 'Chọn bác sĩ')].concat(doctors.map((d) => h('option', { value: d.id }, d.name)))
         )
       ),
-      h('label', { className: 'field' }, h('span', null, 'Lý do khám'),
+      h(
+        'label',
+        { className: 'field' },
+        h('span', null, 'Lý do khám'),
         h('input', {
           type: 'text',
           value: exam?.reason || '',
@@ -67,7 +85,10 @@ function ExaminationHeaderInfo({ patient, exam, doctors, onChange, disabled }) {
           oninput: (e) => onChange({ reason: e.target.value })
         })
       ),
-      h('label', { className: 'field' }, h('span', null, 'Tiền sử sản/phụ khoa'),
+      h(
+        'label',
+        { className: 'field' },
+        h('span', null, 'Tiền sử sản/phụ khoa'),
         h('textarea', {
           rows: 2,
           value: exam?.gyneHistory || '',
@@ -75,7 +96,10 @@ function ExaminationHeaderInfo({ patient, exam, doctors, onChange, disabled }) {
           oninput: (e) => onChange({ gyneHistory: e.target.value })
         })
       ),
-      h('label', { className: 'field' }, h('span', null, 'Ghi chú khác'),
+      h(
+        'label',
+        { className: 'field' },
+        h('span', null, 'Ghi chú khác'),
         h('textarea', {
           rows: 2,
           value: exam?.obstetricHistory || '',
