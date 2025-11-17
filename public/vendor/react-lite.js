@@ -68,6 +68,16 @@ function setProps(dom, props) {
       dom.value = value;
       return;
     }
+    if (typeof value === 'boolean') {
+      if (key === 'checked') dom.checked = value;
+      if (key === 'disabled') dom.disabled = value;
+      if (value) {
+        dom.setAttribute(key, '');
+      } else {
+        dom.removeAttribute(key);
+      }
+      return;
+    }
     dom.setAttribute(key, value);
   });
 }

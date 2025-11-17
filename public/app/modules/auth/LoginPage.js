@@ -62,6 +62,7 @@ function LoginForm({ onAuthenticated }) {
     event.preventDefault();
     setError('');
     setLoading(true);
+    console.info('[login] submit clicked');
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     try {
@@ -115,9 +116,9 @@ function LoginForm({ onAuthenticated }) {
         h('div', { className: 'login-title' }, 'PHẦN MỀM SOI CỔ TỬ CUNG'),
         Logo({ src: logo, alt: 'Logo' })
       ),
-      h(
-        'form',
-        { className: 'login-form', onSubmit: handleSubmit },
+    h(
+      'form',
+      { className: 'login-form', onSubmit: handleSubmit },
         h('label', { className: 'login-field' },
           h('span', null, 'Tên đăng nhập'),
           h('input', {
@@ -155,7 +156,7 @@ function LoginForm({ onAuthenticated }) {
           h('span', null, 'Ghi nhớ đăng nhập trên máy này')
         ),
         error ? h('div', { className: 'error-banner' }, error) : null,
-        h('button', { className: 'btn primary login-button', type: 'submit', disabled: loading }, loading ? 'Đang đăng nhập…' : 'ĐĂNG NHẬP')
+        h('button', { className: 'btn primary login-button', type: 'submit', disabled: loading, onClick: handleSubmit }, loading ? 'Đang đăng nhập…' : 'ĐĂNG NHẬP')
       ),
       FooterStatus({ license })
     )
