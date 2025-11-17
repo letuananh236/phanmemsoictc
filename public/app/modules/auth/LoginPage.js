@@ -89,6 +89,8 @@ function LoginForm({ onAuthenticated }) {
           h('input', {
             type: 'text',
             value: username,
+            name: 'username',
+            'data-focus-id': 'username',
             autocomplete: 'username',
             placeholder: 'Nhập tên đăng nhập',
             required: true,
@@ -100,6 +102,8 @@ function LoginForm({ onAuthenticated }) {
           h('input', {
             type: 'password',
             value: password,
+            name: 'password',
+            'data-focus-id': 'password',
             autocomplete: 'current-password',
             placeholder: '••••••',
             required: true,

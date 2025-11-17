@@ -101,12 +101,36 @@ function renderVNode(vnode) {
 
 function rerender() {
   if (!rootContainer || !rootElement) return;
+  const active = document.activeElement;
+  const focusId = active?.getAttribute('data-focus-id') || active?.getAttribute('name') || active?.id || null;
+  const selection =
+    active && 'selectionStart' in active
+      ? { start: active.selectionStart, end: active.selectionEnd, direction: active.selectionDirection }
+      : null;
+
   hookIndex = 0;
   pendingEffects = [];
   const dom = renderVNode(rootElement);
   rootContainer.innerHTML = '';
   rootContainer.appendChild(dom);
   flushEffects();
+
+  if (focusId) {
+    const next = rootContainer.querySelector(`[data-focus-id="${focusId}"]`) ||
+      rootContainer.querySelector(`[name="${focusId}"]`) ||
+      (focusId ? rootContainer.querySelector(`#${focusId}`) : null);
+    if (next && typeof next.focus === 'function') {
+      next.focus();
+      if (selection && 'setSelectionRange' in next) {
+        try {
+          next.setSelectionRange(selection.start, selection.end, selection.direction || 'none');
+        } catch (_) {
+          /* ignore if input type does not support selection */
+        }
+      }
+    }
+  }
+
   subscribers.forEach((fn) => fn());
 }
 
