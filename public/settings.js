@@ -8,6 +8,7 @@ export function createSettingsView(appState) {
       wrapper.innerHTML = `
         <h3>Cấu hình hệ thống</h3>
         <form id="settings-form" class="grid-2">
+          <input type="hidden" name="logoFileName" />
           <div>
             <div class="form-row">
               <label>Tên bệnh viện</label>
@@ -28,6 +29,19 @@ export function createSettingsView(appState) {
             <div class="form-row">
               <label>Website</label>
               <input name="website" />
+            </div>
+            <div class="form-row logo-row">
+              <label>Logo phiếu khám</label>
+              <div class="logo-picker">
+                <div class="logo-preview">
+                  <img id="logo-preview" src="./assets/logo-default.svg" alt="Logo bệnh viện" />
+                </div>
+                <div class="logo-actions">
+                  <input type="file" id="logo-input" accept=".png,.jpg,.jpeg,.svg" />
+                  <button type="button" id="logo-upload">Tải logo</button>
+                  <p class="help-text">Chọn logo PNG/JPG/SVG để in trên phiếu (khuyên dùng nền trắng).</p>
+                </div>
+              </div>
             </div>
           </div>
           <div>
@@ -68,6 +82,9 @@ export function createSettingsView(appState) {
       target.appendChild(wrapper);
 
       const form = wrapper.querySelector('#settings-form');
+      const logoInput = wrapper.querySelector('#logo-input');
+      const logoPreview = wrapper.querySelector('#logo-preview');
+      const logoHidden = form.querySelector('input[name="logoFileName"]');
       storage.getSettings().then((settings) => {
         Object.entries(settings).forEach(([key, value]) => {
           if (form[key]) {
@@ -78,6 +95,10 @@ export function createSettingsView(appState) {
             }
           }
         });
+        if (settings.logoFileName) {
+          logoPreview.src = `./assets/${settings.logoFileName}`;
+          logoHidden.value = settings.logoFileName;
+        }
       });
 
       form.addEventListener('submit', async (event) => {
@@ -89,6 +110,28 @@ export function createSettingsView(appState) {
         const saved = await storage.saveSettings(payload);
         appState.settings = saved;
         showToast('Đã lưu cấu hình');
+      });
+
+      wrapper.querySelector('#logo-upload').addEventListener('click', async () => {
+        const file = logoInput.files?.[0];
+        if (!file) {
+          showToast('Hãy chọn file logo');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const result = await storage.uploadLogo(file.name, reader.result);
+            logoPreview.src = `./assets/${result.fileName}`;
+            logoHidden.value = result.fileName;
+            appState.settings = result.settings;
+            showToast('Đã cập nhật logo phiếu khám');
+          } catch (error) {
+            console.error(error);
+            showToast('Không thể tải logo');
+          }
+        };
+        reader.readAsDataURL(file);
       });
     }
   };

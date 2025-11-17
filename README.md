@@ -8,7 +8,7 @@ Bộ khung phần mềm soi cổ tử cung chạy offline 100% trên Node.js + H
 - **Khám bệnh (exam-form.js)**: Form 3 vùng (bệnh nhân, phiếu khám, ảnh). Hỗ trợ sinh mã BN/HA, chọn bác sỹ, chèn mô tả mặc định, nhận 2/3/4 ảnh từ màn hình Capture, lưu xuống `data/patients.json` & `data/exams.json`, in khổ A4 qua `print.js`.
 - **Lấy hình ảnh (capture.js)**: Liệt kê camera `getUserMedia`, bật preview, chụp nhiều ảnh, chọn tối đa số ảnh cấu hình. Khi chấp nhận, ảnh được lưu thành file PNG tại `data/images/YYYY/MM/ID_x.png` thông qua API `/api/images` rồi đẩy ngược về form.
 - **Tìm kiếm & danh sách**: `search-patient.js`, `search-exam.js`, `daily-lists.js` lọc nhanh bệnh nhân, phiếu khám và thống kê trong ngày.
-- **Quản trị**: `settings.js` chỉnh thông tin bệnh viện, logo, prefix, số ảnh mặc định, mô tả mẫu, quyền xoá dữ liệu. `doctors.js` quản lý bác sỹ, `result-templates.js` lưu mẫu kết quả. `license-ui.js` hiển thị trạng thái giấy phép, kích hoạt gói tháng/năm/vĩnh viễn. API `/api/backup` và `/api/restore` cho phép sao lưu/phục hồi toàn bộ thư mục `data/`.
+- **Quản trị**: `settings.js` chỉnh thông tin bệnh viện, logo (upload trực tiếp trong giao diện), prefix, số ảnh mặc định, mô tả mẫu, quyền xoá dữ liệu. `doctors.js` quản lý bác sỹ, `result-templates.js` lưu mẫu kết quả. `license-ui.js` hiển thị trạng thái giấy phép, kích hoạt gói tháng/năm/vĩnh viễn. API `/api/backup` và `/api/restore` cho phép sao lưu/phục hồi toàn bộ thư mục `data/`.
 
 ## Cấu trúc thư mục
 ```
@@ -29,7 +29,7 @@ project-root/
 **Lưu ý về Git/GitHub**
 
 - Thư mục `data/images/` được đưa vào `.gitignore` (kèm file `.gitkeep`) để tránh đẩy các ảnh PNG dung lượng lớn lên GitHub và gặp lỗi "Binary file not supported".
-- Logo mặc định nay là file SVG (`public/assets/logo-default.svg`) thuần văn bản nên vẫn nằm trong repo. Khi muốn dùng logo PNG/JPG của bệnh viện, chỉ cần chép file vào `public/assets/` và chỉnh `settings.json` → `logoFileName`. Nếu cần commit logo của riêng bạn, Git vẫn chấp nhận; còn nếu muốn giữ repo thuần văn bản, thêm đường dẫn logo đó vào `.gitignore` trước khi commit.
+- Logo mặc định nay là file SVG (`public/assets/logo-default.svg`) thuần văn bản nên vẫn nằm trong repo. Khi muốn dùng logo PNG/JPG của bệnh viện, bạn có thể tải trực tiếp tại màn hình **Cấu hình → Logo phiếu khám** (logo sẽ lưu vào `public/assets/` và cập nhật `logoFileName`). Nếu muốn làm thủ công, chép file vào `public/assets/` và chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`. Nếu cần commit logo riêng, Git vẫn chấp nhận; còn nếu muốn giữ repo thuần văn bản, thêm đường dẫn logo đó vào `.gitignore` trước khi commit.
 - Khi cần sao lưu/khôi phục ảnh, hãy copy trực tiếp cả thư mục `data/images/` hoặc sử dụng API `/api/backup` và `/api/restore`.
 
 ## Khắc phục lỗi "Tệp nhị phân không được hỗ trợ"
@@ -53,7 +53,7 @@ cd phanmemsoictc
 npm install
 npm start
 ```
-Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/` và chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`, sau đó khởi động lại server.
+Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, vào **Cấu hình → Logo phiếu khám**, chọn file PNG/JPG/SVG và bấm "Tải logo" (server sẽ lưu + cập nhật cấu hình). Cách thủ công: chép file (ví dụ `logo-benhvien.png`) vào `public/assets/`, chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`, rồi khởi động lại server.
 1. **F3 – Khám bệnh**: điền thông tin BN, phiếu khám, chọn bác sỹ, lưu phiếu. Nút “Lấy hình ảnh (F4)” chuyển sang màn hình camera.
 2. **F4 – Lấy hình**: bật camera, chụp, tick tối đa số ảnh cấu hình, bấm “Chấp nhận (F10)” để tải ảnh lên thư mục `data/images/` và đưa về form.
 3. **In phiếu**: tại Khám bệnh bấm “In phiếu” → `print.js` dựng trang A4 với logo bệnh viện, mô tả, ảnh.

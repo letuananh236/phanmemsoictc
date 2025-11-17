@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
+const assetsDir = path.join(publicDir, 'assets');
 const dataDir = path.join(rootDir, 'data');
 const imagesDir = path.join(dataDir, 'images');
 
@@ -69,6 +70,7 @@ const MIME_TYPES = {
 async function ensureDirectories() {
   await fsPromises.mkdir(dataDir, { recursive: true });
   await fsPromises.mkdir(imagesDir, { recursive: true });
+  await fsPromises.mkdir(assetsDir, { recursive: true });
   await Promise.all(
     Object.entries(jsonFiles).map(async ([key, filePath]) => {
       try {
@@ -281,11 +283,52 @@ async function handleApi(req, res, pathname) {
     }
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const merged = { ...defaultData.settings, ...(payload || {}) };
+      const current = await readJson(jsonFiles.settings);
+      const merged = { ...defaultData.settings, ...current, ...(payload || {}) };
       await writeJson(jsonFiles.settings, merged);
       sendJson(res, 200, merged);
       return;
     }
+  }
+
+  if (pathname === '/api/settings/logo' && req.method === 'POST') {
+    try {
+      const payload = await parseBody(req);
+      const { dataUrl, fileName } = payload || {};
+      if (!dataUrl) {
+        sendJson(res, 400, { error: 'missing_data' });
+        return;
+      }
+      const matches = dataUrl.match(/^data:(image\/(png|jpeg|jpg|svg\+xml));base64,(.*)$/i);
+      if (!matches) {
+        sendJson(res, 400, { error: 'invalid_data' });
+        return;
+      }
+      const mime = matches[1].toLowerCase();
+      const extMap = {
+        'image/png': '.png',
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+        'image/svg+xml': '.svg'
+      };
+      const ext = extMap[mime];
+      if (!ext) {
+        sendJson(res, 400, { error: 'unsupported_type' });
+        return;
+      }
+      const baseName = (fileName ? path.parse(fileName).name : 'logo-upload').replace(/[^a-zA-Z0-9_-]/g, '') || 'logo';
+      const finalName = `${baseName}-${Date.now()}${ext}`;
+      const buffer = Buffer.from(matches[3], 'base64');
+      await fsPromises.writeFile(path.join(assetsDir, finalName), buffer);
+      const current = await readJson(jsonFiles.settings);
+      const updated = { ...defaultData.settings, ...current, logoFileName: finalName };
+      await writeJson(jsonFiles.settings, updated);
+      sendJson(res, 200, { fileName: finalName, settings: updated });
+    } catch (error) {
+      console.error('logo_upload_error', error);
+      sendJson(res, 500, { error: 'server_error' });
+    }
+    return;
   }
 
   if (pathname === '/api/patients') {
