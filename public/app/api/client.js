@@ -51,6 +51,26 @@ export const api = {
     const res = await fetch(`/examinations${qs ? `?${qs}` : ''}`);
     return handleResponse(res);
   },
+  async getExamination(id) {
+    const res = await fetch(`/examinations/${encodeURIComponent(id)}`);
+    return handleResponse(res);
+  },
+  async updateExamination(id, payload) {
+    const res = await fetch(`/examinations/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
+  async uploadExamImage(examId, payload) {
+    const res = await fetch(`/examinations/${encodeURIComponent(examId)}/images`, {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
   async listTodayVisits(query = {}) {
     return this.listExaminations(query);
   },
@@ -60,6 +80,10 @@ export const api = {
   },
   async getLicense() {
     const res = await fetch('/license');
+    return handleResponse(res);
+  },
+  async listResultTemplates() {
+    const res = await fetch('/result-templates');
     return handleResponse(res);
   },
   async uploadLogo(file) {
