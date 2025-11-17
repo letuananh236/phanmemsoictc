@@ -38,24 +38,45 @@ function serveStatic(res, requestPath) {
       res.end(JSON.stringify({ error: 'forbidden' }));
       return;
     }
+
     let finalPath = filePath;
     try {
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
         finalPath = path.join(filePath, 'index.html');
       }
-    } catch {
-      // ignore
+    } catch (statError) {
+      if (statError.code === 'ENOENT') {
+        res.writeHead(404);
+        res.end();
+        return;
+      }
+      console.error(statError);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'server_error' }));
+      return;
     }
+
+    if (!fs.existsSync(finalPath)) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+
     const data = fs.readFileSync(finalPath);
     const ext = path.extname(finalPath).toLowerCase();
     const type = MIME_TYPES[ext] || 'application/octet-stream';
     res.writeHead(200, { 'Content-Type': type });
     res.end(data);
   } catch (error) {
+    if (error.code === 'ENOENT') {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
     console.error(error);
-    res.writeHead(error.code === 'ENOENT' ? 404 : 500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: error.code === 'ENOENT' ? 'not_found' : 'server_error' }));
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'server_error' }));
   }
 }
 

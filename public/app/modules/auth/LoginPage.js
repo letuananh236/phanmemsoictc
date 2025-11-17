@@ -80,9 +80,10 @@ function LoginForm({ onAuthenticated }) {
         config: payload.config
       });
     } catch (err) {
-      if (err.status === 403 && err.body?.error === 'license_expired') {
+      const code = err.body?.error;
+      if (err.status === 403 && code === 'LICENSE_EXPIRED') {
         const licenseInfo = summarizeLicense(err.body.license);
-        setError('Bản quyền đã hết hạn, vui lòng kích hoạt để tiếp tục.');
+        setError('Bản quyền đã hết hạn. Vui lòng liên hệ để gia hạn.');
         onAuthenticated({
           user: err.body.user || { username: trimmedUsername, name: trimmedUsername },
           license: licenseInfo,
@@ -90,11 +91,15 @@ function LoginForm({ onAuthenticated }) {
         });
         return;
       }
-      if (err.status === 403 && err.body?.error === 'user_inactive') {
-        setError('Tài khoản đã bị khóa. Vui lòng liên hệ quản trị.');
+      if (err.status === 403 && code === 'USER_INACTIVE') {
+        setError('Tài khoản này đang bị khóa. Liên hệ quản trị.');
         return;
       }
-      setError('Tài khoản hoặc mật khẩu không đúng');
+      if (err.status === 401 && code === 'INVALID_CREDENTIALS') {
+        setError('Tên đăng nhập hoặc mật khẩu không đúng.');
+        return;
+      }
+      setError('Lỗi hệ thống. Vui lòng thử lại hoặc liên hệ hỗ trợ.');
     } finally {
       setLoading(false);
     }

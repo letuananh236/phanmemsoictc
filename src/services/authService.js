@@ -31,17 +31,17 @@ export function authenticate(username, password) {
   console.info(`[auth] user lookup for "${normalizedUsername}": ${user ? 'found' : 'not_found'}`);
 
   if (!user) {
-    return { status: 401, body: { error: 'invalid_credentials' } };
+    return { status: 401, body: { error: 'INVALID_CREDENTIALS' } };
   }
 
   if (!user.IsActive) {
-    return { status: 403, body: { error: 'user_inactive' } };
+    return { status: 403, body: { error: 'USER_INACTIVE' } };
   }
 
   const passwordOk = normalizedPassword ? verifyPassword(normalizedPassword, user.PasswordHash || '') : false;
   if (!passwordOk) {
     console.info(`[auth] password verification failed for username="${normalizedUsername}"`);
-    return { status: 401, body: { error: 'invalid_credentials' } };
+    return { status: 401, body: { error: 'INVALID_CREDENTIALS' } };
   }
 
   const userPayload = {
@@ -52,14 +52,16 @@ export function authenticate(username, password) {
   };
 
   const license = summarizeLicense(ensureLicense());
+  console.info(`[auth] license status for "${normalizedUsername}": ${license.status}`);
   if (!isLicenseValid(license)) {
     console.info('[auth] license invalid or expired during login');
-    return { status: 403, body: { error: 'license_expired', license, user: userPayload, config: getConfig() } };
+    return { status: 403, body: { error: 'LICENSE_EXPIRED', license, user: userPayload, config: getConfig() } };
   }
 
   return {
     status: 200,
     body: {
+      success: true,
       user: userPayload,
       license,
       config: getConfig()

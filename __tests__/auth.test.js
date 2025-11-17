@@ -12,13 +12,13 @@ async function startServer() {
   return { server, port };
 }
 
-test('đăng nhập mặc định admin/123 thành công', async () => {
+test('đăng nhập mặc định admin/admin123 thành công', async () => {
   const { server, port } = await startServer();
   try {
     const res = await fetch(`http://localhost:${port}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: ' admin ', password: ' 123 ' })
+      body: JSON.stringify({ username: ' admin ', password: ' admin123 ' })
     });
     const body = await res.json();
 
@@ -38,8 +38,10 @@ test('đăng nhập sai thông tin trả về 401', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: 'wrong', password: 'creds' })
     });
+    const body = await res.json();
 
     assert.equal(res.status, 401);
+    assert.equal(body.error, 'INVALID_CREDENTIALS');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

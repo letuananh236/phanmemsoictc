@@ -14,16 +14,42 @@ ensureDir(paths.assetsDir);
 const db = new DatabaseSync(paths.databaseFile);
 db.exec('PRAGMA foreign_keys = ON;');
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS Users (
-    UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-    Username TEXT UNIQUE NOT NULL,
-    PasswordHash TEXT NOT NULL,
-    FullName TEXT,
-    Role TEXT,
-    IsActive INTEGER DEFAULT 1
-  );
-`);
+function ensureUserSchema() {
+  const hasUsers = db
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='Users'")
+    .get();
+
+  if (!hasUsers) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS Users (
+        UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Username TEXT UNIQUE NOT NULL,
+        PasswordHash TEXT NOT NULL,
+        FullName TEXT,
+        Role TEXT,
+        IsActive INTEGER NOT NULL DEFAULT 1,
+        CreatedAt DATETIME,
+        UpdatedAt DATETIME
+      );
+    `);
+    return;
+  }
+
+  const columns = db.prepare('PRAGMA table_info(Users)').all();
+  const columnNames = new Set(columns.map((c) => c.name));
+
+  if (!columnNames.has('IsActive')) {
+    db.exec('ALTER TABLE Users ADD COLUMN IsActive INTEGER NOT NULL DEFAULT 1');
+  }
+  if (!columnNames.has('CreatedAt')) {
+    db.exec('ALTER TABLE Users ADD COLUMN CreatedAt DATETIME');
+  }
+  if (!columnNames.has('UpdatedAt')) {
+    db.exec('ALTER TABLE Users ADD COLUMN UpdatedAt DATETIME');
+  }
+}
+
+ensureUserSchema();
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS Patients (
@@ -140,36 +166,39 @@ export function fromBoolean(value) {
 
 export function ensureSeedData() {
   const existingAdmin = db
-    .prepare('SELECT UserID, Username, PasswordHash, FullName, Role, IsActive FROM Users WHERE LOWER(Username) = LOWER(@username)')
+    .prepare(
+      'SELECT UserID, Username, PasswordHash, FullName, Role, IsActive FROM Users WHERE LOWER(Username) = LOWER(@username)'
+    )
     .get({ username: 'admin' });
 
-  const needsInsert = !existingAdmin;
-  const needsMigration =
-    existingAdmin &&
-    verifyPassword('admin123', existingAdmin.PasswordHash || '') &&
-    !verifyPassword('123', existingAdmin.PasswordHash || '');
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM Users').get().count;
+  const nowIso = new Date().toISOString();
 
-  if (needsInsert) {
-    const defaultHash = hashPassword('123');
+  if (!existingAdmin && userCount === 0) {
+    const defaultHash = hashPassword('admin123');
     db.prepare(
-      'INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive) VALUES (@Username, @PasswordHash, @FullName, @Role, @IsActive)'
+      `INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, UpdatedAt)
+       VALUES (@Username, @PasswordHash, @FullName, @Role, @IsActive, @CreatedAt, @UpdatedAt)`
     ).run({
       Username: 'admin',
       PasswordHash: defaultHash,
       FullName: 'Quản trị hệ thống',
       Role: 'ADMIN',
-      IsActive: 1
+      IsActive: 1,
+      CreatedAt: nowIso,
+      UpdatedAt: nowIso
     });
-    console.info('[seed] created default admin user with password "123"');
-  } else if (needsMigration) {
-    const migratedHash = hashPassword('123');
+    console.info('[seed] created default admin user');
+  } else if (existingAdmin && !verifyPassword('admin123', existingAdmin.PasswordHash || '')) {
+    const updatedHash = hashPassword('admin123');
     db.prepare(
-      'UPDATE Users SET PasswordHash=@PasswordHash, IsActive=1, Role=COALESCE(NULLIF(Role, ""), "ADMIN") WHERE UserID=@UserID'
+      'UPDATE Users SET PasswordHash=@PasswordHash, IsActive=1, Role=COALESCE(NULLIF(Role, ""), "ADMIN"), UpdatedAt=@UpdatedAt WHERE UserID=@UserID'
     ).run({
       UserID: existingAdmin.UserID,
-      PasswordHash: migratedHash
+      PasswordHash: updatedHash,
+      UpdatedAt: nowIso
     });
-    console.info('[seed] migrated default admin password to "123"');
+    console.info('[seed] refreshed default admin credentials');
   }
 
   const doctorCount = db.prepare('SELECT COUNT(*) as count FROM Doctors').get().count;

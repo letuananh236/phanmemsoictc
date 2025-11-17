@@ -1,4 +1,4 @@
-const DEFAULT_USER = { username: 'admin', password: '123' };
+const DEFAULT_USER = { username: 'admin', password: 'admin123' };
 
 export function initLogin({ onSuccess }) {
   const modal = document.getElementById('login-modal');
