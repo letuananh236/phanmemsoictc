@@ -106,6 +106,14 @@ export const api = {
     const res = await fetch('/license');
     return handleResponse(res);
   },
+  async activateLicense(payload) {
+    const res = await fetch('/license/activate', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(res);
+  },
   async listResultTemplates() {
     const res = await fetch('/result-templates');
     return handleResponse(res);
