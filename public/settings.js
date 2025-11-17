@@ -54,6 +54,10 @@ export function createSettingsView(appState) {
               <input name="examCodePrefix" />
             </div>
             <div class="form-row">
+              <label>Đường dẫn CSDL</label>
+              <input name="databasePath" readonly />
+            </div>
+            <div class="form-row">
               <label>Số ảnh mặc định</label>
               <select name="defaultImageCount">
                 <option value="2">2</option>
