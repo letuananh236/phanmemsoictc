@@ -3,7 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { paths } from '../utils/paths.js';
 import { ensureDir } from '../utils/fs.js';
-import { hashPassword } from '../utils/password.js';
+import { hashPassword, verifyPassword } from '../utils/password.js';
 
 ensureDir(paths.dataDir);
 ensureDir(paths.databaseDir);
@@ -139,9 +139,18 @@ export function fromBoolean(value) {
 }
 
 export function ensureSeedData() {
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM Users').get().count;
-  if (userCount === 0) {
-    const defaultHash = hashPassword('admin123');
+  const existingAdmin = db
+    .prepare('SELECT UserID, Username, PasswordHash, FullName, Role, IsActive FROM Users WHERE LOWER(Username) = LOWER(@username)')
+    .get({ username: 'admin' });
+
+  const needsInsert = !existingAdmin;
+  const needsMigration =
+    existingAdmin &&
+    verifyPassword('admin123', existingAdmin.PasswordHash || '') &&
+    !verifyPassword('123', existingAdmin.PasswordHash || '');
+
+  if (needsInsert) {
+    const defaultHash = hashPassword('123');
     db.prepare(
       'INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive) VALUES (@Username, @PasswordHash, @FullName, @Role, @IsActive)'
     ).run({
@@ -151,6 +160,16 @@ export function ensureSeedData() {
       Role: 'ADMIN',
       IsActive: 1
     });
+    console.info('[seed] created default admin user with password "123"');
+  } else if (needsMigration) {
+    const migratedHash = hashPassword('123');
+    db.prepare(
+      'UPDATE Users SET PasswordHash=@PasswordHash, IsActive=1, Role=COALESCE(NULLIF(Role, ""), "ADMIN") WHERE UserID=@UserID'
+    ).run({
+      UserID: existingAdmin.UserID,
+      PasswordHash: migratedHash
+    });
+    console.info('[seed] migrated default admin password to "123"');
   }
 
   const doctorCount = db.prepare('SELECT COUNT(*) as count FROM Doctors').get().count;

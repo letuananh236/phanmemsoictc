@@ -3,7 +3,7 @@
 Bộ khung phần mềm soi cổ tử cung chạy offline 100% trên Node.js + HTML/CSS/JavaScript thuần. Máy chủ Node phục vụ file tĩnh và lưu toàn bộ dữ liệu vào SQLite (`Data/Database/app.db`) cùng thư mục ảnh `Data/Images/`, cung cấp API CRUD cho bệnh nhân, phiếu khám, bác sỹ, mẫu kết quả, cấu hình, giấy phép, backup/restore.
 
 ## Chức năng nổi bật
-- **Đăng nhập & bản quyền**: popup đăng nhập (mặc định `admin` / `admin123`) mở khoá thanh menu. Máy chủ tự tạo giấy phép trial 30 ngày, hiển thị màn hình License để kích hoạt các gói trả phí.
+- **Đăng nhập & bản quyền**: popup đăng nhập (mặc định `admin` / `123`) mở khoá thanh menu. Máy chủ tự tạo giấy phép trial 30 ngày, hiển thị màn hình License để kích hoạt các gói trả phí.
 - **Thanh menu + phím tắt**: F3 (Khám bệnh), F4 (Lấy hình), Ctrl+P (Tìm bệnh nhân), Ctrl+E (Tìm phiếu). Nút Thoát đưa về màn hình đăng nhập.
 - **Khám bệnh (exam-form.js)**: Form 3 vùng (bệnh nhân, phiếu khám, ảnh). Hỗ trợ sinh mã BN/HA, chọn bác sỹ, chèn mô tả mặc định, nhận 2/3/4 ảnh từ màn hình Capture, lưu xuống SQLite và in khổ A4 qua `print.js`.
 - **Lấy hình ảnh (capture.js)**: Liệt kê camera `getUserMedia`, bật preview, chụp nhiều ảnh, chọn tối đa số ảnh cấu hình. Khi chấp nhận, ảnh được lưu thành file PNG tại `Data/Images/YYYY/MM/ID_x.png` thông qua API `/api/examinations/:id/images` (alias `/api/images`) rồi đẩy ngược về form.
@@ -59,7 +59,7 @@ cd phanmemsoictc
 npm install
 npm start
 ```
-Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `admin123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, vào **Cấu hình → Logo phiếu khám**, chọn file PNG/JPG/SVG và bấm "Tải logo" (server sẽ lưu + cập nhật cấu hình trong SQLite). Nếu làm thủ công, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/`, sau đó nhập tên file tương ứng tại màn hình **Cấu hình** và lưu lại.
+Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, vào **Cấu hình → Logo phiếu khám**, chọn file PNG/JPG/SVG và bấm "Tải logo" (server sẽ lưu + cập nhật cấu hình trong SQLite). Nếu làm thủ công, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/`, sau đó nhập tên file tương ứng tại màn hình **Cấu hình** và lưu lại.
 1. **F3 – Khám bệnh**: điền thông tin BN, phiếu khám, chọn bác sỹ, lưu phiếu. Nút “Lấy hình ảnh (F4)” chuyển sang màn hình camera.
 2. **F4 – Lấy hình**: bật camera, chụp, tick tối đa số ảnh cấu hình, bấm “Chấp nhận (F10)” để tải ảnh lên thư mục `Data/Images/` và đưa về form.
 3. **In phiếu**: tại Khám bệnh bấm “In phiếu” → `print.js` dựng trang A4 với logo bệnh viện, mô tả, ảnh.
