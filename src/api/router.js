@@ -33,8 +33,9 @@ async function parseBody(req) {
 }
 
 function normalizePath(pathname) {
-  if (pathname.startsWith('/api/')) return pathname.slice(4) || '/';
-  return pathname;
+  const trimmed = pathname.endsWith('/') && pathname !== '/' ? pathname.replace(/\/+$/, '') : pathname;
+  if (trimmed.startsWith('/api/')) return trimmed.slice(4) || '/';
+  return trimmed;
 }
 
 export async function handleApi(req, res, pathname) {
@@ -45,9 +46,14 @@ export async function handleApi(req, res, pathname) {
       sendJson(res, 405, { error: 'method_not_allowed' });
       return;
     }
-    const body = await parseBody(req);
-    const result = authenticate(body.username, body.password);
-    sendJson(res, result.status, result.body);
+    try {
+      const body = await parseBody(req);
+      const result = authenticate(body.username, body.password);
+      sendJson(res, result.status, result.body);
+    } catch (error) {
+      console.error('[auth] unexpected error during login', error);
+      sendJson(res, 500, { error: 'auth_failed' });
+    }
     return;
   }
 
