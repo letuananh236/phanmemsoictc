@@ -35,6 +35,7 @@ function mapRow(row) {
     description: row.mo_ta || row.ghi_chu,
     result: row.chan_doan,
     doctorAdvice: row.de_nghi || row.ghi_chu,
+    note: row.ghi_chu,
     templateVersion: row.templateVersion,
     status,
     createdAt: row.created_at,

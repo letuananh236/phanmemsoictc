@@ -81,7 +81,9 @@ function TableRow({ exam, selected, onSelect, onOpen }) {
     h('td', null, exam.patientId || ''),
     h('td', null, exam.patientName || ''),
     h('td', null, yearOfBirth(exam.patientDob)),
+    h('td', null, exam.patientPhone || ''),
     h('td', null, exam.doctorName || '—'),
+    h('td', null, exam.note || ''),
     h('td', null, h('span', { className: `status-pill ${STATUS_COLORS[exam.status] || 'badge-soft'}` }, exam.status || 'Chưa soi'))
   );
 }
@@ -97,11 +99,11 @@ function ExaminationTable({ exams, selectedId, onSelect, onOpen, loading }) {
         h(
           'tbody',
           null,
-          Array.from({ length: 6 }).map((_, idx) =>
+          Array.from({ length: 9 }).map((_, idx) =>
             h(
               'tr',
               { key: idx },
-              Array.from({ length: 6 }).map((__, col) => h('td', { key: col }, h('div', { className: 'skeleton-block' })))
+              Array.from({ length: 9 }).map((__, col) => h('td', { key: col }, h('div', { className: 'skeleton-block' })))
             )
           )
         )
@@ -130,7 +132,9 @@ function ExaminationTable({ exams, selectedId, onSelect, onOpen, loading }) {
           h('th', null, 'Mã BN'),
           h('th', null, 'Tên BN'),
           h('th', null, 'Năm sinh'),
+          h('th', null, 'SĐT'),
           h('th', null, 'Bác sĩ'),
+          h('th', null, 'Ghi chú'),
           h('th', null, 'Trạng thái')
         )
       ),
