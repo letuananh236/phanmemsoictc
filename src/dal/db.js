@@ -363,6 +363,57 @@ export function ensureSeedData() {
     });
   }
 
+  const patientCount = db.prepare('SELECT COUNT(*) as count FROM patients').get().count;
+  let seededPatientId = null;
+  if (patientCount === 0) {
+    const patientResult = db
+      .prepare(
+        `INSERT INTO patients (ma_bn, ho_ten, ngay_sinh, gioi_tinh, sdt, dia_chi, reason, created_at, updated_at)
+         VALUES (@ma_bn, @ho_ten, @ngay_sinh, @gioi_tinh, @sdt, @dia_chi, @reason, @created_at, @updated_at)`
+      )
+      .run({
+        ma_bn: 'BN00001',
+        ho_ten: 'Nguyễn Văn A',
+        ngay_sinh: '1985-01-01',
+        gioi_tinh: 1,
+        sdt: '0900000000',
+        dia_chi: '123 Đường Mẫu, Quận 1, TP.HCM',
+        reason: 'Khám định kỳ',
+        created_at: nowIso,
+        updated_at: nowIso
+      });
+    seededPatientId = patientResult.lastInsertRowid;
+  }
+
+  const visitCount = db.prepare('SELECT COUNT(*) as count FROM visits').get().count;
+  if (visitCount === 0) {
+    const patientRow =
+      seededPatientId || db.prepare('SELECT id FROM patients ORDER BY id ASC LIMIT 1').get()?.id || null;
+    const doctorRow = db.prepare('SELECT id FROM doctors WHERE is_active = 1 ORDER BY id ASC LIMIT 1').get();
+    const doctorId = doctorRow?.id || null;
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10);
+    const timeStr = today.toISOString().slice(11, 16);
+    db.prepare(
+      `INSERT INTO visits (ma_phieu, patient_id, bac_si_id, ngay_kham, gio_kham, ly_do_kham, mo_ta, chan_doan, de_nghi, ghi_chu, da_in_phieu, created_at, updated_at)
+       VALUES (@ma_phieu, @patient_id, @bac_si_id, @ngay_kham, @gio_kham, @ly_do_kham, @mo_ta, @chan_doan, @de_nghi, @ghi_chu, @da_in_phieu, @created_at, @updated_at)`
+    ).run({
+      ma_phieu: 'HA00001',
+      patient_id: patientRow,
+      bac_si_id: doctorId,
+      ngay_kham: dateStr,
+      gio_kham: timeStr,
+      ly_do_kham: 'Khám soi cổ tử cung',
+      mo_ta: 'Âm đạo: bình thường\nCổ tử cung: bình thường',
+      chan_doan: 'Theo dõi định kỳ',
+      de_nghi: 'Tiếp tục theo dõi',
+      ghi_chu: 'Phiếu khám mẫu',
+      da_in_phieu: 0,
+      created_at: nowIso,
+      updated_at: nowIso
+    });
+  }
+
   const templateCount = db.prepare('SELECT COUNT(*) as count FROM ResultTemplates').get().count;
   if (templateCount === 0) {
     db.prepare(
