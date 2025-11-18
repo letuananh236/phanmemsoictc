@@ -13,6 +13,16 @@ function resolveVisit(visitIdOrCode) {
   return { id: row.id, code: row.ma_phieu };
 }
 
+function deleteVisitImageByOrder(visitId, order) {
+  const db = getDb();
+  const current = db
+    .prepare('SELECT id FROM visit_images WHERE visit_id = ? AND display_order = ?')
+    .get(visitId, order);
+  if (current) {
+    deleteVisitImage(current.id);
+  }
+}
+
 async function resizeBuffer(buffer) {
   try {
     const sharp = await import('sharp');
@@ -61,6 +71,7 @@ export function listVisitImages(visitIdOrCode) {
       visitId: row.visit_id,
       order: row.display_order,
       path: row.file_path,
+      fileName: row.file_path?.split('/')?.pop() || '',
       url: `/images/${row.file_path}`,
       createdAt: row.created_at,
       selected: !!row.is_selected
@@ -79,6 +90,10 @@ export async function saveVisitImage(visitIdOrCode, dataUrl, displayOrder, note)
     const err = new Error('max_images');
     err.status = 400;
     throw err;
+  }
+
+  if (displayOrder) {
+    deleteVisitImageByOrder(visit.id, Number(displayOrder));
   }
 
   const order = nextOrder(selected.map((s) => s.display_order), Number(displayOrder));

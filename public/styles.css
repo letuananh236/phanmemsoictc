@@ -234,6 +234,22 @@ a { color: inherit; }
 .template-title { font-weight: 800; color: #0f172a; }
 .template-desc { margin: 0; color: #475569; font-size: 14px; line-height: 1.5; }
 
+.grid { display: grid; gap: 10px; }
+.grid.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.two-col.gap { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: center; }
+.grid.single { grid-template-columns: 1fr; }
+.grid.two-col.gap.wide { grid-template-columns: 1.15fr 0.85fr; align-items: start; }
+.exam-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; box-shadow: 0 12px 30px rgb(15 23 42 / 0.08); }
+.exam-section .section-header { font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #0f172a; margin-bottom: 6px; }
+.field.short input { max-width: 160px; }
+.field.checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.inline-actions { display: flex; align-items: center; gap: 8px; }
+.inline-actions select { flex: 1; }
+.image-grid.four { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.detail-layout { gap: 12px; }
+.exam-content { display: grid; gap: 12px; }
+.highlight textarea { background: #fff8d9; }
+
 .form-grid.single { display: grid; gap: 10px; }
 .actions-column.gap { gap: 10px; }
 .select { padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; font-weight: 600; }

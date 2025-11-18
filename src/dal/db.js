@@ -132,6 +132,7 @@ function ensureVisitsTable() {
       chan_doan TEXT,
       de_nghi TEXT,
       ghi_chu TEXT,
+      check_mark_on_image INTEGER DEFAULT 0,
       da_in_phieu INTEGER DEFAULT 0,
       created_at TEXT,
       updated_at TEXT,
@@ -142,6 +143,13 @@ function ensureVisitsTable() {
   const info = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name COLLATE NOCASE = 'visits'").get();
   if (!info) {
     db.exec(createSql);
+    return;
+  }
+
+  const columns = db.prepare('PRAGMA table_info(visits)').all();
+  const names = new Set(columns.map((c) => c.name));
+  if (!names.has('check_mark_on_image')) {
+    db.exec('ALTER TABLE visits ADD COLUMN check_mark_on_image INTEGER DEFAULT 0');
   }
 }
 

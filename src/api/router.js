@@ -2,7 +2,7 @@ import { getConfig, saveLogoFromData, setConfig } from '../services/configServic
 import { listPatients, savePatient, deletePatient, getPatient } from '../services/patientService.js';
 import { listDoctors, saveDoctor, deleteDoctor } from '../services/doctorService.js';
 import { listTemplates, saveTemplate, deleteTemplate } from '../services/templateService.js';
-import { listExams, saveExam, deleteExam, getExam, getPrintPayload } from '../services/examService.js';
+import { listExams, saveExam, deleteExam, getExam, getExamDetail, getPrintPayload } from '../services/examService.js';
 import {
   saveVisitImage,
   listVisitImages,
@@ -190,7 +190,7 @@ export async function handleApi(req, res, pathname) {
       const id = decodeURIComponent(parts[1]);
       if (parts.length === 2) {
         if (req.method === 'GET') {
-          const exam = getExam(id);
+          const exam = getExamDetail(id);
           if (!exam) {
             sendJson(res, 404, { error: 'not_found' });
             return;
@@ -220,8 +220,28 @@ export async function handleApi(req, res, pathname) {
         return;
       }
       if (parts[2] === 'images') {
+        if (req.method === 'GET') {
+          sendJson(res, 200, listVisitImages(id));
+          return;
+        }
         if (req.method === 'POST') {
           const body = await parseBody(req);
+          const images = Array.isArray(body?.images) ? body.images : null;
+          if (images && images.length) {
+            const results = [];
+            for (const item of images) {
+              const saved = await saveExamImage(
+                id,
+                Number(item.slotNumber || item.order || item.displayOrder || 0) || undefined,
+                item.dataUrl || item.dataURL || item.base64,
+                item.note
+              );
+              results.push(saved);
+            }
+            sendJson(res, 200, { images: results });
+            return;
+          }
+
           const order = body.index ? Number(body.index) + 1 : Number(body.order || 1);
           const saved = await saveExamImage(id, order, body.dataUrl, body.note);
           sendJson(res, 200, saved);

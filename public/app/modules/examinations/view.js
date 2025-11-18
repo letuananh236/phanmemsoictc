@@ -5,182 +5,225 @@ import { openPrintPreview } from '../../../print.js';
 const { createElement: h, useEffect, useMemo, useState } = React;
 
 function Section({ title, children }) {
-  return h(
-    'section',
-    { className: 'classic-section' },
-    h('div', { className: 'section-title' }, title),
-    children
-  );
+  return h('section', { className: 'exam-section' }, h('div', { className: 'section-header' }, title), children);
 }
 
-function FieldRow({ label, children, className }) {
+function Field({ label, required, children, className }) {
   return h(
     'label',
-    { className: `field inline ${className || ''}` },
-    h('span', null, label),
+    { className: `field ${className || ''}` },
+    h('span', null, label, required ? h('span', { className: 'required' }, ' *') : null),
     children
   );
 }
 
-function PatientInfo({ patient, exam, onChangeReason, disabled }) {
-  const age = patient?.dob ? new Date().getFullYear() - new Date(patient.dob).getFullYear() : patient?.age || '';
-
+function PatientBlock({ patient, onChange, errors }) {
+  const age = patient?.age ?? (patient?.dob ? new Date().getFullYear() - new Date(patient.dob).getFullYear() : '');
   return h(
     Section,
     { title: 'Thông tin bệnh nhân' },
     h(
       'div',
       { className: 'radio-row' },
-      h('label', null, h('input', { type: 'radio', name: 'visitType', checked: true, readOnly: true }), ' Mới khám lần đầu'),
-      h('label', null, h('input', { type: 'radio', name: 'visitType', checked: false, readOnly: true }), ' Đã khám')
+      h('label', null, h('input', { type: 'radio', checked: true, readOnly: true }), ' Mới khám lần đầu'),
+      h('label', null, h('input', { type: 'radio', checked: false, readOnly: true }), ' Đã khám')
     ),
     h(
       'div',
-      { className: 'grid-inline two' },
-      h(FieldRow, { label: 'Mã số BN' }, h('input', { value: patient?.id || '', disabled: true, className: 'short-input' })),
-      h(FieldRow, { label: 'Họ tên BN' }, h('input', { value: patient?.name || '', disabled: true }))
-    ),
-    h(
-      'div',
-      { className: 'grid-inline two' },
-      h(FieldRow, { label: 'Tuổi' }, h('input', { value: age || '', disabled: true, className: 'short-input' })),
-      h(FieldRow, { label: 'Giới tính' }, h('input', { value: patient?.gender || '', disabled: true }))
-    ),
-    h(
-      'div',
-      { className: 'grid-inline two' },
-      h(FieldRow, { label: 'Địa chỉ' }, h('input', { value: patient?.address || '', disabled: true })),
-      h(FieldRow, { label: 'Điện thoại LH' }, h('input', { value: patient?.phone || '', disabled: true }))
-    ),
-    h(
-      'div',
-      { className: 'grid-inline single' },
-      h(FieldRow, { label: 'Lý do KB' },
+      { className: 'grid two-col gap' },
+      h(Field, { label: 'Mã số BN', className: 'short', required: true },
+        h('input', { value: patient?.code || '', disabled: true })
+      ),
+      h(Field, { label: 'Họ tên BN', required: true },
         h('input', {
-          value: exam?.reason || patient?.reason || '',
-          disabled,
-          oninput: (e) => onChangeReason?.(e.target.value)
+          value: patient?.fullName || '',
+          oninput: (e) => onChange({ fullName: e.target.value })
         })
       )
-    )
-  );
-}
-
-function ExamDetails({ exam, doctors, onChange, disabled, config }) {
-  return h(
-    Section,
-    { title: 'Kết quả khám' },
-    h(
-      'div',
-      { className: 'grid-inline two' },
-      h(FieldRow, { label: 'Mã số ID' }, h('input', { value: exam?.id || '', disabled: true, className: 'short-input' })),
-      h(FieldRow, { label: 'Số phiếu khám' }, h('input', { value: exam?.id || '', disabled: true }))
     ),
     h(
       'div',
-      { className: 'grid-inline two' },
-      h(FieldRow, { label: 'Ngày khám' }, h('input', { type: 'date', value: exam?.date || '', disabled })),
-      h(FieldRow, { label: 'Bác sỹ khám' },
+      { className: 'grid two-col gap' },
+      h(Field, { label: 'Tuổi', required: true, className: 'short' },
+        h('input', {
+          type: 'number',
+          min: 0,
+          value: age || '',
+          oninput: (e) => onChange({ age: e.target.value })
+        })
+      ),
+      h(Field, { label: 'Giới tính' },
         h(
           'select',
-          {
-            value: exam?.doctorId || '',
-            disabled,
-            onchange: (e) =>
-              onChange({ doctorId: e.target.value, doctorName: doctors.find((d) => d.id === e.target.value)?.name || '' })
-          },
-          [h('option', { value: '' }, 'Chọn bác sĩ')].concat(doctors.map((d) => h('option', { value: d.id }, d.name)))
+          { value: patient?.gender ?? '', onchange: (e) => onChange({ gender: Number(e.target.value) || 0 }) },
+          [
+            h('option', { value: '' }, 'Chọn'),
+            h('option', { value: '1' }, 'Nam'),
+            h('option', { value: '2' }, 'Nữ'),
+            h('option', { value: '3' }, 'Khác')
+          ]
         )
       )
     ),
     h(
       'div',
-      { className: 'grid-inline single' },
-      h(FieldRow, { label: 'Mô tả soi CTC' },
-        h('textarea', {
-          rows: 4,
-          value: exam?.description || config?.defaultDescription || '',
-          oninput: (e) => onChange({ description: e.target.value }),
-          disabled
+      { className: 'grid two-col gap' },
+      h(Field, { label: 'Địa chỉ', required: true },
+        h('input', {
+          value: patient?.address || '',
+          oninput: (e) => onChange({ address: e.target.value })
+        })
+      ),
+      h(Field, { label: 'Điện thoại LH' },
+        h('input', {
+          value: patient?.phone || '',
+          oninput: (e) => onChange({ phone: e.target.value })
         })
       )
     ),
     h(
       'div',
-      { className: 'grid-inline single' },
-      h(FieldRow, { label: 'KQ soi tử cung' },
+      { className: 'grid single' },
+      h(Field, { label: 'Lý do KB' },
         h('textarea', {
           rows: 2,
-          value: exam?.result || '',
-          oninput: (e) => onChange({ result: e.target.value }),
-          disabled
+          value: patient?.reason || '',
+          oninput: (e) => onChange({ reason: e.target.value })
+        })
+      )
+    ),
+    errors?.patient ? h('div', { className: 'inline-hint warning' }, errors.patient) : null
+  );
+}
+
+function ExamBlock({ exam, doctors, onChange, errors }) {
+  return h(
+    Section,
+    { title: 'Kết quả khám' },
+    h(
+      'div',
+      { className: 'grid two-col gap' },
+      h(Field, { label: 'Mã số ID', className: 'short' }, h('input', { value: exam?.ticketCode || exam?.id || '', disabled: true })),
+      h(Field, { label: 'Số phiếu khám' }, h('input', { value: exam?.ticketCode || exam?.id || '', disabled: true }))
+    ),
+    h(
+      'div',
+      { className: 'grid two-col gap' },
+      h(Field, { label: 'Ngày khám' },
+        h('input', {
+          type: 'date',
+          value: exam?.examDate || '',
+          onchange: (e) => onChange({ examDate: e.target.value })
+        })
+      ),
+      h(Field, { label: 'Bác sỹ khám', required: true },
+        h(
+          'div',
+          { className: 'inline-actions' },
+          h(
+            'select',
+            {
+              value: exam?.doctorId || '',
+              onchange: (e) => onChange({ doctorId: e.target.value })
+            },
+            [h('option', { value: '' }, 'Chọn bác sỹ')].concat(doctors.map((d) => h('option', { value: d.id }, d.name)))
+          )
+        )
+      )
+    ),
+    h(
+      'div',
+      { className: 'grid single' },
+      h(Field, { label: 'Mô tả soi CTC', required: true },
+        h('textarea', {
+          rows: 4,
+          value: exam?.descriptionCtc || '',
+          oninput: (e) => onChange({ descriptionCtc: e.target.value })
         })
       )
     ),
     h(
       'div',
-      { className: 'grid-inline single' },
-      h(FieldRow, { label: 'Các bước DT' },
+      { className: 'grid single' },
+      h(Field, { label: 'KQ soi tử cung', required: true, className: 'highlight' },
+        h('textarea', {
+          rows: 3,
+          value: exam?.resultUterus || '',
+          oninput: (e) => onChange({ resultUterus: e.target.value })
+        })
+      )
+    ),
+    h(
+      'div',
+      { className: 'grid single' },
+      h(Field, { label: 'Các bước ĐT' },
         h('textarea', {
           rows: 2,
           value: exam?.treatmentSteps || '',
-          oninput: (e) => onChange({ treatmentSteps: e.target.value }),
-          disabled
+          oninput: (e) => onChange({ treatmentSteps: e.target.value })
         })
       )
     ),
     h(
       'div',
-      { className: 'grid-inline single' },
-      h(FieldRow, { label: 'Lời dặn của BS' },
+      { className: 'grid single' },
+      h(Field, { label: 'Lời dặn của BS', className: 'highlight' },
         h('textarea', {
           rows: 2,
           value: exam?.doctorAdvice || '',
-          oninput: (e) => onChange({ doctorAdvice: e.target.value }),
-          disabled
+          oninput: (e) => onChange({ doctorAdvice: e.target.value })
         })
       )
-    )
+    ),
+    h(
+      'label',
+      { className: 'field checkbox-row' },
+      h('input', {
+        type: 'checkbox',
+        checked: !!exam?.checkMarkOnImage,
+        onchange: (e) => onChange({ checkMarkOnImage: e.target.checked })
+      }),
+      h('span', null, 'Đánh dấu, khoanh vùng trên hình ảnh số')
+    ),
+    errors?.exam ? h('div', { className: 'inline-hint warning' }, errors.exam) : null
   );
 }
 
-function CameraLauncher({ onOpenCamera, onRefresh, disabled }) {
-  return h(
-    'div',
-    { className: 'camera-launcher' },
-    h('div', { className: 'section-title subtle' }, 'Form chụp hình từ camera'),
-    h('p', { className: 'muted small' }, 'Bấm F4 hoặc nút dưới để mở form camera, chụp và chọn tối đa 4 ảnh.'),
-    h('div', { className: 'actions-row wrap' },
-      h('button', { className: 'btn secondary', type: 'button', onClick: onRefresh, disabled }, 'Tải lại ảnh'),
-      h('button', { className: 'btn primary', type: 'button', onClick: onOpenCamera, disabled }, 'Mở form chụp hình (F4)')
-    )
-  );
-}
-
-function ImageSlot({ image, index }) {
-  const name = image?.file_path || image?.path || '';
-  const label = name ? name.split('/').pop() : `HA000000_${index + 1}.PNG`;
-  return h(
-    'div',
-    { className: 'image-slot' },
-    image?.path || image?.url
-      ? h('img', { src: image.url || `/${image.path || image.file_path}`, alt: label })
-      : h('div', { className: 'image-placeholder' }, `Ảnh ${index + 1}`),
-    h('div', { className: 'filename-tag' }, label)
-  );
-}
-
-function ImagesPanel({ examId, images, targetCount, onOpenCamera, onRefresh }) {
+function ImagesPanel({ images, targetCount }) {
   return h(
     Section,
     { title: 'Hình ảnh soi CTC' },
-    h(CameraLauncher, { onOpenCamera: () => onOpenCamera?.(examId), onRefresh: onRefresh, disabled: !examId }),
     h(
       'div',
-      { className: 'classic-image-grid' },
-      Array.from({ length: targetCount || 4 }).map((_, idx) => h(ImageSlot, { key: idx, image: images[idx], index: idx }))
+      { className: 'image-grid four' },
+      Array.from({ length: targetCount || 4 }).map((_, idx) => {
+        const image = images[idx];
+        const label = image?.fileName || image?.path?.split('/')?.pop() || `Ảnh ${idx + 1}`;
+        return h(
+          'div',
+          { className: 'image-slot', key: idx },
+          image?.fileUrl || image?.url || image?.path
+            ? h('img', { src: image.fileUrl || image.url || `/${image.path}`, alt: label })
+            : h('div', { className: 'image-placeholder' }, 'Chưa có ảnh'),
+          h('div', { className: 'filename-tag' }, label)
+        );
+      })
     ),
-    h('p', { className: 'muted small' }, 'Ảnh hiển thị theo thứ tự, tối đa 4 ảnh. Các ảnh này sẽ được in trên phiếu A4.')
+    h('p', { className: 'muted small' }, 'Ảnh hiển thị theo thứ tự, tối đa 4 ảnh. Các ảnh này được gắn từ form chụp hình F4.')
+  );
+}
+
+function Toolbar({ status, onSave, onSavePrint, onBack, onOpenCamera, disablePrint, disableSave }) {
+  return h(
+    'div',
+    { className: 'toolbar-row actions-row wrap' },
+    h('span', { className: 'pill soft' }, status || 'Chưa lưu'),
+    h('div', { className: 'actions-row wrap' },
+      h('button', { className: 'btn secondary', type: 'button', onClick: onOpenCamera }, 'Lấy hình ảnh (F4)'),
+      h('button', { className: 'btn primary', type: 'button', onClick: onSave, disabled: disableSave }, 'Lưu'),
+      h('button', { className: 'btn ghost', type: 'button', onClick: onSavePrint, disabled: disablePrint }, 'Lưu & In phiếu'),
+      h('button', { className: 'btn secondary', type: 'button', onClick: onBack }, 'Quay lại')
+    )
   );
 }
 
@@ -188,13 +231,13 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [exam, setExam] = useState(null);
   const [patient, setPatient] = useState(null);
   const [doctors, setDoctors] = useState([]);
-  const [templates, setTemplates] = useState([]);
   const [images, setImages] = useState([]);
   const [config, setConfig] = useState({ defaultImageCount: 4 });
-  const [status, setStatus] = useState('Chưa lưu');
+  const targetCount = config?.defaultImageCount || 4;
 
   useEffect(() => {
     let cancelled = false;
@@ -202,40 +245,30 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
       setLoading(true);
       setError('');
       try {
-        const [doctorList, templateList, cfg] = await Promise.all([
-          api.listDoctors(),
-          api.listResultTemplates(),
-          api.getConfig()
-        ]);
+        const [doctorList, cfg] = await Promise.all([api.listActiveDoctors(), api.getConfig()]);
         if (cancelled) return;
-        setDoctors(doctorList);
-        setTemplates(templateList);
+        setDoctors(doctorList?.doctors || doctorList || []);
         setConfig(cfg || {});
-
         if (!examId) {
           setLoading(false);
           return;
         }
-
-        const loadedExam = await api.getExamination(examId);
+        const detail = await api.getExamination(examId);
         if (cancelled) return;
         setExam({
-          ...loadedExam,
-          doctorAdvice: loadedExam?.doctorAdvice || loadedExam?.recommendation,
-          gyneHistory: loadedExam?.gyneHistory,
-          obstetricHistory: loadedExam?.obstetricHistory
+          ...detail.exam,
+          examDate: detail.exam?.examDate || detail.exam?.date || ''
         });
-        setStatus(loadedExam?.status || 'Chưa lưu');
-        const imgs = await api.listVisitImages(examId);
-        if (!cancelled) setImages(imgs || loadedExam?.images || []);
-        if (loadedExam?.patientId) {
-          const p = await api.getPatient(loadedExam.patientId);
-          if (!cancelled) setPatient(p);
-        }
+        setPatient({
+          ...(detail.patient || {}),
+          code: detail.patient?.code || detail.patient?.id,
+          age: detail.patient?.age
+        });
+        setImages(detail.images || []);
       } catch (err) {
         console.error(err);
         if (err?.status === 403 && onLicenseExpired) onLicenseExpired();
-        setError(err?.message || 'Không thể tải dữ liệu');
+        setError(err?.message || 'Không thể tải dữ liệu phiếu khám');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -257,32 +290,72 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
     return () => window.removeEventListener('keydown', handler);
   }, [examId, onOpenCamera]);
 
-  const targetCount = config?.defaultImageCount || 4;
+  const canPrint = useMemo(() => !!examId && !!exam?.ticketCode && !!patient?.code, [examId, exam, patient]);
 
-  const canPrint = useMemo(() => !!examId && !!exam?.id && !!patient?.id, [examId, exam, patient]);
+  const ageToDob = (ageValue) => {
+    const ageNum = Number(ageValue);
+    if (!Number.isFinite(ageNum) || ageNum <= 0) return patient?.dob || '';
+    const year = new Date().getFullYear() - ageNum;
+    return `${year}-01-01`;
+  };
 
-  async function handleSave() {
+  const validate = () => {
+    if (!patient?.fullName || !(patient?.age || patient?.dob)) return 'Vui lòng nhập Họ tên và Tuổi bệnh nhân.';
+    if (!exam?.descriptionCtc || !exam?.resultUterus) return 'Vui lòng nhập Mô tả soi CTC và KQ soi tử cung.';
+    if (!exam?.doctorId) return 'Vui lòng chọn bác sỹ khám.';
+    return '';
+  };
+
+  const refreshImages = async () => {
+    try {
+      const imgs = await api.listVisitImages(examId);
+      setImages(imgs || []);
+    } catch (err) {
+      setError(err?.message || 'Không tải được ảnh');
+    }
+  };
+
+  const handleSave = async (alsoPrint = false) => {
     if (!examId) return;
+    const validation = validate();
+    if (validation) {
+      setError(validation);
+      return;
+    }
     setSaving(true);
     setError('');
+    setNotice('');
     try {
       const payload = {
-        patientId: exam?.patientId,
+        patientId: patient?.code,
         doctorId: exam?.doctorId,
-        doctorName: doctors.find((d) => d.id === exam?.doctorId)?.name,
         reason: exam?.reason,
-        gyneHistory: exam?.gyneHistory,
-        obstetricHistory: exam?.obstetricHistory,
-        description: exam?.description,
-        result: exam?.result,
-        doctorAdvice: exam?.doctorAdvice,
-        templateVersion: exam?.templateVersion,
+        descriptionCtc: exam?.descriptionCtc,
+        resultUterus: exam?.resultUterus,
         treatmentSteps: exam?.treatmentSteps,
-        images
+        doctorAdvice: exam?.doctorAdvice,
+        checkMarkOnImage: !!exam?.checkMarkOnImage,
+        date: exam?.examDate,
+        time: exam?.examTime,
+        patient: {
+          id: patient?.code,
+          code: patient?.code,
+          fullName: patient?.fullName,
+          gender: patient?.gender,
+          address: patient?.address,
+          phone: patient?.phone,
+          dob: patient?.age ? ageToDob(patient.age) : patient?.dob,
+          reason: patient?.reason
+        }
       };
       const saved = await api.updateExamination(examId, payload);
-      setExam((prev) => ({ ...prev, ...saved }));
-      setStatus(saved?.status || 'Đã lưu');
+      setExam((prev) => ({ ...prev, ...saved.exam, examDate: saved.exam?.examDate || saved.exam?.date }));
+      setPatient((prev) => ({ ...prev, ...saved.patient }));
+      setNotice('Đã lưu phiếu khám.');
+      if (alsoPrint) {
+        const printPayload = await api.getVisitPrintData(examId);
+        openPrintPreview(printPayload);
+      }
     } catch (err) {
       console.error(err);
       if (err?.status === 403 && onLicenseExpired) onLicenseExpired();
@@ -290,25 +363,7 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
     } finally {
       setSaving(false);
     }
-  }
-
-  function handleApplyTemplate(tpl) {
-    setExam((prev) => ({
-      ...prev,
-      templateVersion: tpl?.id,
-      result: tpl?.diagnosisText || prev?.result || '',
-      doctorAdvice: tpl?.recommendationText || prev?.doctorAdvice || ''
-    }));
-  }
-
-  function handlePrint() {
-    if (!canPrint) return;
-    openPrintPreview({ patient, exam, settings: config, images });
-  }
-
-  function updateExam(partial) {
-    setExam((prev) => ({ ...prev, ...partial }));
-  }
+  };
 
   if (!examId) {
     return h(
@@ -321,72 +376,45 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
 
   return h(
     'div',
-    { className: 'exam-page classic-layout' },
+    { className: 'exam-page detail-layout' },
     loading
       ? h('div', { className: 'skeleton-panel' }, 'Đang tải dữ liệu phiếu khám…')
       : h(
           'div',
-          { className: 'classic-grid' },
+          { className: 'exam-content' },
+          h(Toolbar, {
+            status: notice || 'Đang chỉnh sửa',
+            onSave: () => handleSave(false),
+            onSavePrint: () => handleSave(true),
+            onBack: onBackToDaily,
+            onOpenCamera: () => onOpenCamera?.(examId),
+            disablePrint: !canPrint || saving || license?.status === 'expired',
+            disableSave: saving || license?.status === 'expired'
+          }),
+          h(PatientBlock, {
+            patient: patient || {},
+            onChange: (partial) => setPatient((prev) => ({ ...prev, ...partial })),
+            errors: { patient: error && error.includes('Họ tên') ? error : '' }
+          }),
           h(
             'div',
-            { className: 'classic-left' },
-            h(
-              'div',
-              { className: 'toolbar-row' },
-              h(
-                'div',
-                { className: 'toolbar-title' },
-                h('div', { className: 'eyebrow' }, 'PHIẾU KHÁM'),
-                h('div', { className: 'title-strong' }, patient?.name || 'Chưa chọn bệnh nhân')
-              ),
-              h(
-                'div',
-                { className: 'actions-row wrap' },
-                h('span', { className: 'pill soft' }, status || 'Chưa lưu'),
-                h('button', { className: 'btn secondary', type: 'button', onClick: () => onOpenCamera?.(examId), disabled: !examId }, 'Lấy hình ảnh (F4)'),
-                h('button', { className: 'btn primary', type: 'button', onClick: handleSave, disabled: saving || license?.status === 'expired' }, saving ? 'Đang lưu…' : 'Lưu'),
-                h('button', { className: 'btn ghost', type: 'button', onClick: handlePrint, disabled: !canPrint || license?.status === 'expired' }, 'In phiếu')
-              )
-            ),
-            h(PatientInfo, { patient, exam, onChangeReason: (reason) => updateExam({ reason }), disabled: license?.status === 'expired' }),
-            h(ExamDetails, { exam, doctors, onChange: updateExam, disabled: license?.status === 'expired', config }),
-            h(
-              'div',
-              { className: 'templates-box compact' },
-              h('div', { className: 'templates-header' }, 'Mẫu kết quả mặc định'),
-              h(
-                'ul',
-                { className: 'templates-list slim' },
-                templates.length
-                  ? templates.map((t) =>
-                      h(
-                        'li',
-                        { key: t.id },
-                        h(
-                          'button',
-                          { className: 'template-item', type: 'button', onClick: () => handleApplyTemplate(t) },
-                          h('div', { className: 'template-title' }, t.name),
-                          h('p', { className: 'template-desc' }, t.diagnosisText || t.recommendationText || '—')
-                        )
-                      )
-                    )
-                  : h('li', { className: 'muted' }, 'Chưa có mẫu nào')
-              )
-            )
+            { className: 'grid two-col gap wide' },
+            h(ExamBlock, {
+              exam: exam || {},
+              doctors,
+              onChange: (partial) => setExam((prev) => ({ ...prev, ...partial })),
+              errors: { exam: error && !error.includes('Họ tên') ? error : '' }
+            }),
+            h(ImagesPanel, { images, targetCount })
           ),
-          h(ImagesPanel, {
-            examId,
-            images,
-            targetCount,
-            onOpenCamera,
-            onRefresh: () =>
-              api
-                .listVisitImages(examId)
-                .then((imgs) => setImages(imgs || images))
-                .catch((err) => setError(err?.message || 'Không tải được ảnh'))
-          })
+          h(
+            'div',
+            { className: 'actions-row wrap' },
+            h('button', { className: 'btn secondary', type: 'button', onClick: refreshImages }, 'Tải lại ảnh'),
+            h('span', { className: 'muted small' }, 'Ảnh được gắn từ form camera (F4).')
+          )
         ),
-    error && h('div', { className: 'inline-hint warning' }, error)
+    error && !error.includes('Họ tên') ? h('div', { className: 'inline-hint warning' }, error) : null
   );
 }
 
