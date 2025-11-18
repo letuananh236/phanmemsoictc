@@ -338,7 +338,11 @@ export function ensureSeedData() {
       UpdatedAt: nowIso
     });
     console.info('[seed] created default admin user');
-  } else if (existingAdmin && !verifyPassword('admin123', existingAdmin.PasswordHash || '')) {
+  } else if (
+    existingAdmin &&
+    !verifyPassword('admin123', existingAdmin.PasswordHash || '') &&
+    !verifyPassword('123', existingAdmin.PasswordHash || '')
+  ) {
     const updatedHash = hashPassword('admin123');
     db.prepare(
       'UPDATE Users SET PasswordHash=@PasswordHash, IsActive=1, Role=COALESCE(NULLIF(Role, ""), "ADMIN"), UpdatedAt=@UpdatedAt WHERE UserID=@UserID'

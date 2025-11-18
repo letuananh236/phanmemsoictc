@@ -3,7 +3,7 @@
 Bộ khung phần mềm soi cổ tử cung chạy offline 100% trên Node.js + HTML/CSS/JavaScript thuần. Máy chủ Node phục vụ file tĩnh và lưu toàn bộ dữ liệu vào SQLite (`Data/Database/app.db`) cùng thư mục ảnh `Data/Images/`, cung cấp API CRUD cho bệnh nhân, phiếu khám, bác sỹ, mẫu kết quả, cấu hình, giấy phép, backup/restore.
 
 ## Chức năng nổi bật
-- **Đăng nhập & bản quyền**: popup đăng nhập (mặc định `admin` / `admin123`) mở khoá thanh menu. Máy chủ tự tạo giấy phép trial 30 ngày, hiển thị màn hình License để kích hoạt các gói trả phí.
+- **Đăng nhập & bản quyền**: popup đăng nhập (mặc định `admin` / `admin123`, tương thích cả mật khẩu cũ `123`) mở khoá thanh menu. Máy chủ tự tạo giấy phép trial 30 ngày, hiển thị màn hình License để kích hoạt các gói trả phí.
 - **Thanh menu + phím tắt**: F3 (Khám bệnh), F4 (Lấy hình), Ctrl+P (Tìm bệnh nhân), Ctrl+E (Tìm phiếu). Nút Thoát đưa về màn hình đăng nhập.
 - **Khám bệnh (exam-form.js)**: Form 3 vùng (bệnh nhân, phiếu khám, ảnh). Hỗ trợ sinh mã BN/HA, chọn bác sỹ, chèn mô tả mặc định, nhận 2/3/4 ảnh từ màn hình Capture, lưu xuống SQLite và in khổ A4 qua `print.js`.
 - **Lấy hình ảnh (capture.js)**: Liệt kê camera `getUserMedia`, bật preview, chụp nhiều ảnh, chọn tối đa số ảnh cấu hình. Khi chấp nhận, ảnh được lưu thành file PNG tại `Data/Images/YYYY/MM/ID_x.png` thông qua API `/api/examinations/:id/images` (alias `/api/images`) rồi đẩy ngược về form.

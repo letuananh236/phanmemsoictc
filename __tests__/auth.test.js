@@ -30,6 +30,23 @@ test('đăng nhập mặc định admin/admin123 thành công', async () => {
   }
 });
 
+test('đăng nhập tương thích mật khẩu cũ admin/123', async () => {
+  const { server, port } = await startServer();
+  try {
+    const res = await fetch(`http://localhost:${port}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: '123' })
+    });
+    const body = await res.json();
+
+    assert.equal(res.status, 200);
+    assert.equal(body?.user?.username, 'admin');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
 test('đăng nhập vẫn hoạt động với đường dẫn có dấu / cuối', async () => {
   const { server, port } = await startServer();
   try {
