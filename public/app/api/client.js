@@ -208,5 +208,9 @@ export const api = {
       body: arrayBuffer
     });
     return handleResponse(res);
+  },
+  async getSrs() {
+    const res = await fetch('/api/srs');
+    return handleResponse(res);
   }
 };

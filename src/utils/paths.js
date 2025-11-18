@@ -10,6 +10,8 @@ const imagesDir = path.join(dataDir, 'Images');
 const configDir = path.join(dataDir, 'Config');
 const publicDir = path.join(rootDir, 'public');
 const assetsDir = path.join(publicDir, 'assets');
+const srsFile = path.join(rootDir, 'SRS_UML_Offline_CTC.md');
+const promptSrsFile = path.join(rootDir, 'PROMPT_Codex_SRS_UML.md');
 
 export const paths = {
   rootDir,
@@ -19,5 +21,7 @@ export const paths = {
   configDir,
   publicDir,
   assetsDir,
-  databaseFile: path.join(databaseDir, 'app.db')
+  databaseFile: path.join(databaseDir, 'app.db'),
+  srsFile,
+  promptSrsFile
 };

@@ -352,3 +352,9 @@ a { color: inherit; }
 .camera-panel.gallery .pager { display: flex; align-items: center; gap: 8px; }
 .thumb-grid.remote { max-height: 520px; overflow: auto; }
 .checkbox-row { display: flex; gap: 8px; align-items: center; }
+
+/* SRS viewer */
+.srs-card { display: grid; gap: 12px; }
+.srs-body { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; max-height: 70vh; overflow: auto; }
+.srs-pre { white-space: pre-wrap; line-height: 1.5; font-family: 'SFMono-Regular', 'JetBrains Mono', 'Consolas', monospace; font-size: 14px; margin: 0; }
+.srs-meta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }

@@ -19,6 +19,7 @@ function resolveViewFromPath(pathname) {
   if (pathname === '/cauhinh' || pathname === '/cau-hinh') return 'settings';
   if (pathname === '/license') return 'license';
   if (pathname === '/backup') return 'backup';
+  if (pathname === '/srs') return 'srs';
   return 'daily';
 }
 

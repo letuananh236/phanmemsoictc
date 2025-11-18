@@ -13,6 +13,7 @@ import {
 import { activateLicense, ensureLicense, getLicense, isLicenseValid } from '../services/licenseService.js';
 import { authenticate, getLicenseSummary, verifySession } from '../services/authService.js';
 import { createBackup, restoreBackup, listBackupHistory } from '../services/backupService.js';
+import { getSrsDocument } from '../services/srsService.js';
 
 function sendJson(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -47,6 +48,7 @@ function normalizePath(pathname) {
 function requiresAuth(normalizedPath, method) {
   if (normalizedPath === '/auth/login') return false;
   if (normalizedPath.startsWith('/license')) return false;
+  if (normalizedPath === '/srs') return false;
   if ((normalizedPath === '/system-config' || normalizedPath === '/settings') && method === 'GET') return false;
   return true;
 }
@@ -88,12 +90,28 @@ export async function handleApi(req, res, pathname) {
   }
 
   const license = ensureLicense();
-  if (!normalized.startsWith('/license') && !normalized.startsWith('/auth') && !isLicenseValid(license)) {
+  if (!normalized.startsWith('/license') && !normalized.startsWith('/auth') && normalized !== '/srs' && !isLicenseValid(license)) {
     sendJson(res, 403, { error: 'license_expired', license: getLicenseSummary() });
     return;
   }
 
   try {
+    if (normalized === '/srs') {
+      if (req.method !== 'GET') {
+        sendJson(res, 405, { error: 'method_not_allowed' });
+        return;
+      }
+      const format = requestUrl.searchParams.get('format');
+      const doc = getSrsDocument();
+      if (format === 'raw') {
+        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end(doc.content);
+        return;
+      }
+      sendJson(res, 200, doc);
+      return;
+    }
+
     if (normalized === '/system-config') {
       if (req.method === 'GET') {
         sendJson(res, 200, getConfig());

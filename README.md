@@ -9,6 +9,7 @@ Bộ khung phần mềm soi cổ tử cung chạy offline 100% trên Node.js + H
 - **Lấy hình ảnh (capture.js)**: Liệt kê camera `getUserMedia`, bật preview, chụp nhiều ảnh, chọn tối đa số ảnh cấu hình. Khi chấp nhận, ảnh được lưu thành file PNG tại `Data/Images/YYYY/MM/ID_x.png` thông qua API `/api/examinations/:id/images` (alias `/api/images`) rồi đẩy ngược về form.
 - **Tìm kiếm & danh sách**: `search-patient.js`, `search-exam.js`, `daily-lists.js` lọc nhanh bệnh nhân, phiếu khám và thống kê trong ngày.
 - **Quản trị**: `settings.js` chỉnh thông tin bệnh viện, logo (upload trực tiếp trong giao diện), prefix, số ảnh mặc định, mô tả mẫu, quyền xoá dữ liệu. `doctors.js` quản lý bác sỹ, `result-templates.js` lưu mẫu kết quả. `license-ui.js` hiển thị trạng thái giấy phép, kích hoạt gói tháng/năm/vĩnh viễn. API `/backup/create` (hoặc `/api/backup`) và `/backup/restore` sao lưu/phục hồi toàn bộ thư mục `Data/`.
+- **Tài liệu SRS/UML**: xem nhanh tài liệu đặc tả phần mềm ngay trong ứng dụng (tab "SRS / Tài liệu"), tải bản đầy đủ qua `/api/srs`.
 
 ## Cấu trúc thư mục
 ```

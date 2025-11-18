@@ -50,3 +50,16 @@ test('đường dẫn /login vẫn trả về trang đăng nhập cho SPA', asyn
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('API /api/srs trả về nội dung SRS', async () => {
+  const { server, port } = await startServer();
+  try {
+    const response = await fetch(`http://localhost:${port}/api/srs`);
+    const body = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.match(body.content || '', /Đặc tả hệ thống/i);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});

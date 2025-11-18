@@ -169,7 +169,8 @@ export function createServer() {
       '/license',
       '/backup',
       '/backup/create',
-      '/backup/restore'
+      '/backup/restore',
+      '/srs'
     ];
 
     const isApi = url.pathname.startsWith('/api/') || apiPaths.some((p) => url.pathname.startsWith(p));

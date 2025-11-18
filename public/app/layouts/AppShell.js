@@ -9,6 +9,7 @@ import { renderSettings } from '../modules/settings/view.js';
 import { renderLicense } from '../modules/license/view.js';
 import { renderBackup } from '../modules/backup/view.js';
 import { renderCamera } from '../modules/camera/view.js';
+import { renderSrs } from '../modules/srs/view.js';
 
 const NAV_ITEMS = [
   { id: 'daily', label: 'Khám bệnh', path: '/kham-benh' },
@@ -18,7 +19,8 @@ const NAV_ITEMS = [
   { id: 'templates', label: 'Kết quả mặc định' },
   { id: 'settings', label: 'Cấu hình' },
   { id: 'license', label: 'License' },
-  { id: 'backup', label: 'Backup & Restore' }
+  { id: 'backup', label: 'Backup & Restore' },
+  { id: 'srs', label: 'SRS / Tài liệu', path: '/srs' }
 ];
 
 const VIEW_RENDERERS = {
@@ -30,7 +32,8 @@ const VIEW_RENDERERS = {
   settings: renderSettings,
   license: renderLicense,
   backup: renderBackup,
-  camera: renderCamera
+  camera: renderCamera,
+  srs: renderSrs
 };
 
 export function renderShell() {
