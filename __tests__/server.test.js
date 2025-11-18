@@ -25,15 +25,14 @@ test('health endpoint trả về trạng thái ok', async () => {
   }
 });
 
-test('trang chủ trả về nội dung biểu mẫu khám bệnh', async () => {
+test('trang chủ trả về nội dung trang đăng nhập', async () => {
   const { server, port } = await startServer();
   try {
     const response = await fetch(`http://localhost:${port}/`);
     const html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.match(html, /Phiếu khám bệnh/i);
-    assert.match(html, /BỆNH VIỆN XYZ/);
+    assert.match(html, /Đăng nhập/i);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
