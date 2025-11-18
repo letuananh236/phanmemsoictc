@@ -37,3 +37,16 @@ test('trang chủ trả về nội dung trang đăng nhập', async () => {
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('đường dẫn /login vẫn trả về trang đăng nhập cho SPA', async () => {
+  const { server, port } = await startServer();
+  try {
+    const response = await fetch(`http://localhost:${port}/login`);
+    const html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /Đăng nhập/i);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
