@@ -11,7 +11,7 @@ import { renderBackup } from '../modules/backup/view.js';
 import { renderCamera } from '../modules/camera/view.js';
 
 const NAV_ITEMS = [
-  { id: 'daily', label: 'Khám bệnh' },
+  { id: 'daily', label: 'Khám bệnh', path: '/kham-benh' },
   { id: 'patients', label: 'Bệnh nhân' },
   { id: 'examinations', label: 'Khám soi CTC' },
   { id: 'doctors', label: 'Bác sĩ' },
@@ -76,6 +76,10 @@ export function renderShell() {
   const navigate = (view, extras = {}) => {
     setState({ currentView: view, ...extras });
     setActive(view);
+    const target = NAV_ITEMS.find((n) => n.id === view);
+    if (target?.path) {
+      window.history.replaceState({}, '', target.path);
+    }
     renderView(view, content, navigate);
   };
 

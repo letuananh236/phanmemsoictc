@@ -78,7 +78,8 @@ function LoginForm({ onAuthenticated }) {
       onAuthenticated({
         user: payload.user,
         license: licenseInfo,
-        config: payload.config
+        config: payload.config,
+        token: payload.token
       });
     } catch (err) {
       const code = err.body?.error;

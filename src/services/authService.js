@@ -1,7 +1,22 @@
+import crypto from 'node:crypto';
 import { getDb, ensureSeedData } from '../dal/db.js';
 import { getConfig } from './configService.js';
 import { ensureLicense, isLicenseValid } from './licenseService.js';
 import { verifyPassword } from '../utils/password.js';
+
+const sessions = new Map();
+
+function issueSession(user) {
+  const token = crypto.randomUUID();
+  sessions.set(token, { user, issuedAt: Date.now() });
+  return token;
+}
+
+export function verifySession(token) {
+  if (!token) return null;
+  const entry = sessions.get(token);
+  return entry?.user || null;
+}
 
 function summarizeLicense(license) {
   const now = new Date();
@@ -66,11 +81,14 @@ export function authenticate(username, password) {
     return { status: 403, body: { error: 'LICENSE_EXPIRED', license, user: userPayload, config: getConfig() } };
   }
 
+  const token = issueSession(userPayload);
+
   return {
     status: 200,
     body: {
       success: true,
       user: userPayload,
+      token,
       license,
       config: getConfig()
     }

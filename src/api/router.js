@@ -11,7 +11,7 @@ import {
   saveExamImage
 } from '../services/imageService.js';
 import { activateLicense, ensureLicense, getLicense, isLicenseValid } from '../services/licenseService.js';
-import { authenticate, getLicenseSummary } from '../services/authService.js';
+import { authenticate, getLicenseSummary, verifySession } from '../services/authService.js';
 import { createBackup, restoreBackup, listBackupHistory } from '../services/backupService.js';
 
 function sendJson(res, status, payload) {
@@ -44,6 +44,21 @@ function normalizePath(pathname) {
   return trimmed;
 }
 
+function requiresAuth(normalizedPath, method) {
+  if (normalizedPath === '/auth/login') return false;
+  if (normalizedPath.startsWith('/license')) return false;
+  if ((normalizedPath === '/system-config' || normalizedPath === '/settings') && method === 'GET') return false;
+  return true;
+}
+
+function extractToken(req) {
+  const header = req.headers['authorization'] || '';
+  if (header.toLowerCase().startsWith('bearer ')) {
+    return header.slice(7).trim();
+  }
+  return null;
+}
+
 export async function handleApi(req, res, pathname) {
   const requestUrl = new URL(req.url, 'http://localhost');
   const normalized = normalizePath(requestUrl.pathname);
@@ -61,6 +76,15 @@ export async function handleApi(req, res, pathname) {
       sendJson(res, 500, { error: 'auth_failed' });
     }
     return;
+  }
+
+  if (requiresAuth(normalized, req.method || 'GET')) {
+    const token = extractToken(req);
+    const sessionUser = verifySession(token);
+    if (!sessionUser) {
+      sendJson(res, 401, { error: 'UNAUTHORIZED' });
+      return;
+    }
   }
 
   const license = ensureLicense();

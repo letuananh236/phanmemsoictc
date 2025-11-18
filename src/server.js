@@ -58,6 +58,14 @@ function serveStatic(res, requestPath) {
     }
 
     if (!fs.existsSync(finalPath)) {
+      const isHtmlLike = !path.extname(requestPath);
+      if (isHtmlLike) {
+        const fallback = path.join(paths.publicDir, 'index.html');
+        const data = fs.readFileSync(fallback);
+        res.writeHead(200, { 'Content-Type': MIME_TYPES['.html'] });
+        res.end(data);
+        return;
+      }
       res.writeHead(404);
       res.end();
       return;
