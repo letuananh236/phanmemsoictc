@@ -145,6 +145,12 @@ function rerender() {
 }
 
 function createRoot(container) {
+  // Reset hook/effect state for each root to avoid leaking state between
+  // screens (e.g. switching from the login page into the main shell).
+  hookStates = [];
+  effectStates = [];
+  hookIndex = 0;
+  pendingEffects = [];
   rootContainer = container;
   return {
     render(element) {

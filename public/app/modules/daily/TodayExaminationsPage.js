@@ -179,7 +179,7 @@ function TodayExaminationsPage({ initialDate, onNavigateExam, onCreatePatient, o
     setError('');
     try {
       const res = await api.listExaminations({ date, doctorId, ...opts });
-      const next = res.exams || res || [];
+      const next = Array.isArray(res?.exams) ? res.exams : Array.isArray(res) ? res : [];
       setExams(next);
       setSelected((prev) => {
         const nextSelected = prev && next.some((exam) => exam.id === prev) ? prev : null;
@@ -216,7 +216,8 @@ function TodayExaminationsPage({ initialDate, onNavigateExam, onCreatePatient, o
     onNavigateExam?.(exam.id);
   };
 
-  const filteredExams = exams.filter((exam) => {
+  const normalizedExams = Array.isArray(exams) ? exams : [];
+  const filteredExams = normalizedExams.filter((exam) => {
     if (!searchText) return true;
     const needle = searchText.toLowerCase().trim();
     return (
