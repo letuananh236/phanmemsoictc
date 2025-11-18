@@ -22,6 +22,11 @@ export function authenticate(username, password) {
   const normalizedUsername = typeof username === 'string' ? username.trim() : '';
   const normalizedPassword = typeof password === 'string' ? password.trim() : '';
 
+  if (!normalizedUsername || !normalizedPassword) {
+    console.info('[auth] missing username/password');
+    return { status: 401, body: { error: 'INVALID_CREDENTIALS' } };
+  }
+
   console.info(`[auth] login request for username="${normalizedUsername}"`);
 
   const db = getDb();

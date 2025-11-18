@@ -100,6 +100,10 @@ function LoginForm({ onAuthenticated }) {
         setError('Tên đăng nhập hoặc mật khẩu không đúng.');
         return;
       }
+      if (!err.status) {
+        setError('Không thể kết nối tới máy chủ. Vui lòng kiểm tra server và thử lại.');
+        return;
+      }
       setError('Lỗi hệ thống. Vui lòng thử lại hoặc liên hệ hỗ trợ.');
     } finally {
       setLoading(false);

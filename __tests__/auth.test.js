@@ -63,3 +63,20 @@ test('đăng nhập sai thông tin trả về 401', async () => {
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('thiếu username/password trả về 401', async () => {
+  const { server, port } = await startServer();
+  try {
+    const res = await fetch(`http://localhost:${port}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: '   ', password: '' })
+    });
+    const body = await res.json();
+
+    assert.equal(res.status, 401);
+    assert.equal(body.error, 'INVALID_CREDENTIALS');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});

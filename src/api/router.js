@@ -27,7 +27,13 @@ async function parseBody(req) {
   const buffer = Buffer.concat(chunks);
   const type = req.headers['content-type'] || '';
   if (type.includes('application/json')) {
-    return JSON.parse(buffer.toString('utf8') || '{}');
+    try {
+      const text = buffer.toString('utf8');
+      return text ? JSON.parse(text) : {};
+    } catch (err) {
+      console.warn('[api] không thể parse body JSON:', err?.message);
+      return {};
+    }
   }
   return buffer;
 }
