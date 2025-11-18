@@ -259,14 +259,22 @@ function CameraPage({ visitId, onClose, onLicenseExpired }) {
     h(
       'div',
       { className: 'camera-panel gallery' },
-      h('div', { className: 'panel-header spaced' },
-        h('div', null, 'Ảnh đã lưu'),
-        h('div', { className: 'pager' },
-          h('button', { type: 'button', className: 'btn ghost', onclick: () => setPage((p) => Math.max(p - 1, 0)) }, '<<'),
-          h('span', null, `Trang ${page + 1}`),
-          h('button', { type: 'button', className: 'btn ghost', onclick: () => setPage((p) => (p + 1) * perPage < gallery.length ? p + 1 : p)) }, '>>')
-        )
-      ),
+        h('div', { className: 'panel-header spaced' },
+          h('div', null, 'Ảnh đã lưu'),
+          h('div', { className: 'pager' },
+            h('button', { type: 'button', className: 'btn ghost', onclick: () => setPage((p) => Math.max(p - 1, 0)) }, '<<'),
+            h('span', null, `Trang ${page + 1}`),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'btn ghost',
+                onclick: () => setPage((p) => ((p + 1) * perPage < gallery.length ? p + 1 : p))
+              },
+              '>>'
+            )
+          )
+        ),
       h(
         'div',
         { className: 'thumb-grid remote' },
