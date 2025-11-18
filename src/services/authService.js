@@ -1,4 +1,4 @@
-import { getDb } from '../dal/db.js';
+import { getDb, ensureSeedData } from '../dal/db.js';
 import { getConfig } from './configService.js';
 import { ensureLicense, isLicenseValid } from './licenseService.js';
 import { verifyPassword } from '../utils/password.js';
@@ -16,6 +16,9 @@ function summarizeLicense(license) {
 }
 
 export function authenticate(username, password) {
+  // Make sure default credentials are present even if bootstrap was skipped
+  ensureSeedData();
+
   const normalizedUsername = typeof username === 'string' ? username.trim() : '';
   const normalizedPassword = typeof password === 'string' ? password.trim() : '';
 
