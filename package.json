@@ -1,0 +1,19 @@
+{
+  "name": "phanmemsoictc",
+  "version": "1.1.0",
+  "description": "Ứng dụng tạo phiếu khám bệnh với khả năng chụp hình và in khổ A4",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "build": "node scripts/build.js",
+    "deploy": "npm run build && gh-pages -d dist",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}
