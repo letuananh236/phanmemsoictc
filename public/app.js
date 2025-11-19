@@ -11,16 +11,6 @@ const STORAGE_KEYS = {
   user: 'auth.user'
 };
 
-const NAV_ITEMS = [
-  { id: 'kham-benh', label: 'Khám bệnh (F3)', path: '/kham-benh', factory: (state) => createExamFormView(state) },
-  { id: 'chup-anh', label: 'Chụp ảnh (F4)', path: '/chup-anh', factory: (state) => createCaptureView(state) },
-  { id: 'tim-phieu-kham', label: 'Tìm phiếu khám', path: '/tim-phieu-kham', factory: () => createExamSearchView() },
-  { id: 'cau-hinh', label: 'Cấu hình hệ thống', path: '/cau-hinh', factory: (state) => createSettingsView(state) },
-  { id: 'license', label: 'License', path: '/license', factory: (state) => createLicenseView(state) },
-  { id: 'backup-restore', label: 'Backup & Restore', path: '/backup-restore', factory: () => createBackupRestoreView() },
-  { id: 'gioi-thieu', label: 'Giới thiệu phần mềm', path: '/gioi-thieu', factory: () => createAboutView() }
-];
-
 const ROUTE_ALIASES = new Map([
   ['/cauhinh', '/cau-hinh'],
   ['/backup', '/backup-restore'],
@@ -28,8 +18,6 @@ const ROUTE_ALIASES = new Map([
   ['/kham-soi-ctc', '/kham-benh']
 ]);
 
-const PATH_TO_ID = new Map(NAV_ITEMS.map((item) => [item.path, item.id]));
-const ID_TO_PATH = new Map(NAV_ITEMS.map((item) => [item.id, item.path]));
 const DEFAULT_ROUTE = '/kham-benh';
 
 const viewCache = new Map();
@@ -41,6 +29,138 @@ const appState = {
 };
 
 let shellInitialized = false;
+let examFormViewInstance;
+let captureViewInstance;
+let searchViewInstance;
+let settingsViewInstance;
+let licenseViewInstance;
+let backupViewInstance;
+let aboutViewInstance;
+
+function renderExamForm(target) {
+  if (!examFormViewInstance) {
+    examFormViewInstance = createExamFormView(appState);
+  }
+  examFormViewInstance.render(target);
+}
+
+function renderCaptureForm(target) {
+  if (!captureViewInstance) {
+    captureViewInstance = createCaptureView(appState);
+  }
+  captureViewInstance.render(target);
+}
+
+function renderSearchExam(target) {
+  if (!searchViewInstance) {
+    searchViewInstance = createExamSearchView();
+  }
+  searchViewInstance.render(target);
+}
+
+function renderSettings(target) {
+  if (!settingsViewInstance) {
+    settingsViewInstance = createSettingsView(appState);
+  }
+  settingsViewInstance.render(target);
+}
+
+function renderLicense(target) {
+  if (!licenseViewInstance) {
+    licenseViewInstance = createLicenseView(appState);
+  }
+  licenseViewInstance.render(target);
+}
+
+function renderBackupRestore(target) {
+  if (!backupViewInstance) {
+    backupViewInstance = createBackupRestoreView();
+  }
+  backupViewInstance.render(target);
+}
+
+function renderAbout(target) {
+  if (!aboutViewInstance) {
+    aboutViewInstance = createAboutView();
+  }
+  aboutViewInstance.render(target);
+}
+
+const NAV_ITEMS = [
+  {
+    id: 'kham-benh',
+    label: 'Khám bệnh (F3)',
+    path: '/kham-benh',
+    factory: () => ({
+      render(target) {
+        renderExamForm(target);
+      }
+    })
+  },
+  {
+    id: 'chup-anh',
+    label: 'Chụp ảnh (F4)',
+    path: '/chup-anh',
+    factory: () => ({
+      render(target) {
+        renderCaptureForm(target);
+      }
+    })
+  },
+  {
+    id: 'tim-phieu-kham',
+    label: 'Tìm phiếu khám',
+    path: '/tim-phieu-kham',
+    factory: () => ({
+      render(target) {
+        renderSearchExam(target);
+      }
+    })
+  },
+  {
+    id: 'cau-hinh',
+    label: 'Cấu hình hệ thống',
+    path: '/cau-hinh',
+    factory: () => ({
+      render(target) {
+        renderSettings(target);
+      }
+    })
+  },
+  {
+    id: 'license',
+    label: 'License',
+    path: '/license',
+    factory: () => ({
+      render(target) {
+        renderLicense(target);
+      }
+    })
+  },
+  {
+    id: 'backup-restore',
+    label: 'Backup & Restore',
+    path: '/backup-restore',
+    factory: () => ({
+      render(target) {
+        renderBackupRestore(target);
+      }
+    })
+  },
+  {
+    id: 'gioi-thieu',
+    label: 'Giới thiệu phần mềm',
+    path: '/gioi-thieu',
+    factory: () => ({
+      render(target) {
+        renderAbout(target);
+      }
+    })
+  }
+];
+
+const PATH_TO_ID = new Map(NAV_ITEMS.map((item) => [item.path, item.id]));
+const ID_TO_PATH = new Map(NAV_ITEMS.map((item) => [item.id, item.path]));
 
 function normalizePath(pathname = '/') {
   if (!pathname) return '/';
@@ -192,7 +312,7 @@ function getViewInstance(viewId) {
   if (!viewCache.has(viewId)) {
     const nav = NAV_ITEMS.find((item) => item.id === viewId);
     if (!nav) return null;
-    viewCache.set(viewId, nav.factory(appState));
+    viewCache.set(viewId, nav.factory());
   }
   return viewCache.get(viewId);
 }
