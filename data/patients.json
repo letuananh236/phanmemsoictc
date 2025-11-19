@@ -1,0 +1,12 @@
+[
+  {
+    "id": "BN000001",
+    "name": "Nguyễn Văn A",
+    "age": 32,
+    "gender": "Nữ",
+    "address": "123 Đường ABC",
+    "phone": "0901234567",
+    "reason": "Khám định kỳ",
+    "createdAt": "2024-01-01T08:00:00.000Z"
+  }
+]
