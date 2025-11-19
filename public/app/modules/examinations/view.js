@@ -6,11 +6,17 @@ const { createElement: h, useEffect, useMemo, useState } = React;
 
 const DEFAULT_DESCRIPTION_TEMPLATE = 'Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n';
 
-function SectionHeading({ title, subtitle, actions }) {
+function SectionHeading({ subtitle, actions }) {
   return h(
     'div',
-    { className: 'section-heading with-actions' },
-    h('div', null, h('div', { className: 'eyebrow' }, 'Khám bệnh (F3)'), h('h2', { className: 'title-strong' }, title), subtitle ? h('p', { className: 'muted small' }, subtitle) : null),
+    { className: 'section-heading with-actions exam-heading' },
+    h(
+      'div',
+      { className: 'heading-stack' },
+      h('p', { className: 'eyebrow' }, 'Khám bệnh (F3)'),
+      h('h1', { className: 'title-strong large' }, 'Phiếu khám soi cổ tử cung'),
+      subtitle ? h('p', { className: 'muted small' }, subtitle) : null
+    ),
     actions
   );
 }
@@ -35,17 +41,40 @@ function PatientBlock({ patient, onChange, errors }) {
     { title: 'Thông tin bệnh nhân' },
     h(
       'div',
-      { className: 'radio-row soft' },
-      h('label', null, h('input', { type: 'radio', checked: true, readOnly: true }), ' Mới khám lần đầu'),
-      h('label', null, h('input', { type: 'radio', checked: false, readOnly: true }), ' Đã khám')
+      { className: 'patient-status-row' },
+      h(Field, { label: 'Mã số BN', className: 'short', required: true }, h('input', { value: patient?.code || '', disabled: true })),
+      h(
+        'div',
+        { className: 'visit-status' },
+        h('span', { className: 'label' }, 'Tình trạng khám'),
+        h(
+          'div',
+          { className: 'radio-row soft inline' },
+          h('label', null,
+            h('input', {
+              type: 'radio',
+              name: 'visitStatus',
+              checked: patient?.visitStatus !== 'returning',
+              onchange: () => onChange({ visitStatus: 'new' })
+            }),
+            ' Mới khám lần đầu'
+          ),
+          h('label', null,
+            h('input', {
+              type: 'radio',
+              name: 'visitStatus',
+              checked: patient?.visitStatus === 'returning',
+              onchange: () => onChange({ visitStatus: 'returning' })
+            }),
+            ' Đã khám'
+          )
+        )
+      )
     ),
     h(
       'div',
-      { className: 'grid three-col gap tight' },
-      h(Field, { label: 'Mã số BN', className: 'short', required: true },
-        h('input', { value: patient?.code || '', disabled: true })
-      ),
-      h(Field, { label: 'Họ tên BN', required: true, className: 'wide' },
+      { className: 'patient-grid' },
+      h(Field, { label: 'Họ tên BN', required: true },
         h('input', {
           value: patient?.fullName || '',
           oninput: (e) => onChange({ fullName: e.target.value })
@@ -77,7 +106,7 @@ function PatientBlock({ patient, onChange, errors }) {
           oninput: (e) => onChange({ address: e.target.value })
         })
       ),
-      h(Field, { label: 'Điện thoại LH' },
+      h(Field, { label: 'Điện thoại liên hệ' },
         h('input', {
           value: patient?.phone || '',
           oninput: (e) => onChange({ phone: e.target.value })
@@ -95,15 +124,16 @@ function PatientBlock({ patient, onChange, errors }) {
   );
 }
 
+
 function ExamBlock({ exam, doctors, onChange, errors, onAddDoctor }) {
   return h(
     Section,
     { title: 'Kết quả khám soi CTC' },
     h(
       'div',
-      { className: 'grid three-col gap tight' },
-      h(Field, { label: 'Mã số ID', className: 'short' }, h('input', { value: exam?.ticketCode || exam?.id || '', disabled: true })),
-      h(Field, { label: 'Số phiếu khám', className: 'short' }, h('input', { value: exam?.ticketCode || exam?.id || '', disabled: true })),
+      { className: 'exam-id-row' },
+      h(Field, { label: 'Mã số ID', className: 'short' }, h('input', { value: exam?.id || exam?.ticketCode || '', disabled: true })),
+      h(Field, { label: 'Số phiếu khám', className: 'short' }, h('input', { value: exam?.ticketCode || '', disabled: true })),
       h(Field, { label: 'Ngày khám' },
         h('input', {
           type: 'date',
@@ -160,7 +190,7 @@ function ExamBlock({ exam, doctors, onChange, errors, onAddDoctor }) {
     ),
     h(
       'div',
-      { className: 'grid two-col gap tight' },
+      { className: 'grid two-col gap tight stacked-row' },
       h(Field, { label: 'Bác sỹ khám', required: true },
         h(
           'div',
@@ -191,7 +221,8 @@ function ExamBlock({ exam, doctors, onChange, errors, onAddDoctor }) {
   );
 }
 
-function ImagesPanel({ images, targetCount, ticketCode }) {
+
+function ImagesPanel({ images, targetCount, ticketCode, onOpenCamera }) {
   return h(
     Section,
     { title: 'Hình ảnh soi CTC' },
@@ -212,9 +243,15 @@ function ImagesPanel({ images, targetCount, ticketCode }) {
         );
       })
     ),
-    h('p', { className: 'muted small' }, 'Ảnh hiển thị theo thứ tự, tối đa 4 ảnh. Các ảnh này được gắn từ form chụp hình F4.')
+    h(
+      'div',
+      { className: 'image-panel-actions' },
+      h('button', { className: 'btn outline', type: 'button', onClick: onOpenCamera }, 'Lấy hình ảnh (F4)'),
+      h('span', { className: 'muted small' }, 'Ảnh lấy từ form Camera và tự gắn đúng vị trí trong phiếu.')
+    )
   );
 }
+
 
 function Toolbar({ status, onSave, onSavePrint, onBack, onOpenCamera, disablePrint, disableSave }) {
   return h(
@@ -353,7 +390,8 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
           address: patient?.address,
           phone: patient?.phone,
           dob: patient?.age ? ageToDob(patient.age) : patient?.dob,
-          reason: patient?.reason
+          reason: patient?.reason,
+          visitStatus: patient?.visitStatus || 'new'
         }
       };
       const saved = await api.updateExamination(examId, payload);
@@ -391,10 +429,9 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
           'div',
           { className: 'exam-content' },
           h(SectionHeading, {
-            title: 'Khám bệnh',
-            subtitle: 'Nhập thông tin bệnh nhân, mô tả soi CTC và gắn ảnh từ form camera.',
-            actions: h('div', { className: 'actions-row wrap' },
-              h('span', { className: 'pill soft' }, 'Khám bệnh (F3)'),
+            subtitle: 'Điền đầy đủ thông tin bệnh nhân, mô tả soi CTC, chọn bác sĩ và gắn ảnh từ form chụp hình.',
+            actions: h('div', { className: 'heading-actions' },
+              h('button', { className: 'btn secondary', type: 'button', onClick: onBackToDaily }, '↩ Quay lại danh sách'),
               h('button', { className: 'btn primary', type: 'button', onClick: () => onOpenCamera?.(examId) }, 'Lấy hình ảnh (F4)')
             )
           }),
@@ -422,7 +459,7 @@ function ExaminationPage({ examId, onLicenseExpired, onBackToDaily, onOpenCamera
               errors: { exam: error && !error.includes('Họ tên') ? error : '' },
               onAddDoctor
             }),
-            h(ImagesPanel, { images, targetCount, ticketCode: exam?.ticketCode || exam?.id })
+            h(ImagesPanel, { images, targetCount, ticketCode: exam?.ticketCode || exam?.id, onOpenCamera: () => onOpenCamera?.(examId) })
           ),
           h(
             'div',
