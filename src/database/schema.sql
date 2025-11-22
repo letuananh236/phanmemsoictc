@@ -65,9 +65,11 @@ CREATE TABLE IF NOT EXISTS config (
 CREATE TABLE IF NOT EXISTS license (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   license_key TEXT,
+  edition TEXT,
+  expire_date TEXT,
   status TEXT,
   activated_at TEXT,
-  expire_at TEXT
+  created_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS backup (
