@@ -1,0 +1,16 @@
+<section class="panel">
+  <h2>Backup &amp; Restore</h2>
+  <% if (message) { %><div class="alert"><%= message %></div><% } %>
+  <form method="post" action="/backup/create">
+    <button class="btn btn-primary" type="submit">Tạo backup</button>
+  </form>
+  <h3>Lịch sử backup</h3>
+  <table class="table">
+    <thead><tr><th>File</th><th>Thời gian</th></tr></thead>
+    <tbody>
+      <% backups.forEach(function(b){ %>
+        <tr><td><%= b.file_path %></td><td><%= b.created_at %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
