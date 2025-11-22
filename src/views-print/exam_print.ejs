@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phiếu soi cổ tử cung</title>
+  <link rel="stylesheet" href="/public/css/print.css">
+</head>
+<body>
+  <div class="print-page">
+    <header class="print-header">
+      <div class="logo">Logo</div>
+      <div class="clinic-info">
+        <div><%= clinic.clinic_name || 'Phòng khám' %></div>
+        <div><%= clinic.clinic_address || '' %></div>
+        <div><%= clinic.clinic_phone || '' %></div>
+      </div>
+    </header>
+    <h1 class="title">PHIẾU SOI CỔ TỬ CUNG</h1>
+    <section class="patient-info">
+      <div>Mã BN: <%= patient.code %> | Họ tên: <%= patient.full_name %> | Năm sinh: <%= patient.birth_year || '' %> | Giới tính: <%= patient.gender || '' %></div>
+      <div>Ngày khám: <%= formattedDate %> | Bác sỹ: <%= doctor ? doctor.name : '' %></div>
+    </section>
+    <section>
+      <h3>Mô tả soi CTC</h3>
+      <p><%= exam.description || '' %></p>
+      <h3>Kết quả</h3>
+      <p><%= exam.conclusion || '' %></p>
+      <h3>Điều trị</h3>
+      <p><%= exam.treatment || '' %></p>
+      <h3>Lời dặn</h3>
+      <p><%= exam.instruction || '' %></p>
+    </section>
+    <section class="image-grid">
+      <% images.slice(0,4).forEach(function(img){ %>
+        <div class="img-item"><img src="<%= img.file_path %>" alt="Ảnh"></div>
+      <% }); %>
+    </section>
+  </div>
+</body>
+</html>
