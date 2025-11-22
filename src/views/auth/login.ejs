@@ -2,22 +2,39 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Đăng nhập</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập | Phần mềm soi cổ tử cung</title>
   <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 <body class="login-page">
-  <div class="login-card">
-    <h1>PHẦN MỀM SOI CỔ TỬ CUNG</h1>
-    <% if (error) { %>
-      <div class="alert"> <%= error %> </div>
-    <% } %>
-    <form method="post" action="/login">
-      <label>Tên đăng nhập</label>
-      <input type="text" name="username" required />
-      <label>Mật khẩu</label>
-      <input type="password" name="password" required />
-      <button type="submit" class="btn btn-primary">ĐĂNG NHẬP</button>
-    </form>
+  <div class="login-hero">
+    <div class="login-hero__brand">
+      <div class="login-hero__logo">CTC</div>
+      <div>
+        <h1>PHẦN MỀM SOI CỔ TỬ CUNG</h1>
+        <p>Giải pháp khám, chụp ảnh và in phiếu A4 chạy offline tại phòng khám.</p>
+      </div>
+    </div>
+    <div class="login-card">
+      <div class="login-card__header">
+        <h2>Đăng nhập</h2>
+        <p>Nhập tài khoản để vào hệ thống.</p>
+      </div>
+      <% if (error) { %>
+        <div class="alert"> <%= error %> </div>
+      <% } %>
+      <form method="post" action="/login" class="login-form">
+        <label for="username">Tên đăng nhập</label>
+        <input id="username" type="text" name="username" autocomplete="username" required />
+        <label for="password">Mật khẩu</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary login-btn">ĐĂNG NHẬP</button>
+        <p class="login-hint">Tài khoản mặc định: admin / admin123</p>
+      </form>
+    </div>
   </div>
+  <footer class="login-footer">
+    <span>Hỗ trợ: liên hệ IT phòng khám khi cần kích hoạt license hoặc đặt lại mật khẩu.</span>
+  </footer>
 </body>
 </html>

@@ -9,7 +9,6 @@ function ensureShape() {
       const columns = rows.map((r) => r.name);
       const alters = [];
       if (!columns.length) {
-        // table missing, create
         db.run(
           'CREATE TABLE IF NOT EXISTS license (id INTEGER PRIMARY KEY AUTOINCREMENT, license_key TEXT, edition TEXT, expire_date TEXT, status TEXT, activated_at TEXT, created_at TEXT)',
           (createErr) => {
@@ -40,13 +39,18 @@ function ensureShape() {
 }
 
 async function getStatus() {
-  await ensureShape();
-  return new Promise((resolve, reject) => {
-    db.get('SELECT * FROM license ORDER BY id DESC LIMIT 1', [], (err, row) => {
-      if (err) return reject(err);
-      resolve(row || null);
+  try {
+    await ensureShape();
+    return await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM license ORDER BY id DESC LIMIT 1', [], (err, row) => {
+        if (err) return reject(err);
+        resolve(row || null);
+      });
     });
-  });
+  } catch (err) {
+    console.error('license.model.getStatus failed:', err);
+    return null;
+  }
 }
 
 async function saveKey(data) {

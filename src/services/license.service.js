@@ -1,7 +1,12 @@
 const licenseModel = require('../models/license.model');
 
 async function getStatus() {
-  return licenseModel.getStatus();
+  try {
+    return await licenseModel.getStatus();
+  } catch (err) {
+    console.error('license.service.getStatus failed:', err);
+    return null;
+  }
 }
 
 function parseKey(keyString) {
@@ -31,8 +36,13 @@ async function activate(key) {
   if (!parsed.valid) {
     return { success: false, message: parsed.message };
   }
-  const record = await licenseModel.saveKey(parsed.payload);
-  return { success: true, status: record, message: 'Kích hoạt thành công.' };
+  try {
+    const record = await licenseModel.saveKey(parsed.payload);
+    return { success: true, status: record, message: 'Kích hoạt thành công.' };
+  } catch (err) {
+    console.error('license.service.activate failed:', err);
+    return { success: false, message: 'Không thể lưu license. Vui lòng thử lại.' };
+  }
 }
 
 module.exports = { getStatus, activate };
