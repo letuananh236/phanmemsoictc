@@ -1,0 +1,129 @@
+<div class="exam-page">
+  <h1>Khám bệnh</h1>
+  <% if (error) { %>
+    <div class="alert"><%= error %></div>
+  <% } %>
+  <form method="post" action="<%= exam ? '/exam/' + exam.id : '/exam' %>">
+    <div class="exam-layout">
+      <section class="exam-section">
+        <h2>Thông tin bệnh nhân</h2>
+        <div class="exam-form-grid">
+          <div class="exam-form-group">
+            <label>Mã BN</label>
+            <input type="text" readonly value="<%= patient ? patient.code : '' %>" placeholder="Tự sinh">
+            <small class="field-hint">Tự sinh</small>
+          </div>
+          <div class="exam-form-group">
+            <label>Họ tên BN *</label>
+            <input name="full_name" required value="<%= patient ? patient.full_name : '' %>">
+          </div>
+
+          <div class="exam-form-group">
+            <label>Năm sinh / Tuổi *</label>
+            <input name="birth_year" required value="<%= patient ? patient.birth_year : '' %>" placeholder="VD: 1988">
+          </div>
+          <div class="exam-form-group">
+            <label>Giới tính</label>
+            <select name="gender">
+              <option value="">--</option>
+              <option value="Nam" <%= patient && patient.gender==='Nam'?'selected':'' %>>Nam</option>
+              <option value="Nữ" <%= patient && patient.gender==='Nữ'?'selected':'' %>>Nữ</option>
+              <option value="Khác" <%= patient && patient.gender==='Khác'?'selected':'' %>>Khác</option>
+            </select>
+          </div>
+
+          <div class="exam-form-group col-span-2">
+            <label>Địa chỉ</label>
+            <input name="address" value="<%= patient ? patient.address : '' %>">
+          </div>
+
+          <div class="exam-form-group">
+            <label>Điện thoại</label>
+            <input name="phone" value="<%= patient ? patient.phone : '' %>">
+          </div>
+          <div class="exam-form-group">
+            <label>Lý do khám</label>
+            <textarea name="reason" rows="2"><%= patient ? patient.reason : '' %></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="exam-section">
+        <h2>Kết quả khám</h2>
+        <div class="exam-form-grid exam-form-grid--three">
+          <div class="exam-form-group">
+            <label>Mã phiếu</label>
+            <input type="text" readonly value="<%= exam ? exam.ticket_code : '' %>" placeholder="Tự sinh">
+            <small class="field-hint">Tự sinh</small>
+          </div>
+          <div class="exam-form-group">
+            <label>Ngày khám</label>
+            <input type="date" name="exam_date" value="<%= exam ? exam.exam_date : '' %>">
+          </div>
+          <div class="exam-form-group">
+            <label>Bác sỹ khám *</label>
+            <select name="doctor_id" required>
+              <option value="">-- Chọn bác sỹ --</option>
+              <% doctors.forEach(function(d){ %>
+                <option value="<%= d.id %>" <%= exam && exam.doctor_id===d.id ? 'selected' : '' %>><%= d.name %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+
+        <div class="exam-form-group">
+          <label>Mô tả soi CTC *</label>
+          <textarea name="description" required rows="4"><%= exam ? exam.description : '' %></textarea>
+        </div>
+        <div class="exam-form-group">
+          <label>Kết quả soi tử cung *</label>
+          <textarea name="conclusion" required rows="4" class="exam-result-highlight"><%= exam ? exam.conclusion : '' %></textarea>
+        </div>
+        <div class="exam-form-group">
+          <label>Các bước điều trị</label>
+          <textarea name="treatment" rows="3"><%= exam ? exam.treatment : '' %></textarea>
+        </div>
+        <div class="exam-form-group">
+          <label>Lời dặn của BS</label>
+          <textarea name="instruction" rows="3" class="exam-result-highlight"><%= exam ? exam.instruction : '' %></textarea>
+        </div>
+        <div class="exam-form-group">
+          <label class="checkbox-row">
+            <input type="checkbox" name="mark_on_image" <%= exam && exam.mark_on_image ? 'checked' : '' %>>
+            <span>Đánh dấu, khoanh vùng trên hình ảnh số</span>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <div class="exam-actions">
+      <button type="submit" name="action" value="save" class="btn btn-primary">Lưu</button>
+      <button type="submit" name="action" value="save_print" class="btn">Lưu &amp; In</button>
+      <a href="/home" class="btn">Hủy</a>
+    </div>
+
+    <section class="exam-images">
+      <div class="exam-images-header">
+        <h2>Hình ảnh soi CTC</h2>
+        <% if (exam) { %>
+          <a class="btn" href="/camera/capture?examId=<%= exam.id %>">Lấy hình ảnh (F4)</a>
+        <% } else { %>
+          <button class="btn" type="button" disabled>Vui lòng lưu phiếu để lấy hình</button>
+        <% } %>
+      </div>
+      <div class="exam-images-grid">
+        <% const examImages = images || []; %>
+        <% [1,2,3,4].forEach(function(i){ const img = examImages.find(im=>im.display_order===i); %>
+          <div class="exam-image-slot">
+            <% if (img) { %>
+              <img src="<%= img.file_path %>" alt="Ảnh <%= i %>">
+              <div class="file-name"><%= img.file_path %></div>
+            <% } else { %>
+              <span>Chưa có ảnh</span>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+  </form>
+</div>

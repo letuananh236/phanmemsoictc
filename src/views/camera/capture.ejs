@@ -1,0 +1,20 @@
+<section class="panel">
+  <h2>Camera chụp ảnh</h2>
+  <p>Exam ID: <%= examId || 'Chế độ thử' %></p>
+  <form id="upload-form" method="post" action="/camera/upload" enctype="multipart/form-data">
+    <input type="hidden" name="examId" value="<%= examId %>">
+    <input type="file" name="photo" accept="image/*" required>
+    <button type="submit" class="btn">Tải ảnh lên</button>
+  </form>
+  <div id="upload-result"></div>
+  <script>
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const res = await fetch('/camera/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      document.getElementById('upload-result').innerText = data.success ? 'Đã lưu ảnh' : 'Lỗi lưu ảnh';
+    });
+  </script>
+</section>
