@@ -1,0 +1,15 @@
+<section class="panel">
+  <h2><%= doctor ? 'Sửa bác sỹ' : 'Thêm bác sỹ' %></h2>
+  <form method="post">
+    <label>Họ tên *</label>
+    <input name="name" required value="<%= doctor ? doctor.name : '' %>">
+    <label>Chức danh</label>
+    <input name="position" value="<%= doctor ? doctor.position : '' %>">
+    <label>Trạng thái</label>
+    <input type="checkbox" name="status" <%= !doctor || doctor.status ? 'checked' : '' %>> Hoạt động
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Lưu</button>
+      <a class="btn" href="/doctor">Hủy</a>
+    </div>
+  </form>
+</section>
