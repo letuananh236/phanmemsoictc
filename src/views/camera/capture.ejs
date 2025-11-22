@@ -1,0 +1,228 @@
+<section class="camera-page">
+  <h1>Camera chụp ảnh</h1>
+
+  <div class="camera-top-info">
+    <span><strong>Exam ID:</strong> <%= examId || 'Chế độ thử' %></span>
+  </div>
+
+  <div class="camera-main">
+    <aside class="camera-left-panel">
+      <h2>Thiết bị & điều khiển</h2>
+
+      <div class="form-group">
+        <label>Chọn camera</label>
+        <select id="cameraDeviceSelect"></select>
+      </div>
+
+      <div class="camera-config-buttons">
+        <button type="button" id="btnSaveDefaultCamera" class="btn btn-secondary">Lưu camera đang dùng</button>
+        <button type="button" id="btnOpenCameraConfig" class="btn btn-secondary">Cấu hình camera</button>
+      </div>
+
+      <div class="form-group">
+        <button type="button" id="btnCapture" class="btn btn-primary">Chụp hình</button>
+      </div>
+
+      <div class="camera-selected">
+        <h3>Ảnh đã chọn</h3>
+        <div id="selectedThumbnails" class="camera-selected-grid"></div>
+        <div class="camera-selected-actions">
+          <button type="button" id="btnAcceptImages" class="btn btn-success">Chấp nhận (F10)</button>
+          <button type="button" id="btnClearImages" class="btn btn-danger-outline">Xóa toàn bộ ảnh</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="camera-preview">
+      <video id="cameraVideo" autoplay playsinline></video>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+    </section>
+  </div>
+
+  <section class="camera-bottom">
+    <div class="camera-captured-header">
+      <h2>Ảnh đã chụp</h2>
+      <span class="camera-note">Nhấp vào ảnh để chọn (tối đa 4 ảnh).</span>
+    </div>
+    <div id="capturedGrid" class="camera-captured-grid"></div>
+    <div class="camera-paging">
+      <button type="button" id="btnPrevPage" class="btn btn-light">&laquo;</button>
+      <button type="button" id="btnNextPage" class="btn btn-light">&raquo;</button>
+    </div>
+  </section>
+</section>
+
+<script>
+  (() => {
+    const examId = '<%= examId || "" %>';
+    const videoEl = document.getElementById('cameraVideo');
+    const canvasEl = document.getElementById('cameraCanvas');
+    const deviceSelect = document.getElementById('cameraDeviceSelect');
+    const capturedGrid = document.getElementById('capturedGrid');
+    const selectedThumbnails = document.getElementById('selectedThumbnails');
+
+    let mediaStream = null;
+    let captured = [];
+    let selected = [];
+    let page = 0;
+    const pageSize = 12;
+    const maxSelected = 4;
+
+    async function listDevices() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+        deviceSelect.innerHTML = '';
+        videoInputs.forEach((d, idx) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Camera ${idx + 1}`;
+          deviceSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Không thể liệt kê camera', err);
+      }
+    }
+
+    async function startStream(deviceId) {
+      try {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((t) => t.stop());
+        }
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: deviceId ? { deviceId: { exact: deviceId } } : true });
+        videoEl.srcObject = mediaStream;
+      } catch (err) {
+        console.error('Không thể mở camera', err);
+      }
+    }
+
+    function renderCaptured() {
+      capturedGrid.innerHTML = '';
+      const start = page * pageSize;
+      const items = captured.slice(start, start + pageSize);
+      items.forEach((item) => {
+        const slot = document.createElement('div');
+        slot.className = 'thumb';
+        if (selected.includes(item)) {
+          slot.classList.add('selected');
+        }
+        const img = document.createElement('img');
+        img.src = item.dataUrl;
+        slot.appendChild(img);
+        slot.addEventListener('click', () => toggleSelect(item));
+        capturedGrid.appendChild(slot);
+      });
+    }
+
+    function renderSelected() {
+      selectedThumbnails.innerHTML = '';
+      for (let i = 0; i < maxSelected; i += 1) {
+        const item = selected[i];
+        const slot = document.createElement('div');
+        slot.className = item ? 'camera-thumb' : 'camera-slot camera-slot-empty';
+        if (item) {
+          const img = document.createElement('img');
+          img.src = item.dataUrl;
+          const remove = document.createElement('button');
+          remove.className = 'thumb-remove';
+          remove.type = 'button';
+          remove.textContent = '×';
+          remove.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selected = selected.filter((s) => s !== item);
+            renderSelected();
+            renderCaptured();
+          });
+          slot.appendChild(img);
+          slot.appendChild(remove);
+        } else {
+          slot.textContent = 'Trống';
+        }
+        selectedThumbnails.appendChild(slot);
+      }
+    }
+
+    function toggleSelect(item) {
+      const exists = selected.includes(item);
+      if (exists) {
+        selected = selected.filter((s) => s !== item);
+      } else {
+        if (selected.length >= maxSelected) {
+          alert('Chỉ chọn tối đa 4 ảnh.');
+          return;
+        }
+        selected.push(item);
+      }
+      renderSelected();
+      renderCaptured();
+    }
+
+    function captureFrame() {
+      if (!mediaStream) return;
+      const trackSettings = mediaStream.getVideoTracks()[0]?.getSettings?.() || {};
+      const width = trackSettings.width || 640;
+      const height = trackSettings.height || 480;
+      canvasEl.width = width;
+      canvasEl.height = height;
+      const ctx = canvasEl.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, width, height);
+      const dataUrl = canvasEl.toDataURL('image/png');
+      const item = { dataUrl, capturedAt: Date.now() };
+      captured.unshift(item);
+      toggleSelect(item);
+      renderCaptured();
+    }
+
+    async function handleAcceptImages() {
+      if (!selected.length) return;
+      if (examId) {
+        try {
+          // TODO: hook into existing upload endpoint if available
+          const fd = new FormData();
+          fd.append('examId', examId);
+          selected.forEach((item) => fd.append('images', item.dataUrl));
+          await fetch('/camera/upload', { method: 'POST', body: fd });
+          window.location.assign(`/exam/${examId}/edit`);
+        } catch (err) {
+          console.error('Không thể lưu ảnh', err);
+        }
+      } else {
+        alert('Đang ở chế độ thử, ảnh chỉ lưu tạm trên trình duyệt.');
+      }
+    }
+
+    function clearAll() {
+      captured = [];
+      selected = [];
+      page = 0;
+      renderCaptured();
+      renderSelected();
+    }
+
+    async function init() {
+      await listDevices();
+      await startStream(deviceSelect.value);
+      renderCaptured();
+      renderSelected();
+    }
+
+    document.getElementById('btnCapture').addEventListener('click', captureFrame);
+    document.getElementById('btnAcceptImages').addEventListener('click', handleAcceptImages);
+    document.getElementById('btnClearImages').addEventListener('click', clearAll);
+    document.getElementById('btnPrevPage').addEventListener('click', () => {
+      if (page > 0) { page -= 1; renderCaptured(); }
+    });
+    document.getElementById('btnNextPage').addEventListener('click', () => {
+      if ((page + 1) * pageSize < captured.length) { page += 1; renderCaptured(); }
+    });
+    deviceSelect.addEventListener('change', (e) => startStream(e.target.value));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'F4') { e.preventDefault(); captureFrame(); }
+      if (e.key === 'F10') { e.preventDefault(); handleAcceptImages(); }
+      if (e.key === 'Escape') { window.history.back(); }
+    });
+
+    init();
+  })();
+</script>

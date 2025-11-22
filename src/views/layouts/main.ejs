@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title><%= typeof title != 'undefined' ? title : 'Phần mềm soi cổ tử cung' %></title>
+  <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-brand">Phần mềm soi cổ tử cung</div>
+      <div class="app-header-actions">
+        <a href="/backup" class="btn">Backup &amp; Restore</a>
+        <a href="/config/system" class="btn">Cấu hình hệ thống</a>
+        <a href="/license" class="btn">Bản quyền</a>
+        <a href="/logout" class="btn btn-danger">Thoát</a>
+      </div>
+    </header>
+    <div class="app-body">
+      <aside class="app-sidebar">
+        <a href="/exam/new">Khám bệnh</a>
+        <a href="/camera/capture">Camera chụp ảnh</a>
+        <a href="/exam-search">Tìm kiếm phiếu khám</a>
+        <a href="/doctor">Thêm bác sỹ</a>
+        <a href="/about">Giới thiệu phần mềm</a>
+      </aside>
+      <main class="app-content">
+        <%- body %>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
