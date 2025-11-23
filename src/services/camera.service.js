@@ -3,18 +3,52 @@ const path = require('path');
 const { UPLOAD_DIR } = require('../config/app.config');
 const imageModel = require('../models/image.model');
 
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
 }
 
-async function saveImage(examId, file) {
-  const order = (await imageModel.listByExam(examId)).length + 1;
-  const fileName = `${examId}_${order}_${Date.now()}${path.extname(file.originalname || '.jpg')}`;
-  const dest = path.join(UPLOAD_DIR, fileName);
-  fs.writeFileSync(dest, file.buffer);
-  const relative = `/public/uploads/${fileName}`;
-  await imageModel.create(examId, relative, order);
-  return relative;
+function bufferFromPayload(payload) {
+  if (!payload) return null;
+  if (Buffer.isBuffer(payload)) return payload;
+  if (typeof payload === 'string') {
+    const base64 = payload.startsWith('data:') ? payload.split(',')[1] : payload;
+    return Buffer.from(base64, 'base64');
+  }
+  return null;
 }
 
-module.exports = { saveImage };
+async function saveImageBuffer(examId, payload) {
+  const buffer = bufferFromPayload(payload);
+  if (!buffer) {
+    throw new Error('No image payload provided');
+  }
+  const safeExam = examId || 'session';
+  const folder = ensureDir(path.join(UPLOAD_DIR, 'exams', safeExam.toString()));
+  const fileName = `${Date.now()}.jpg`;
+  const dest = path.join(folder, fileName);
+  await fs.promises.writeFile(dest, buffer);
+  const relativePath = `/uploads/exams/${safeExam}/${fileName}`;
+  const record = await imageModel.create({ examId: examId || null, filePath: relativePath });
+  return record;
+}
+
+async function getImagesForExam(examId) {
+  if (examId) {
+    return imageModel.listForCapture(examId);
+  }
+  return imageModel.listUnassigned();
+}
+
+async function assignImagesToExam(examId, imageIds) {
+  if (!examId || !imageIds || !imageIds.length) return;
+  await imageModel.assignToExam(examId, imageIds);
+}
+
+module.exports = {
+  saveImageBuffer,
+  getImagesForExam,
+  assignImagesToExam
+};
