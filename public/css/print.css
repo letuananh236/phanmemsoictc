@@ -1,0 +1,5 @@
+body { font-family: 'Times New Roman', serif; margin: 1.5cm; }
+.print-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.title { text-align: center; color: red; margin: 10px 0; font-size: 20px; }
+.image-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 8px; }
+.image-grid img { width: 100%; height: 140px; object-fit: cover; }

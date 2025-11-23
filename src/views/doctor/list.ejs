@@ -1,0 +1,17 @@
+<section class="panel">
+  <h2>Danh sách bác sỹ</h2>
+  <a class="btn" href="/doctor/new">Thêm bác sỹ</a>
+  <table class="table">
+    <thead><tr><th>Tên</th><th>Chức danh</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+      <% doctors.forEach(function(d){ %>
+        <tr>
+          <td><%= d.name %></td>
+          <td><%= d.position || '' %></td>
+          <td><%= d.status ? 'Hoạt động' : 'Ngưng' %></td>
+          <td><a class="btn" href="/doctor/<%= d.id %>/edit">Sửa</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>

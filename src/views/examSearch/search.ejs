@@ -1,0 +1,49 @@
+<section class="panel">
+  <h2>Tìm kiếm phiếu khám</h2>
+  <form method="get" action="/exam-search/results" class="grid four-col">
+    <div>
+      <label>Tên bệnh nhân</label>
+      <input name="name" value="<%= filters.name || '' %>">
+    </div>
+    <div>
+      <label>Mã BN</label>
+      <input name="code" value="<%= filters.code || '' %>">
+    </div>
+    <div>
+      <label>Từ ngày</label>
+      <input type="date" name="fromDate" value="<%= filters.fromDate || '' %>">
+    </div>
+    <div>
+      <label>Đến ngày</label>
+      <input type="date" name="toDate" value="<%= filters.toDate || '' %>">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+      <a class="btn" href="/exam-search">Làm mới</a>
+    </div>
+  </form>
+
+  <% if (results && results.length) { %>
+    <table class="table">
+      <thead><tr><th>ID</th><th>Ngày</th><th>Mã BN</th><th>Tên BN</th><th>Bác sỹ</th><th>Kết luận</th><th>Hành động</th></tr></thead>
+      <tbody>
+        <% results.forEach(function(r){ %>
+          <tr>
+            <td><%= r.ticket_code %></td>
+            <td><%= r.exam_date %></td>
+            <td><%= r.patient_code %></td>
+            <td><%= r.full_name %></td>
+            <td><%= r.doctor_name || '' %></td>
+            <td><%= r.conclusion || '' %></td>
+            <td>
+              <a class="btn" href="/exam/<%= r.id %>/edit">Xem/Sửa</a>
+              <a class="btn" href="/exam/<%= r.id %>/print" target="_blank">In phiếu</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else if(results) { %>
+    <p>Không tìm thấy phiếu khám.</p>
+  <% } %>
+</section>
