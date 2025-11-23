@@ -225,8 +225,15 @@
       const resp = await fetch(`/camera/${encodeURIComponent(target)}/capture`, { method: 'POST', body: fd });
       const json = await resp.json();
       if (json.success && json.image) {
-        captured.unshift({ id: json.image.id, filePath: json.image.filePath, examId: json.image.examId, selected: false });
+        const shouldSelect = getSelectedIds().length < MAX_SELECTED;
+        captured.unshift({
+          id: json.image.id,
+          filePath: json.image.filePath,
+          examId: json.image.examId,
+          selected: shouldSelect
+        });
         captured = captured.slice(0, MAX_GALLERY);
+        renderSelected();
         renderCaptured();
       } else {
         alert('Không thể lưu ảnh.');
