@@ -1,48 +1,51 @@
-<section class="camera-page">
+<div class="camera-page">
   <h1>Camera chụp ảnh</h1>
 
   <div class="camera-top-info">
     <span><strong>Exam ID:</strong> <%= examId || 'Chế độ thử' %></span>
   </div>
 
-  <div class="camera-main">
-    <aside class="camera-left-panel">
-      <h2>Thiết bị & điều khiển</h2>
+  <div class="camera-top">
+    <div class="camera-left">
+      <div class="camera-left-content">
+        <h2>Thiết bị & điều khiển</h2>
 
-      <div class="form-group">
-        <label>Chọn camera</label>
-        <select id="cameraDeviceSelect"></select>
+        <div class="form-group">
+          <label>Chọn camera</label>
+          <select id="cameraDeviceSelect"></select>
+        </div>
+
+        <div class="camera-config-buttons">
+          <button type="button" id="btnSaveDefaultCamera" class="btn btn-secondary">Lưu camera đang dùng</button>
+          <button type="button" id="btnOpenCameraConfig" class="btn btn-secondary">Cấu hình camera</button>
+        </div>
+
+        <div class="form-group">
+          <button type="button" id="btnCapture" class="btn btn-primary">Chụp hình</button>
+        </div>
+
+        <div class="camera-selected">
+          <h3>Ảnh đã chọn</h3>
+          <div id="selectedThumbnails" class="camera-selected-grid"></div>
+        </div>
       </div>
 
-      <div class="camera-config-buttons">
-        <button type="button" id="btnSaveDefaultCamera" class="btn btn-secondary">Lưu camera đang dùng</button>
-        <button type="button" id="btnOpenCameraConfig" class="btn btn-secondary">Cấu hình camera</button>
-      </div>
+      <form id="confirmForm" method="POST" action="/camera/<%= examId || 'session' %>/confirm" class="camera-left-actions">
+        <input type="hidden" name="selectedImages" id="selectedImageIds" />
+        <div class="camera-selected-actions">
+          <button type="button" id="btnAcceptImages" class="btn btn-success">Chấp nhận (F10)</button>
+          <button type="button" id="btnClearImages" class="btn btn-danger-outline">Xóa toàn bộ ảnh</button>
+        </div>
+      </form>
+    </div>
 
-      <div class="form-group">
-        <button type="button" id="btnCapture" class="btn btn-primary">Chụp hình</button>
-      </div>
-
-      <div class="camera-selected">
-        <h3>Ảnh đã chọn</h3>
-        <div id="selectedThumbnails" class="camera-selected-grid"></div>
-        <form id="confirmForm" method="POST" action="/camera/<%= examId || 'session' %>/confirm">
-          <input type="hidden" name="selectedImages" id="selectedImageIds" />
-          <div class="camera-selected-actions">
-            <button type="button" id="btnAcceptImages" class="btn btn-success">Chấp nhận (F10)</button>
-            <button type="button" id="btnClearImages" class="btn btn-danger-outline">Xóa toàn bộ ảnh</button>
-          </div>
-        </form>
-      </div>
-    </aside>
-
-    <section class="camera-preview">
+    <div class="camera-preview">
       <video id="cameraVideo" autoplay playsinline></video>
       <canvas id="cameraCanvas" style="display:none;"></canvas>
-    </section>
+    </div>
   </div>
 
-  <section class="camera-bottom">
+  <div class="camera-bottom">
     <div class="camera-captured-header">
       <h2>Ảnh đã chụp</h2>
       <span class="camera-note">Nhấp vào ảnh để chọn (tối đa 4 ảnh).</span>
@@ -52,8 +55,8 @@
       <button type="button" id="btnPrevPage" class="btn btn-light">&laquo;</button>
       <button type="button" id="btnNextPage" class="btn btn-light">&raquo;</button>
     </div>
-  </section>
-</section>
+  </div>
+</div>
 
 <script>
   window.cameraPageData = {
