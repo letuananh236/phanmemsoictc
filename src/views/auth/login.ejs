@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập | Phần mềm soi cổ tử cung</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body class="login-page">
+  <div class="login-wrapper">
+    <div class="login-card login-card--wide">
+      <div class="login-card__badge">PHẦN MỀM SOI CỔ TỬ CUNG</div>
+      <div class="login-card__header">
+        <h1>Đăng nhập</h1>
+        <p>Nhập tài khoản để vào hệ thống khám và in phiếu.</p>
+      </div>
+      <% if (error) { %>
+        <div class="alert"> <%= error %> </div>
+      <% } %>
+      <form method="post" action="/login" class="login-form">
+        <label for="username">Tên đăng nhập</label>
+        <input id="username" type="text" name="username" autocomplete="username" required />
+        <label for="password">Mật khẩu</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required />
+        <button type="submit" class="btn btn-primary login-btn">ĐĂNG NHẬP</button>
+        <p class="login-hint">Tài khoản mặc định: admin / admin123</p>
+        <p class="login-support">Cần hỗ trợ? Liên hệ IT phòng khám để kích hoạt license hoặc đặt lại mật khẩu.</p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

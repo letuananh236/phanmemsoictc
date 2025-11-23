@@ -1,0 +1,29 @@
+<section class="panel">
+  <h2>Cấu hình hệ thống</h2>
+  <form method="post">
+    <div class="grid two-col">
+      <div>
+        <label>Tên phòng khám</label>
+        <input name="clinic_name" value="<%= config.clinic_name || '' %>">
+        <label>Địa chỉ</label>
+        <input name="clinic_address" value="<%= config.clinic_address || '' %>">
+        <label>Điện thoại</label>
+        <input name="clinic_phone" value="<%= config.clinic_phone || '' %>">
+      </div>
+      <div>
+        <label>Mô tả soi CTC mặc định</label>
+        <textarea name="default_exam_description"><%= config.default_exam_description || '' %></textarea>
+        <label>Kết luận mặc định</label>
+        <textarea name="default_exam_conclusion"><%= config.default_exam_conclusion || '' %></textarea>
+      </div>
+    </div>
+    <h3>Cấu hình camera</h3>
+    <label>Device ID mặc định</label>
+    <input name="camera_default_device_id" value="<%= config.camera_default_device_id || '' %>">
+    <label>Độ phân giải</label>
+    <input name="camera_resolution" value="<%= config.camera_resolution || '' %>">
+    <label>Tỉ lệ khung hình</label>
+    <input name="camera_aspect_ratio" value="<%= config.camera_aspect_ratio || '' %>">
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Lưu cấu hình</button></div>
+  </form>
+</section>
