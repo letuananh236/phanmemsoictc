@@ -16,5 +16,13 @@ router.get('/camera/capture', ensureAuthenticated, ensureLicense, (req, res) => 
 router.get('/camera/:examId', ensureAuthenticated, ensureLicense, cameraController.showCaptureForm);
 router.post('/camera/:examId/capture', ensureAuthenticated, ensureLicense, upload.single('image'), cameraController.captureImage);
 router.post('/camera/:examId/confirm', ensureAuthenticated, ensureLicense, cameraController.confirmSelectedImages);
+router.post('/camera/image/:imageId/delete', ensureAuthenticated, ensureLicense, cameraController.deleteImage);
+router.post(
+  '/camera/:examId/image/:imageId/retake',
+  ensureAuthenticated,
+  ensureLicense,
+  upload.single('image'),
+  cameraController.retakeImage
+);
 
 module.exports = router;

@@ -50,7 +50,19 @@
       <h2>Ảnh đã chụp</h2>
       <span class="camera-note">Nhấp vào ảnh để chọn (tối đa 4 ảnh).</span>
     </div>
-    <div id="capturedGrid" class="camera-captured-grid"></div>
+    <div id="capturedGrid" class="camera-captured-grid">
+      <% (images || []).slice(0, 10).forEach(function(image) { %>
+        <div class="thumb-item" data-image-id="<%= image.id %>">
+          <div class="thumb-image">
+            <img src="<%= image.file_path %>" alt="">
+          </div>
+          <div class="thumb-actions">
+            <button type="button" class="btn-thumb-delete" data-image-id="<%= image.id %>">Xóa</button>
+            <button type="button" class="btn-thumb-retake" data-image-id="<%= image.id %>">Chụp lại</button>
+          </div>
+        </div>
+      <% }); %>
+    </div>
     <div class="camera-paging">
       <button type="button" id="btnPrevPage" class="btn btn-light">&laquo;</button>
       <button type="button" id="btnNextPage" class="btn btn-light">&raquo;</button>

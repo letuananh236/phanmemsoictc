@@ -9,11 +9,11 @@ function listByExam(examId) {
   });
 }
 
-function listForCapture(examId) {
+function listForCapture(examId, limit = 10) {
   return new Promise((resolve, reject) => {
     db.all(
-      'SELECT * FROM images WHERE exam_id = ? OR exam_id IS NULL ORDER BY created_at DESC',
-      [examId],
+      'SELECT * FROM images WHERE exam_id = ? OR exam_id IS NULL ORDER BY created_at DESC LIMIT ?',
+      [examId, limit],
       (err, rows) => {
         if (err) return reject(err);
         resolve(rows || []);
@@ -22,9 +22,9 @@ function listForCapture(examId) {
   });
 }
 
-function listUnassigned() {
+function listUnassigned(limit = 10) {
   return new Promise((resolve, reject) => {
-    db.all('SELECT * FROM images WHERE exam_id IS NULL ORDER BY created_at DESC', [], (err, rows) => {
+    db.all('SELECT * FROM images WHERE exam_id IS NULL ORDER BY created_at DESC LIMIT ?', [limit], (err, rows) => {
       if (err) return reject(err);
       resolve(rows || []);
     });
@@ -44,6 +44,33 @@ function create({ examId, filePath, displayOrder = null }) {
   });
 }
 
+function findById(id) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT * FROM images WHERE id = ?', [id], (err, row) => {
+      if (err) return reject(err);
+      resolve(row || null);
+    });
+  });
+}
+
+function remove(id) {
+  return new Promise((resolve, reject) => {
+    db.run('DELETE FROM images WHERE id = ?', [id], function runCb(err) {
+      if (err) return reject(err);
+      resolve(this.changes > 0);
+    });
+  });
+}
+
+function touch(id) {
+  return new Promise((resolve, reject) => {
+    db.run('UPDATE images SET created_at = CURRENT_TIMESTAMP WHERE id = ?', [id], (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
 function assignToExam(examId, imageIds) {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
@@ -60,4 +87,13 @@ function assignToExam(examId, imageIds) {
   });
 }
 
-module.exports = { listByExam, listForCapture, listUnassigned, create, assignToExam };
+module.exports = {
+  listByExam,
+  listForCapture,
+  listUnassigned,
+  create,
+  findById,
+  remove,
+  touch,
+  assignToExam
+};

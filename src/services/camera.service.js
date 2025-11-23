@@ -37,9 +37,9 @@ async function saveImageBuffer(examId, payload) {
 
 async function getImagesForExam(examId) {
   if (examId) {
-    return imageModel.listForCapture(examId);
+    return imageModel.listForCapture(examId, 10);
   }
-  return imageModel.listUnassigned();
+  return imageModel.listUnassigned(10);
 }
 
 async function assignImagesToExam(examId, imageIds) {
@@ -47,8 +47,42 @@ async function assignImagesToExam(examId, imageIds) {
   await imageModel.assignToExam(examId, imageIds);
 }
 
+async function deleteImage(imageId) {
+  const image = await imageModel.findById(imageId);
+  if (!image) return false;
+  if (image.exam_id) return false;
+
+  const absolute = path.join(__dirname, '..', '..', 'public', image.file_path.replace(/^\//, ''));
+  try {
+    if (fs.existsSync(absolute)) {
+      await fs.promises.unlink(absolute);
+    }
+  } catch (err) {
+    console.error('delete file error', err);
+  }
+  await imageModel.remove(imageId);
+  return true;
+}
+
+async function retakeImage(examId, imageId, payload) {
+  const buffer = bufferFromPayload(payload);
+  if (!buffer) throw new Error('No image payload provided');
+
+  const image = await imageModel.findById(imageId);
+  if (!image) throw new Error('NOT_FOUND');
+  if (image.exam_id) throw new Error('IMAGE_SELECTED');
+
+  const absolute = path.join(__dirname, '..', '..', 'public', image.file_path.replace(/^\//, ''));
+  ensureDir(path.dirname(absolute));
+  await fs.promises.writeFile(absolute, buffer);
+  await imageModel.touch(imageId);
+  return { ...image, file_path: image.file_path };
+}
+
 module.exports = {
   saveImageBuffer,
   getImagesForExam,
-  assignImagesToExam
+  assignImagesToExam,
+  deleteImage,
+  retakeImage
 };
