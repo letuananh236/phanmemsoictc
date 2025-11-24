@@ -83,15 +83,31 @@ export function createCaptureView(appState) {
     return track || null;
   }
 
-  function filterPresetsByCapabilities(capabilities) {
-    const presets = [
-      { label: '320 x 240 (QVGA)', width: 320, height: 240, frameRate: 30 },
-      { label: '640 x 480 (VGA)', width: 640, height: 480, frameRate: 30 },
-      { label: '960 x 720 (HD-ready 4:3)', width: 960, height: 720, frameRate: 30 },
-      { label: '1280 x 720 (HD)', width: 1280, height: 720, frameRate: 30 },
-      { label: '1920 x 1080 (Full HD)', width: 1920, height: 1080, frameRate: 30 },
-      { label: '2560 x 1440 (QHD)', width: 2560, height: 1440, frameRate: 30 }
+  function buildResolutionPresets() {
+    const baseResolutions = [
+      { label: '640 x 360 (360p 16:9)', width: 640, height: 360 },
+      { label: '1280 x 720 (HD 16:9)', width: 1280, height: 720 },
+      { label: '1920 x 1080 (Full HD 16:9)', width: 1920, height: 1080 },
+      { label: '2560 x 1440 (QHD 16:9)', width: 2560, height: 1440 },
+      { label: '320 x 240 (QVGA 4:3)', width: 320, height: 240 },
+      { label: '640 x 480 (VGA 4:3)', width: 640, height: 480 },
+      { label: '960 x 720 (HD-ready 4:3)', width: 960, height: 720 },
+      { label: '1440 x 1080 (Full HD 4:3)', width: 1440, height: 1080 },
+      { label: '1600 x 1200 (UXGA 4:3)', width: 1600, height: 1200 }
     ];
+
+    const frameRates = [30, 60];
+    return frameRates.flatMap((frameRate) =>
+      baseResolutions.map((resolution) => ({
+        ...resolution,
+        frameRate,
+        label: `${resolution.label} - ${frameRate} fps`
+      }))
+    );
+  }
+
+  function filterPresetsByCapabilities(capabilities) {
+    const presets = buildResolutionPresets();
 
     const widthRange = capabilities.width;
     const heightRange = capabilities.height;
@@ -194,12 +210,9 @@ export function createCaptureView(appState) {
             <label for="camera-preset">Chọn phân giải</label>
             <select id="camera-preset" name="preset">
               <option value="">Tùy chỉnh</option>
-              ${presets
-                .map(
-                  (preset) =>
-                    `<option value="${preset.label}">${preset.label} - ${preset.frameRate} fps</option>`
-                )
-                .join('')}
+                ${presets
+                  .map((preset) => `<option value="${preset.label}">${preset.label}</option>`)
+                  .join('')}
             </select>
           </div>
           <div class="form-row inline-fields">
@@ -237,8 +250,12 @@ export function createCaptureView(appState) {
     const form = modal.querySelector('#camera-settings-form');
     const presetSelect = form.querySelector('#camera-preset');
 
+    const roundedFrameRate = Math.round(currentFrameRate || 0);
     const presetMatchesCurrent = presets.find(
-      (preset) => preset.width === currentWidth && preset.height === currentHeight
+      (preset) =>
+        preset.width === currentWidth &&
+        preset.height === currentHeight &&
+        (!preset.frameRate || Math.round(preset.frameRate) === roundedFrameRate)
     );
     if (presetMatchesCurrent) {
       presetSelect.value = presetMatchesCurrent.label;
