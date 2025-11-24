@@ -4,9 +4,9 @@ import path from 'path';
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import os from 'os';
-import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { generateMachineKey } from './hardware-id.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -109,12 +109,6 @@ async function writeJson(filePath, data) {
   await fsPromises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function getMachineId() {
-  const hostname = os.hostname();
-  const hash = crypto.createHash('sha1').update(hostname).digest('hex');
-  return `${hash.slice(0, 4).toUpperCase()}-${hash.slice(4, 8).toUpperCase()}`;
-}
-
 async function ensureLicense() {
   let license;
   try {
@@ -127,7 +121,7 @@ async function ensureLicense() {
     const expire = new Date(now);
     expire.setDate(expire.getDate() + 30);
     license = {
-      machineId: getMachineId(),
+      machineId: generateMachineKey(),
       licenseType: 'trial',
       licenseKey: '',
       startDate: now.toISOString().slice(0, 10),
@@ -627,7 +621,7 @@ async function handleApi(req, res, pathname) {
       expire.setMonth(expire.getMonth() + 1);
     }
     const updated = {
-      machineId: getMachineId(),
+      machineId: generateMachineKey(),
       licenseType: payload.licenseType || 'trial',
       licenseKey: payload.licenseKey || '',
       startDate: now.toISOString().slice(0, 10),

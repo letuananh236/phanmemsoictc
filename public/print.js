@@ -24,7 +24,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
         <style>
           @page {
             size: A4 portrait;
-            margin: 1.5cm;
+            margin: 1cm;
           }
           :root {
             font-family: 'Times New Roman', 'Times', serif;
@@ -37,7 +37,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             padding: 16px;
           }
           .print-wrapper {
-            max-width: 900px;
+            width: 100%;
             margin: 0 auto;
           }
           .print-actions {
@@ -64,13 +64,14 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             background: #6b7280;
           }
           .print-sheet {
-            width: 210mm;
+            width: 100%;
+            max-width: 210mm;
             min-height: 297mm;
             margin: 0 auto;
             background: #fff;
-            padding: 1.5cm;
+            padding: 1cm 1.5cm;
             box-shadow: 0 18px 45px rgb(0 0 0 / 0.18);
-            font-size: 12px;
+            font-size: 16px;
           }
           header {
             display: grid;
@@ -100,26 +101,26 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             font-weight: 700;
           }
           .header-text .hospital-name {
-            font-size: 16px;
+            font-size: 21px;
           }
           .header-text .department-name {
-            font-size: 14px;
+            font-size: 18px;
           }
           .title {
             text-align: center;
             color: #b91c1c;
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 800;
             text-transform: uppercase;
-            margin: 4px 0 18px;
+            margin: 6px 0 20px;
           }
           .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
           }
           .info-table td {
-            padding: 5px 8px 5px 0;
+            padding: 6px 10px 6px 0;
             vertical-align: top;
           }
           .info-table tr td:first-child,
@@ -133,7 +134,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .result-block,
           .treatment-block,
           .advice-block {
-            margin-bottom: 14px;
+            margin-bottom: 16px;
           }
           .text-content {
             white-space: pre-wrap;
@@ -142,12 +143,14 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-images {
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 12px;
-            margin: 14px 0 18px;
+            margin: 16px 0 20px;
           }
           .print-image {
-            width: 190px;
-            height: 130px;
+            flex: 0 0 calc((100% - 36px) / 4);
+            max-width: calc((100% - 36px) / 4);
+            aspect-ratio: 4 / 3;
             border: 1px solid #d1d5db;
             display: flex;
             align-items: center;
@@ -163,7 +166,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             border-style: dashed;
             color: #94a3b8;
             font-style: italic;
-            font-size: 12px;
+            font-size: 13px;
           }
           .section-heading {
             font-weight: 700;
@@ -171,20 +174,20 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin-bottom: 4px;
           }
           .signature-block {
-            margin-top: 26px;
+            margin-top: 28px;
             text-align: right;
           }
           .signature-block .doctor-title {
             font-weight: 700;
             text-align: center;
-            margin-top: 8px;
+            margin-top: 10px;
           }
           .footer-note {
             border-top: 1px solid #111827;
-            margin-top: 26px;
-            padding-top: 8px;
+            margin-top: 28px;
+            padding-top: 10px;
             font-style: italic;
-            font-size: 11px;
+            font-size: 14px;
           }
           @media print {
             body {
@@ -250,7 +253,7 @@ function normalizeExamCode(code = '') {
 }
 
 function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
-  const examNumber = normalizeExamCode(exam?.examNumber || exam?.id || '');
+  const patientCode = normalizeExamCode(patient?.id || exam?.examNumber || exam?.id || '');
 
   const imageRow = examImages
     .map((image, index) => {
@@ -280,8 +283,7 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
 
       <table class="info-table">
         <tr>
-          <td><span class="label">Mã số BN:</span> ${patient?.id || ''}</td>
-          <td><span class="label">Số bệnh án:</span> ${examNumber}</td>
+          <td colspan="2"><span class="label">Mã số BN:</span> ${patientCode}</td>
         </tr>
         <tr>
           <td><span class="label">Họ và tên:</span> ${patient?.name || ''}</td>

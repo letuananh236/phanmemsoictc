@@ -60,6 +60,25 @@ Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `a
 4. **Tìm phiếu**: dùng màn hình phụ để lọc phiếu khám.
 5. **Cấu hình/Doctor/Mẫu**: quản lý dữ liệu nền trực tiếp qua giao diện, dữ liệu được ghi vào JSON tương ứng.
 
+## Tạo key phần mềm theo phần cứng
+- Chạy `node scripts/generate-license-key.js` để đọc serial CPU, serial ổ cứng chính (nếu OS cho phép) và dung lượng RAM, sau đó băm SHA-256 để tạo `machineId` dạng `XXXX-XXXX-XXXX` cho giấy phép.
+- Mã được dùng ngay trong API `/api/license/activate` và hiển thị ở `data/license.json`.
+- Nếu không lấy được serial từ hệ điều hành, key sẽ rơi về hostname để đảm bảo luôn sinh ra giá trị ổn định.
+
+Mẫu code (nằm trong `scripts/generate-license-key.js`):
+
+```js
+import { collectHardwareInfo, generateMachineKey } from '../src/hardware-id.js';
+
+const info = collectHardwareInfo();
+const key = generateMachineKey();
+
+console.log('CPU Serial:', info.cpuSerial);
+console.log('Ổ cứng Serial:', info.diskSerial);
+console.log('RAM (MB):', info.ramMb);
+console.log('Machine key:', key);
+```
+
 ## API chính (server.js)
 - `GET/PUT /api/settings`
 - `GET/POST/PUT/DELETE /api/patients`
