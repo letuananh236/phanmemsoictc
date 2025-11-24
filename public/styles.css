@@ -122,6 +122,12 @@ body {
   margin: 0 auto;
 }
 
+.capture-view.wide-card,
+.exam-search-view.wide-card {
+  width: min(96vw, 1500px);
+  margin: 0 auto;
+}
+
 .exam-view {
   width: 100%;
 }
