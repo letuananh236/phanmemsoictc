@@ -103,14 +103,14 @@ export function createExamSearchView(appState) {
         <h3>Tìm phiếu khám</h3>
         <div class="form-row">
           <label>Từ khóa</label>
-          <input id="exam-search" placeholder="Tên BN, kết quả hoặc mã HA" />
+          <input id="exam-search" placeholder="Tên BN, kết quả hoặc mã phiếu" />
         </div>
         <div class="grid-2">
           <div>
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Mã HA</th>
+                  <th>Mã phiếu</th>
                   <th>Bệnh nhân</th>
                   <th>Ngày</th>
                   <th>Kết quả</th>

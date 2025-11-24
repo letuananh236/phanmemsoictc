@@ -389,7 +389,7 @@ export function createCaptureView(appState) {
     ctx.drawImage(videoEl, 0, 0);
     const dataUrl = canvas.toDataURL('image/png');
     const image = {
-      name: `${captureContext.examId || 'HA'}_${capturedImages.length + 1}.png`,
+      name: `${captureContext.examId || 'PK'}_${capturedImages.length + 1}.png`,
       dataUrl
     };
     capturedImages.unshift(image);
@@ -397,7 +397,7 @@ export function createCaptureView(appState) {
   }
 
   async function acceptImages() {
-    const examId = captureContext.examId || 'HA000000';
+    const examId = captureContext.examId || '000000';
     const uploads = [];
     for (let i = 0; i < selectedImages.length; i += 1) {
       const image = selectedImages[i];

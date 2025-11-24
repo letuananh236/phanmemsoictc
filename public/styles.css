@@ -429,23 +429,29 @@ textarea {
 }
 
 .login-modal .modal-card {
-  width: min(600px, 100%);
-  padding: 30px;
-  font-size: 1.25em;
+  width: min(780px, 100%);
+  padding: 39px;
+  font-size: 1.6em;
 }
 
 .login-modal label,
 .login-modal input,
 .login-modal button {
-  font-size: 1em;
+  font-size: 1.2em;
 }
 
 .login-modal input {
-  padding: 12px;
+  padding: 14px;
 }
 
 .login-modal .toolbar button {
-  padding: 12px 18px;
+  padding: 14px 22px;
+}
+
+.login-modal .version-text {
+  margin: 6px 0 12px;
+  color: #0f5ba7;
+  font-weight: 600;
 }
 
 .toast {

@@ -121,8 +121,8 @@ export function createExamFormView(appState) {
     const settings = appState.settings;
     const nextPatientNumber = settings?.nextPatientNumber || 1;
     const nextExamNumber = settings?.nextExamNumber || 1;
-    const patientPrefix = settings?.patientCodePrefix || 'BN';
-    const examPrefix = settings?.examCodePrefix || 'HA';
+    const patientPrefix = settings?.patientCodePrefix || '';
+    const examPrefix = settings?.examCodePrefix || patientPrefix || '';
 
     form.patientId.value = formatCode(patientPrefix, nextPatientNumber);
     form.examId.value = formatCode(examPrefix, nextExamNumber);
@@ -194,7 +194,9 @@ export function createExamFormView(appState) {
     if (!form) return;
 
     const fallbackSettings = appState.settings || {};
-    form.patientId.value = patient?.id || formatCode(fallbackSettings.patientCodePrefix || 'BN', fallbackSettings.nextPatientNumber || 1);
+    const patientPrefix = fallbackSettings.patientCodePrefix || '';
+    const examPrefix = fallbackSettings.examCodePrefix || patientPrefix || '';
+    form.patientId.value = patient?.id || formatCode(patientPrefix, fallbackSettings.nextPatientNumber || 1);
     form.patientName.value = patient?.name || '';
     form.patientAge.value = patient?.age || '';
     form.patientGender.value = patient?.gender || 'Nữ';
@@ -202,7 +204,7 @@ export function createExamFormView(appState) {
     form.patientPhone.value = patient?.phone || '';
     form.patientReason.value = patient?.reason || '';
 
-    form.examId.value = exam?.id || formatCode(fallbackSettings.examCodePrefix || 'HA', fallbackSettings.nextExamNumber || 1);
+    form.examId.value = exam?.id || formatCode(examPrefix, fallbackSettings.nextExamNumber || 1);
     form.examNumber.value = exam?.examNumber || form.examId.value;
     form.examDate.value = exam?.date || '';
     form.description.value = exam?.description || fallbackSettings.defaultDescription || '';
@@ -239,7 +241,7 @@ export function createExamFormView(appState) {
               <h3>Thông tin bệnh nhân</h3>
               <div class="form-row inline-fields">
                 <div class="field short-field">
-                  <label>Mã BN</label>
+                  <label>Mã</label>
                   <input class="input-short" name="patientId" readonly />
                 </div>
                 <div class="field">

@@ -10,6 +10,8 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
+const packageJson = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'));
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
@@ -37,8 +39,8 @@ const defaultData = {
     website: '',
     email: '',
     logoFileName: 'logo-default.svg',
-    patientCodePrefix: 'BN',
-    examCodePrefix: 'HA',
+    patientCodePrefix: 'PK',
+    examCodePrefix: 'PK',
     nextPatientNumber: 1,
     nextExamNumber: 1,
     defaultImageCount: 4,
@@ -172,9 +174,31 @@ function normalizePath(requestPath) {
 }
 
 function formatCode(prefix, number) {
-  const safePrefix = prefix || 'BN';
+  const safePrefix = prefix || '';
   const seq = Number.parseInt(number, 10) || 1;
   return `${safePrefix}${String(seq).padStart(5, '0')}`;
+}
+
+async function serveDataFile(res, requestPath) {
+  try {
+    const safePath = normalizePath(requestPath);
+    const filePath = path.join(rootDir, safePath);
+    if (!filePath.startsWith(dataDir)) {
+      sendJson(res, 403, { error: 'forbidden' });
+      return;
+    }
+    const data = await fsPromises.readFile(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const type = MIME_TYPES[ext] || 'application/octet-stream';
+    sendBuffer(res, 200, data, { 'Content-Type': type });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      sendJson(res, 404, { error: 'not_found' });
+    } else {
+      console.error(error);
+      sendJson(res, 500, { error: 'server_error' });
+    }
+  }
 }
 
 async function serveStatic(res, requestPath) {
@@ -544,6 +568,11 @@ async function handleApi(req, res, pathname) {
     }
   }
 
+  if (pathname === '/api/meta' && req.method === 'GET') {
+    sendJson(res, 200, { version: packageJson.version || '0.0.0' });
+    return;
+  }
+
   if (pathname === '/api/license/activate' && req.method === 'POST') {
     const payload = await parseBody(req);
     const now = new Date();
@@ -640,6 +669,10 @@ export function createServer() {
     }
     if (url.pathname.startsWith('/api/')) {
       await handleApi(req, res, url.pathname);
+      return;
+    }
+    if (url.pathname.startsWith('/data/images/')) {
+      await serveDataFile(res, url.pathname);
       return;
     }
     serveStatic(res, url.pathname);
