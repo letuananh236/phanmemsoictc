@@ -40,6 +40,8 @@ export function createSettingsView(appState) {
             <div class="form-row">
               <label>Số ảnh mặc định</label>
               <select name="defaultImageCount">
+                <option value="2">2</option>
+                <option value="3">3</option>
                 <option value="4">4</option>
               </select>
             </div>
@@ -60,12 +62,47 @@ export function createSettingsView(appState) {
             <button type="submit">Lưu cấu hình</button>
           </div>
         </form>
+        <div class="card" style="margin-top: 16px;">
+          <h4>Thêm tài khoản đăng nhập</h4>
+          <form id="user-form" class="grid-3">
+            <div class="form-row">
+              <label>Tên đăng nhập</label>
+              <input name="username" required />
+            </div>
+            <div class="form-row">
+              <label>Mật khẩu</label>
+              <input type="password" name="password" required />
+            </div>
+            <div class="form-row">
+              <label>Nhập lại mật khẩu</label>
+              <input type="password" name="confirm" required />
+            </div>
+            <div class="form-row" style="grid-column: 1 / -1;">
+              <button type="submit">Thêm tài khoản</button>
+            </div>
+          </form>
+          <div>
+            <h5>Danh sách tài khoản</h5>
+            <ul id="user-list"></ul>
+          </div>
+        </div>
       `;
       target.appendChild(wrapper);
 
       const form = wrapper.querySelector('#settings-form');
       const logoInput = form.querySelector('#logo-file');
       const logoCurrent = form.querySelector('#logo-current');
+      const userList = wrapper.querySelector('#user-list');
+      const userForm = wrapper.querySelector('#user-form');
+
+      storage.listUsers().then((users) => {
+        userList.innerHTML = '';
+        users.forEach((user) => {
+          const li = document.createElement('li');
+          li.textContent = user.username;
+          userList.appendChild(li);
+        });
+      });
       storage.getSettings().then((settings) => {
         Object.entries(settings).forEach(([key, value]) => {
           if (form[key]) {
@@ -91,6 +128,37 @@ export function createSettingsView(appState) {
         const saved = await storage.saveSettings(payload);
         appState.settings = saved;
         showToast('Đã lưu cấu hình');
+      });
+
+      userForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const data = new FormData(userForm);
+        const username = (data.get('username') || '').trim();
+        const password = (data.get('password') || '').trim();
+        const confirm = (data.get('confirm') || '').trim();
+        if (!username || !password) {
+          showToast('Nhập đầy đủ tài khoản và mật khẩu');
+          return;
+        }
+        if (password !== confirm) {
+          showToast('Mật khẩu nhập lại chưa khớp');
+          return;
+        }
+        try {
+          const created = await storage.createUser({ username, password });
+          const li = document.createElement('li');
+          li.textContent = created.username;
+          userList.appendChild(li);
+          userForm.reset();
+          showToast('Đã thêm tài khoản mới');
+        } catch (error) {
+          const message = `${error?.message || ''}`;
+          if (message.includes('user_exists')) {
+            showToast('Tài khoản đã tồn tại');
+            return;
+          }
+          showToast('Không thêm được tài khoản');
+        }
       });
 
       logoInput.addEventListener('change', async () => {

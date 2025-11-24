@@ -31,6 +31,12 @@ export function createExamFormView(appState) {
   let currentPatient = null;
   let pendingExamLoad = null;
 
+  function persistDraft(form) {
+    if (!form) return;
+    const values = getFormValues(form);
+    appState.examDraft = values;
+  }
+
   const handleExternalExamLoad = (event) => {
     const detail = event.detail;
     if (container && container.isConnected) {
@@ -45,6 +51,8 @@ export function createExamFormView(appState) {
     appState.selectedImages = event.detail;
     if (container) {
       renderImageSlots(container.querySelector('.image-grid'), appState.selectedImages);
+      const form = container.querySelector('#exam-form');
+      persistDraft(form);
     }
   });
 
@@ -167,6 +175,7 @@ export function createExamFormView(appState) {
 
     currentExam = savedExam;
     currentPatient = savedPatient;
+    appState.examDraft = { patient: savedPatient, exam: savedExam };
 
     form.patientId.value = savedPatient.id;
     form.examId.value = savedExam.id;
@@ -188,9 +197,11 @@ export function createExamFormView(appState) {
     renderImageSlots(container.querySelector('.image-grid'), []);
     currentExam = null;
     currentPatient = null;
+    persistDraft(form);
   }
 
-  function loadExamIntoForm(form, exam, patient) {
+  function loadExamIntoForm(form, exam, patient, options = {}) {
+    const { keepUnsaved = false } = options;
     if (!form) return;
 
     const fallbackSettings = appState.settings || {};
@@ -217,9 +228,10 @@ export function createExamFormView(appState) {
     appState.selectedImages = imageList;
     renderImageSlots(container.querySelector('.image-grid'), imageList);
 
-    currentExam = exam || null;
-    currentPatient = patient || null;
+    currentExam = keepUnsaved ? currentExam : exam || null;
+    currentPatient = keepUnsaved ? currentPatient : patient || null;
     publishContext(form);
+    persistDraft(form);
   }
 
   return {
@@ -327,12 +339,24 @@ export function createExamFormView(appState) {
       if (pendingExamLoad) {
         loadExamIntoForm(form, pendingExamLoad.exam, pendingExamLoad.patient);
         pendingExamLoad = null;
+      } else if (appState.examDraft) {
+        loadExamIntoForm(form, appState.examDraft.exam, appState.examDraft.patient, { keepUnsaved: true });
+        renderImageSlots(container.querySelector('.image-grid'), appState.selectedImages);
       } else {
         fillDefaultValues(form);
         renderImageSlots(container.querySelector('.image-grid'), appState.selectedImages);
+        persistDraft(form);
       }
 
-      form.addEventListener('input', () => publishContext(form));
+      form.addEventListener('input', () => {
+        publishContext(form);
+        persistDraft(form);
+      });
+
+      form.addEventListener('change', () => {
+        publishContext(form);
+        persistDraft(form);
+      });
 
       container.querySelector('[data-action="new"]').addEventListener('click', () => handleNew(form));
       container.querySelector('[data-action="save"]').addEventListener('click', () => handleSave(form));

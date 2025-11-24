@@ -26,6 +26,7 @@ const jsonFiles = {
   exams: path.join(dataDir, 'exams.json'),
   doctors: path.join(dataDir, 'doctors.json'),
   templates: path.join(dataDir, 'result-templates.json'),
+  users: path.join(dataDir, 'users.json'),
   license: path.join(dataDir, 'license.json')
 };
 
@@ -56,7 +57,8 @@ const defaultData = {
   templates: [
     { id: 'T001', name: 'Bình thường', content: 'Mô tả kết quả bình thường...' }
   ],
-  license: {}
+  license: {},
+  users: [{ username: 'admin', password: '123' }]
 };
 
 const MIME_TYPES = {
@@ -330,8 +332,24 @@ async function copyDirectory(source, destination) {
 
 async function handleApi(req, res, pathname) {
   const license = await ensureLicense();
-  if (!pathname.startsWith('/api/license') && !isLicenseValid(license)) {
+  const licenseExemptPaths = ['/api/login', '/api/meta'];
+  const isLicenseExempt = licenseExemptPaths.includes(pathname);
+  if (!pathname.startsWith('/api/license') && !isLicenseExempt && !isLicenseValid(license)) {
     sendJson(res, 403, { error: 'license_expired', license });
+    return;
+  }
+
+  if (pathname === '/api/login' && req.method === 'POST') {
+    const payload = await parseBody(req);
+    const users = (await readJson(jsonFiles.users).catch(() => null)) || defaultData.users;
+    const matched = (users || []).find(
+      (user) => user.username === payload.username && user.password === payload.password
+    );
+    if (matched) {
+      sendJson(res, 200, { success: true, username: matched.username });
+    } else {
+      sendJson(res, 401, { error: 'invalid_credentials' });
+    }
     return;
   }
 
@@ -348,6 +366,30 @@ async function handleApi(req, res, pathname) {
       const merged = { ...defaultData.settings, ...(current || {}), ...(payload || {}) };
       await writeJson(jsonFiles.settings, merged);
       sendJson(res, 200, merged);
+      return;
+    }
+  }
+
+  if (pathname === '/api/users') {
+    const users = (await readJson(jsonFiles.users).catch(() => null)) || defaultData.users;
+    if (req.method === 'GET') {
+      const sanitized = (users || []).map((user) => ({ username: user.username }));
+      sendJson(res, 200, sanitized);
+      return;
+    }
+    if (req.method === 'POST') {
+      const payload = await parseBody(req);
+      if (!payload?.username || !payload?.password) {
+        sendJson(res, 400, { error: 'invalid_user' });
+        return;
+      }
+      if ((users || []).some((u) => u.username === payload.username)) {
+        sendJson(res, 409, { error: 'user_exists' });
+        return;
+      }
+      const updated = [...(users || []), { username: payload.username, password: payload.password }];
+      await writeJson(jsonFiles.users, updated);
+      sendJson(res, 201, { username: payload.username });
       return;
     }
   }

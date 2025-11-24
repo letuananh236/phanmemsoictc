@@ -141,6 +141,12 @@ body {
   align-items: start;
 }
 
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 @media (max-width: 1180px) {
   .grid-2,
   #exam-form {

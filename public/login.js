@@ -1,3 +1,5 @@
+import { storage } from './storage.js';
+
 const DEFAULT_USER = { username: 'admin', password: '123' };
 
 export function initLogin({ onSuccess }) {
@@ -50,10 +52,31 @@ export function initLogin({ onSuccess }) {
     window.close();
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
+    try {
+      const result = await storage.login({ username, password });
+      if (result?.success) {
+        if (rememberCheckbox.checked) {
+          localStorage.setItem('pm_credentials', JSON.stringify({ username, password }));
+        } else {
+          localStorage.removeItem('pm_credentials');
+        }
+        modal.classList.add('hidden');
+        onSuccess({ username });
+        return;
+      }
+    } catch (error) {
+      const message = `${error?.message || ''}`;
+      if (message.includes('invalid_credentials')) {
+        alert('Sai tên truy cập hoặc mật khẩu');
+        return;
+      }
+      console.error('Login failed, trying fallback', error);
+    }
+
     if (username === DEFAULT_USER.username && password === DEFAULT_USER.password) {
       if (rememberCheckbox.checked) {
         localStorage.setItem('pm_credentials', JSON.stringify({ username, password }));

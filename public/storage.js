@@ -88,6 +88,17 @@ export const storage = {
     }
     return response.json();
   },
+  login: (payload) => request('/api/login', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
+  }),
+  listUsers: () => request('/api/users'),
+  createUser: (payload) => request('/api/users', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
+  }),
   getLicense: () => request('/api/license'),
   activateLicense: (payload) => request('/api/license/activate', {
     method: 'POST',
