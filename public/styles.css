@@ -267,7 +267,7 @@ textarea {
 
 .capture-layout {
   display: grid;
-  grid-template-columns: 280px 2.1fr 220px;
+  grid-template-columns: 280px 2.1fr 412px;
   gap: 16px;
   align-items: start;
 }
@@ -278,6 +278,7 @@ textarea {
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 3px 12px rgb(15 91 167 / 0.1);
+  min-width: 275px;
 }
 
 .capture-controls {
@@ -295,52 +296,92 @@ textarea {
 .capture-gallery {
   max-height: 600px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .capture-preview {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 580px;
-  background: linear-gradient(135deg, #0b172a, #0d2142);
+  align-items: flex-start;
+  justify-content: flex-start;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  min-height: 0;
+  background: #fff;
   border-radius: 14px;
+  padding: 8px;
 }
 
 .capture-preview video {
-  width: 100%;
-  height: 100%;
-  max-height: 720px;
+  width: 80%;
+  height: auto;
+  max-height: 80%;
   object-fit: contain;
-  background: #000;
+  aspect-ratio: 4 / 3;
+  background: transparent;
   border-radius: 12px;
-  box-shadow: 0 8px 26px rgb(0 0 0 / 0.25);
+  box-shadow: none;
+}
+
+.capture-gallery #capture-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
 }
 
 .gallery-item {
   border: 1px solid #dbe0ea;
   border-radius: 8px;
-  margin-bottom: 10px;
-  padding: 6px;
+  padding: 8px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.gallery-item img {
-  width: 56px;
-  height: 42px;
+.gallery-item.selected {
+  border-color: #0f5ba7;
+  box-shadow: 0 3px 12px rgb(15 91 167 / 0.2);
+}
+
+.gallery-thumb {
+  width: 150%;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f4f6fb;
+  align-self: center;
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  display: block;
 }
 
 .capture-view .selected-grid.image-grid {
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .capture-view .selected-grid .image-slot {
-  min-height: 96px;
+  min-height: 120px;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-width: 1px;
+}
+
+.capture-view .selected-grid .image-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .modal {
