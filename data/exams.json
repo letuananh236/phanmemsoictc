@@ -1,6 +1,6 @@
 [
   {
-    "id": "HA000001",
+    "id": "BN000001",
     "examNumber": "000001",
     "date": "2024-01-01",
     "patientId": "BN000001",
@@ -14,7 +14,7 @@
     "updatedAt": "2024-01-01T08:30:00.000Z"
   },
   {
-    "id": "HA764722",
+    "id": "BN764722",
     "examNumber": "852528",
     "date": "2025-11-17",
     "patientId": "BN519706",
@@ -24,10 +24,10 @@
     "doctorAdvice": "ddddddddddđ",
     "doctorName": "BS Trần Văn B",
     "imagePaths": [
-      "data/images/2025/11/HA964673_01.png",
-      "data/images/2025/11/HA964673_02.png",
-      "data/images/2025/11/HA964673_03.png",
-      "data/images/2025/11/HA964673_04.png"
+      "data/images/2025/11/BN964673_01.png",
+      "data/images/2025/11/BN964673_02.png",
+      "data/images/2025/11/BN964673_03.png",
+      "data/images/2025/11/BN964673_04.png"
     ],
     "createdAt": "2025-11-17T07:51:18.215Z",
     "updatedAt": "2025-11-17T07:51:18.215Z"

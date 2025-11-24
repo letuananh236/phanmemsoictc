@@ -8,7 +8,7 @@
   "email": "",
   "logoFileName": "logo-default.svg",
   "patientCodePrefix": "BN",
-  "examCodePrefix": "HA",
+  "examCodePrefix": "BN",
   "defaultImageCount": 4,
   "defaultDescription": "Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n",
   "defaultResult": "",

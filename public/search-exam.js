@@ -19,6 +19,10 @@ function normalizeImages(imagePaths = [], targetCount = 4) {
   return list;
 }
 
+function normalizeExamCode(code = '') {
+  return code.replace(/^HA/i, 'BN');
+}
+
 export function createExamSearchView(appState) {
   let exams = [];
   let patients = [];
@@ -30,8 +34,10 @@ export function createExamSearchView(appState) {
         if (!keyword) return true;
         const normalized = keyword.toLowerCase();
         const patient = patients.find((p) => p.id === exam.patientId);
+        const examCode = normalizeExamCode(exam.id || '');
         return (
           exam.id.toLowerCase().includes(normalized) ||
+          examCode.toLowerCase().includes(normalized) ||
           (exam.result || '').toLowerCase().includes(normalized) ||
           (patient?.name || '').toLowerCase().includes(normalized)
         );
@@ -40,7 +46,7 @@ export function createExamSearchView(appState) {
         const patient = patients.find((p) => p.id === exam.patientId);
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${exam.id}</td>
+          <td>${normalizeExamCode(exam.id)}</td>
           <td>${patient?.name || ''}</td>
           <td>${exam.date}</td>
           <td>${exam.result || ''}</td>

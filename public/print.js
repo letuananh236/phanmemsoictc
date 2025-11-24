@@ -245,7 +245,13 @@ function normalizeImages(images = [], targetCount = 4) {
   return list;
 }
 
+function normalizeExamCode(code = '') {
+  return code.replace(/^HA/i, 'BN');
+}
+
 function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
+  const examNumber = normalizeExamCode(exam?.examNumber || exam?.id || '');
+
   const imageRow = examImages
     .map((image, index) => {
       if (!image) {
@@ -275,7 +281,7 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
       <table class="info-table">
         <tr>
           <td><span class="label">Mã số BN:</span> ${patient?.id || ''}</td>
-          <td><span class="label">Số bệnh án:</span> ${exam?.examNumber || ''}</td>
+          <td><span class="label">Số bệnh án:</span> ${examNumber}</td>
         </tr>
         <tr>
           <td><span class="label">Họ và tên:</span> ${patient?.name || ''}</td>
