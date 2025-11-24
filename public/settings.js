@@ -4,7 +4,7 @@ export function createSettingsView(appState) {
   return {
     render(target) {
       const wrapper = document.createElement('section');
-      wrapper.className = 'card settings-view';
+      wrapper.className = 'card settings-view wide-card';
       wrapper.innerHTML = `
         <h3>Cấu hình hệ thống</h3>
         <form id="settings-form" class="grid-2">
@@ -29,21 +29,17 @@ export function createSettingsView(appState) {
               <label>Website</label>
               <input name="website" />
             </div>
+            <div class="form-row">
+              <label>Logo phiếu khám</label>
+              <input type="hidden" name="logoFileName" />
+              <input type="file" id="logo-file" accept="image/*" />
+              <div id="logo-current" style="margin-top: 6px; color: #475569;"></div>
+            </div>
           </div>
           <div>
             <div class="form-row">
-              <label>Prefix mã BN</label>
-              <input name="patientCodePrefix" />
-            </div>
-            <div class="form-row">
-              <label>Prefix mã HA</label>
-              <input name="examCodePrefix" />
-            </div>
-            <div class="form-row">
               <label>Số ảnh mặc định</label>
               <select name="defaultImageCount">
-                <option value="2">2</option>
-                <option value="3">3</option>
                 <option value="4">4</option>
               </select>
             </div>
@@ -68,6 +64,8 @@ export function createSettingsView(appState) {
       target.appendChild(wrapper);
 
       const form = wrapper.querySelector('#settings-form');
+      const logoInput = form.querySelector('#logo-file');
+      const logoCurrent = form.querySelector('#logo-current');
       storage.getSettings().then((settings) => {
         Object.entries(settings).forEach(([key, value]) => {
           if (form[key]) {
@@ -78,17 +76,40 @@ export function createSettingsView(appState) {
             }
           }
         });
+        if (settings.logoFileName) {
+          logoCurrent.textContent = `Logo hiện tại: ${settings.logoFileName}`;
+        }
+        appState.settings = settings;
       });
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
-        const payload = Object.fromEntries(formData.entries());
+        const payload = { ...appState.settings, ...Object.fromEntries(formData.entries()) };
         payload.allowDeleteData = form.allowDeleteData.checked;
         payload.defaultImageCount = Number.parseInt(payload.defaultImageCount, 10);
         const saved = await storage.saveSettings(payload);
         appState.settings = saved;
         showToast('Đã lưu cấu hình');
+      });
+
+      logoInput.addEventListener('change', async () => {
+        const file = logoInput.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const uploaded = await storage.uploadLogo({ dataUrl: reader.result, fileName: file.name, setDefault: true });
+            form.logoFileName.value = uploaded.fileName;
+            logoCurrent.textContent = `Logo hiện tại: ${uploaded.fileName}`;
+            appState.settings = { ...appState.settings, logoFileName: uploaded.fileName };
+            showToast('Đã cập nhật logo phiếu khám');
+          } catch (error) {
+            console.error('Logo upload failed', error);
+            showToast('Không tải được logo. Vui lòng thử lại');
+          }
+        };
+        reader.readAsDataURL(file);
       });
     }
   };

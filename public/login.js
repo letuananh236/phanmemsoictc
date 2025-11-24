@@ -2,6 +2,7 @@ const DEFAULT_USER = { username: 'admin', password: '123' };
 
 export function initLogin({ onSuccess }) {
   const modal = document.getElementById('login-modal');
+  modal.classList.add('login-modal');
   modal.classList.remove('hidden');
   modal.innerHTML = `
     <div class="modal-card">

@@ -1,6 +1,25 @@
 import { storage } from './storage.js';
+import { openPrintPreview } from './print.js';
 
-export function createExamSearchView() {
+function normalizeImages(imagePaths = [], targetCount = 4) {
+  const list = (imagePaths || [])
+    .map((path) => {
+      if (!path) return null;
+      if (typeof path === 'string') {
+        if (path.startsWith('data:')) return { dataUrl: path };
+        return { path };
+      }
+      return path;
+    })
+    .slice(0, targetCount);
+
+  while (list.length < targetCount) {
+    list.push(null);
+  }
+  return list;
+}
+
+export function createExamSearchView(appState) {
   let exams = [];
   let patients = [];
 
@@ -13,7 +32,7 @@ export function createExamSearchView() {
         const patient = patients.find((p) => p.id === exam.patientId);
         return (
           exam.id.toLowerCase().includes(normalized) ||
-          exam.result.toLowerCase().includes(normalized) ||
+          (exam.result || '').toLowerCase().includes(normalized) ||
           (patient?.name || '').toLowerCase().includes(normalized)
         );
       })
@@ -32,8 +51,13 @@ export function createExamSearchView() {
   }
 
   function renderDetail(panel, exam, patient) {
+    const images = normalizeImages(exam?.imagePaths, appState.settings?.defaultImageCount || 4);
     panel.innerHTML = `
       <h4>Chi tiết phiếu</h4>
+      <div class="toolbar detail-actions">
+        <button type="button" data-action="print">In lại phiếu</button>
+        <button type="button" class="secondary" data-action="edit">Sửa phiếu</button>
+      </div>
       <p><strong>Bệnh nhân:</strong> ${patient?.name || ''}</p>
       <p><strong>Kết quả:</strong> ${exam.result || ''}</p>
       <p><strong>Mô tả:</strong></p>
@@ -41,18 +65,40 @@ export function createExamSearchView() {
       <div class="image-grid"></div>
     `;
     const grid = panel.querySelector('.image-grid');
-    exam.imagePaths?.forEach((path) => {
+    images.forEach((image, index) => {
       const slot = document.createElement('div');
       slot.className = 'image-slot';
-      slot.innerHTML = `<img src="/${path}" alt="Ảnh phiếu" />`;
+      if (image?.dataUrl) {
+        slot.innerHTML = `<img src="${image.dataUrl}" alt="Ảnh phiếu ${index + 1}" />`;
+      } else if (image?.path) {
+        const src = image.path.startsWith('data:') ? image.path : `/${image.path}`;
+        slot.innerHTML = `<img src="${src}" alt="Ảnh phiếu ${index + 1}" />`;
+      } else {
+        slot.textContent = `Ảnh ${index + 1}`;
+      }
       grid.appendChild(slot);
+    });
+
+    const printButton = panel.querySelector('[data-action="print"]');
+    printButton.addEventListener('click', () => {
+      openPrintPreview({ patient, exam, settings: appState.settings || {}, images });
+    });
+
+    const editButton = panel.querySelector('[data-action="edit"]');
+    editButton.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'exam' } }));
+      document.dispatchEvent(
+        new CustomEvent('exam:load', {
+          detail: { exam, patient }
+        })
+      );
     });
   }
 
   return {
     render(target) {
       const wrapper = document.createElement('section');
-      wrapper.className = 'card exam-search-view';
+      wrapper.className = 'card exam-search-view wide-card';
       wrapper.innerHTML = `
         <h3>Tìm phiếu khám</h3>
         <div class="form-row">

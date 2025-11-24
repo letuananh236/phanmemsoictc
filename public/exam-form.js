@@ -1,9 +1,26 @@
 import { storage, showToast } from './storage.js';
 import { openPrintPreview } from './print.js';
 
-function generateCode(prefix) {
-  const random = Math.floor(Math.random() * 999999);
-  return `${prefix}${String(random).padStart(6, '0')}`;
+function formatCode(prefix, number) {
+  return `${prefix}${String(number).padStart(5, '0')}`;
+}
+
+function normalizeImages(images = [], count = 4) {
+  const mapped = (images || [])
+    .map((image) => {
+      if (!image) return null;
+      if (typeof image === 'string') {
+        if (image.startsWith('data:')) return { dataUrl: image };
+        return { path: image };
+      }
+      return image;
+    })
+    .slice(0, count);
+
+  while (mapped.length < count) {
+    mapped.push(null);
+  }
+  return mapped;
 }
 
 export function createExamFormView(appState) {
@@ -11,6 +28,18 @@ export function createExamFormView(appState) {
   let doctors = [];
   let templates = [];
   let currentExam = null;
+  let currentPatient = null;
+  let pendingExamLoad = null;
+
+  const handleExternalExamLoad = (event) => {
+    const detail = event.detail;
+    if (container && container.isConnected) {
+      const form = container.querySelector('#exam-form');
+      loadExamIntoForm(form, detail?.exam, detail?.patient);
+    } else {
+      pendingExamLoad = detail;
+    }
+  };
 
   document.addEventListener('images:selected', (event) => {
     appState.selectedImages = event.detail;
@@ -26,14 +55,20 @@ export function createExamFormView(appState) {
     ]);
   }
 
+  document.addEventListener('exam:load', handleExternalExamLoad);
+
+  function getImageCount() {
+    return appState.settings?.defaultImageCount || 4;
+  }
+
   function renderImageSlots(wrapper, images) {
     if (!wrapper) return;
     wrapper.innerHTML = '';
-    const count = appState.settings?.defaultImageCount || 4;
-    for (let i = 0; i < count; i += 1) {
+    const normalized = normalizeImages(images, getImageCount());
+    for (let i = 0; i < normalized.length; i += 1) {
       const slot = document.createElement('div');
       slot.className = 'image-slot';
-      const image = images?.[i];
+      const image = normalized[i];
       if (image?.dataUrl) {
         slot.innerHTML = `<img src="${image.dataUrl}" alt="Ảnh ${i + 1}" />`;
       } else if (image?.path) {
@@ -54,8 +89,7 @@ export function createExamFormView(appState) {
       gender: formData.get('patientGender'),
       address: formData.get('patientAddress'),
       phone: formData.get('patientPhone'),
-      reason: formData.get('patientReason'),
-      createdAt: new Date().toISOString()
+      reason: formData.get('patientReason')
     };
     const exam = {
       id: formData.get('examId'),
@@ -67,7 +101,9 @@ export function createExamFormView(appState) {
       treatmentSteps: formData.get('treatment'),
       doctorAdvice: formData.get('advice'),
       doctorName: formData.get('doctorName'),
-      imagePaths: (appState.selectedImages || []).map((img) => img.path || img.dataUrl)
+      imagePaths: (appState.selectedImages || [])
+        .filter(Boolean)
+        .map((img) => img.path || img.dataUrl)
     };
     return { patient, exam };
   }
@@ -83,14 +119,23 @@ export function createExamFormView(appState) {
 
   function fillDefaultValues(form) {
     const settings = appState.settings;
-    form.patientId.value = generateCode(settings?.patientCodePrefix || 'BN');
-    form.examId.value = generateCode(settings?.examCodePrefix || 'HA');
-    form.examNumber.value = new Date().getTime().toString().slice(-6);
+    const nextPatientNumber = settings?.nextPatientNumber || 1;
+    const nextExamNumber = settings?.nextExamNumber || 1;
+    const patientPrefix = settings?.patientCodePrefix || 'BN';
+    const examPrefix = settings?.examCodePrefix || 'HA';
+
+    form.patientId.value = formatCode(patientPrefix, nextPatientNumber);
+    form.examId.value = formatCode(examPrefix, nextExamNumber);
+    form.examNumber.value = formatCode(examPrefix, nextExamNumber);
     form.examDate.valueAsDate = new Date();
     form.description.value = settings?.defaultDescription || '';
     form.result.value = settings?.defaultResult || '';
     form.advice.value = settings?.defaultDoctorAdvice || '';
     publishContext(form);
+  }
+
+  async function refreshSettings() {
+    appState.settings = await storage.getSettings();
   }
 
   function populateDoctors(select) {
@@ -105,9 +150,28 @@ export function createExamFormView(appState) {
 
   async function handleSave(form) {
     const { patient, exam } = getFormValues(form);
-    await storage.savePatient(patient);
-    await storage.saveExam(exam);
-    currentExam = exam;
+
+    let savedPatient;
+    if (currentPatient?.id) {
+      savedPatient = await storage.updatePatient(currentPatient.id, patient);
+    } else {
+      savedPatient = await storage.savePatient(patient);
+    }
+
+    let savedExam;
+    if (currentExam?.id) {
+      savedExam = await storage.updateExam(currentExam.id, { ...exam, id: currentExam.id, patientId: savedPatient.id });
+    } else {
+      savedExam = await storage.saveExam({ ...exam, patientId: savedPatient.id });
+    }
+
+    currentExam = savedExam;
+    currentPatient = savedPatient;
+
+    form.patientId.value = savedPatient.id;
+    form.examId.value = savedExam.id;
+    form.examNumber.value = savedExam.examNumber || savedExam.id;
+    await refreshSettings();
     showToast('Đã lưu phiếu khám');
   }
 
@@ -116,18 +180,50 @@ export function createExamFormView(appState) {
     openPrintPreview({ patient, exam, settings: appState.settings, images: appState.selectedImages });
   }
 
-  function handleNew(form) {
+  async function handleNew(form) {
     form.reset();
+    await refreshSettings();
     fillDefaultValues(form);
     appState.selectedImages = [];
     renderImageSlots(container.querySelector('.image-grid'), []);
     currentExam = null;
+    currentPatient = null;
+  }
+
+  function loadExamIntoForm(form, exam, patient) {
+    if (!form) return;
+
+    const fallbackSettings = appState.settings || {};
+    form.patientId.value = patient?.id || formatCode(fallbackSettings.patientCodePrefix || 'BN', fallbackSettings.nextPatientNumber || 1);
+    form.patientName.value = patient?.name || '';
+    form.patientAge.value = patient?.age || '';
+    form.patientGender.value = patient?.gender || 'Nữ';
+    form.patientAddress.value = patient?.address || '';
+    form.patientPhone.value = patient?.phone || '';
+    form.patientReason.value = patient?.reason || '';
+
+    form.examId.value = exam?.id || formatCode(fallbackSettings.examCodePrefix || 'HA', fallbackSettings.nextExamNumber || 1);
+    form.examNumber.value = exam?.examNumber || form.examId.value;
+    form.examDate.value = exam?.date || '';
+    form.description.value = exam?.description || fallbackSettings.defaultDescription || '';
+    form.result.value = exam?.result || fallbackSettings.defaultResult || '';
+    form.treatment.value = exam?.treatmentSteps || '';
+    form.advice.value = exam?.doctorAdvice || fallbackSettings.defaultDoctorAdvice || '';
+    form.doctorName.value = exam?.doctorName || form.doctorName.value;
+
+    const imageList = normalizeImages(exam?.imagePaths, getImageCount());
+    appState.selectedImages = imageList;
+    renderImageSlots(container.querySelector('.image-grid'), imageList);
+
+    currentExam = exam || null;
+    currentPatient = patient || null;
+    publishContext(form);
   }
 
   return {
     render(target) {
       container = document.createElement('section');
-      container.className = 'card exam-view';
+      container.className = 'card exam-view wide-card';
       container.innerHTML = `
         <div class="toolbar">
           <button type="button" data-action="new">Tạo PK mới</button>
@@ -212,7 +308,7 @@ export function createExamFormView(appState) {
           <div>
             <div class="card">
               <h3>Ảnh soi</h3>
-              <p>Hiển thị ${appState.settings?.defaultImageCount || 4} ảnh. Chọn tại màn hình Lấy hình ảnh.</p>
+              <p>Hiển thị ${getImageCount()} ảnh. Chọn tại màn hình Lấy hình ảnh.</p>
               <div class="image-grid"></div>
             </div>
           </div>
@@ -226,8 +322,13 @@ export function createExamFormView(appState) {
       });
 
       const form = container.querySelector('#exam-form');
-      fillDefaultValues(form);
-      renderImageSlots(container.querySelector('.image-grid'), appState.selectedImages);
+      if (pendingExamLoad) {
+        loadExamIntoForm(form, pendingExamLoad.exam, pendingExamLoad.patient);
+        pendingExamLoad = null;
+      } else {
+        fillDefaultValues(form);
+        renderImageSlots(container.querySelector('.image-grid'), appState.selectedImages);
+      }
 
       form.addEventListener('input', () => publishContext(form));
 
@@ -237,6 +338,7 @@ export function createExamFormView(appState) {
       container.querySelector('[data-action="capture"]').addEventListener('click', () => {
         document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'capture' } }));
       });
+
     }
   };
 }

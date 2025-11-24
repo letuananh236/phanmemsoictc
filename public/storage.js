@@ -93,6 +93,11 @@ export const storage = {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify(payload)
+  }),
+  uploadLogo: (payload) => request('/api/logo', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
   })
 };
 

@@ -16,6 +16,7 @@ const rootDir = path.join(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
 const dataDir = path.join(rootDir, 'data');
 const imagesDir = path.join(dataDir, 'images');
+const logoDir = path.join(publicDir, 'logo');
 
 const jsonFiles = {
   settings: path.join(dataDir, 'settings.json'),
@@ -38,6 +39,8 @@ const defaultData = {
     logoFileName: 'logo-default.svg',
     patientCodePrefix: 'BN',
     examCodePrefix: 'HA',
+    nextPatientNumber: 1,
+    nextExamNumber: 1,
     defaultImageCount: 4,
     defaultDescription: 'Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n',
     defaultResult: '',
@@ -69,6 +72,7 @@ const MIME_TYPES = {
 async function ensureDirectories() {
   await fsPromises.mkdir(dataDir, { recursive: true });
   await fsPromises.mkdir(imagesDir, { recursive: true });
+  await ensureDefaultLogo();
   await Promise.all(
     Object.entries(jsonFiles).map(async ([key, filePath]) => {
       try {
@@ -79,6 +83,17 @@ async function ensureDirectories() {
       }
     })
   );
+}
+
+async function ensureDefaultLogo() {
+  await fsPromises.mkdir(logoDir, { recursive: true });
+  const target = path.join(logoDir, 'logo-default.svg');
+  try {
+    await fsPromises.access(target, fs.constants.F_OK);
+  } catch {
+    const source = path.join(publicDir, 'assets', 'logo-default.svg');
+    await fsPromises.copyFile(source, target);
+  }
 }
 
 async function readJson(filePath) {
@@ -156,6 +171,12 @@ function normalizePath(requestPath) {
   return safePath.replace(/^\//, '');
 }
 
+function formatCode(prefix, number) {
+  const safePrefix = prefix || 'BN';
+  const seq = Number.parseInt(number, 10) || 1;
+  return `${safePrefix}${String(seq).padStart(5, '0')}`;
+}
+
 async function serveStatic(res, requestPath) {
   try {
     const relative = normalizePath(requestPath);
@@ -208,6 +229,23 @@ async function saveImageFromDataUrl({ examId, index, dataUrl }) {
   const filePath = path.join(folder, name);
   await fsPromises.writeFile(filePath, buffer);
   return path.relative(rootDir, filePath).replace(/\\/g, '/');
+}
+
+async function saveLogoFile({ dataUrl, fileName }) {
+  if (!dataUrl) {
+    throw new Error('missing_logo');
+  }
+  const matches = dataUrl.match(/^data:(.+);base64,(.*)$/);
+  if (!matches) {
+    throw new Error('invalid_logo');
+  }
+  const buffer = Buffer.from(matches[2], 'base64');
+  await fsPromises.mkdir(logoDir, { recursive: true });
+  const safeBase = path.basename(fileName || 'logo.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const finalName = `${Date.now()}_${safeBase}`;
+  const filePath = path.join(logoDir, finalName);
+  await fsPromises.writeFile(filePath, buffer);
+  return finalName;
 }
 
 function windowsPath(p) {
@@ -276,12 +314,14 @@ async function handleApi(req, res, pathname) {
   if (pathname === '/api/settings') {
     if (req.method === 'GET') {
       const settings = await readJson(jsonFiles.settings);
-      sendJson(res, 200, settings);
+      const merged = { ...defaultData.settings, ...(settings || {}) };
+      sendJson(res, 200, merged);
       return;
     }
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const merged = { ...defaultData.settings, ...(payload || {}) };
+      const current = await readJson(jsonFiles.settings);
+      const merged = { ...defaultData.settings, ...(current || {}), ...(payload || {}) };
       await writeJson(jsonFiles.settings, merged);
       sendJson(res, 200, merged);
       return;
@@ -297,7 +337,19 @@ async function handleApi(req, res, pathname) {
     if (req.method === 'POST') {
       const payload = await parseBody(req);
       const patients = await readJson(jsonFiles.patients);
-      const patient = { ...payload, createdAt: new Date().toISOString() };
+      const settings = await readJson(jsonFiles.settings);
+      const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
+      const nextPatientNumber = mergedSettings.nextPatientNumber || 1;
+      const generatedId = formatCode(mergedSettings.patientCodePrefix, nextPatientNumber);
+      const shouldAutoIncrement = !payload.id || payload.id === generatedId;
+      const assignedId = payload.id?.trim() || generatedId;
+      const updatedSettings = {
+        ...mergedSettings,
+        nextPatientNumber: shouldAutoIncrement ? nextPatientNumber + 1 : mergedSettings.nextPatientNumber
+      };
+      await writeJson(jsonFiles.settings, updatedSettings);
+
+      const patient = { ...payload, id: assignedId, createdAt: new Date().toISOString() };
       patients.push(patient);
       await writeJson(jsonFiles.patients, patients);
       sendJson(res, 201, patient);
@@ -344,7 +396,20 @@ async function handleApi(req, res, pathname) {
       const payload = await parseBody(req);
       const exams = await readJson(jsonFiles.exams);
       const now = new Date().toISOString();
-      const exam = { ...payload, createdAt: now, updatedAt: now };
+      const settings = await readJson(jsonFiles.settings);
+      const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
+      const nextExamNumber = mergedSettings.nextExamNumber || 1;
+      const generatedExamId = formatCode(mergedSettings.examCodePrefix, nextExamNumber);
+      const shouldAutoIncrement = !payload.id || payload.id === generatedExamId;
+      const examId = payload.id?.trim() || generatedExamId;
+      const examNumber = payload.examNumber || generatedExamId;
+      const updatedSettings = {
+        ...mergedSettings,
+        nextExamNumber: shouldAutoIncrement ? nextExamNumber + 1 : mergedSettings.nextExamNumber
+      };
+      await writeJson(jsonFiles.settings, updatedSettings);
+
+      const exam = { ...payload, id: examId, examNumber, createdAt: now, updatedAt: now };
       exams.push(exam);
       await writeJson(jsonFiles.exams, exams);
       sendJson(res, 201, exam);
@@ -500,6 +565,23 @@ async function handleApi(req, res, pathname) {
     };
     await writeJson(jsonFiles.license, updated);
     sendJson(res, 200, { license: updated, valid: true });
+    return;
+  }
+
+  if (pathname === '/api/logo' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const storedName = await saveLogoFile(body || {});
+      if (body?.setDefault) {
+        const current = await readJson(jsonFiles.settings);
+        const merged = { ...defaultData.settings, ...(current || {}), logoFileName: storedName };
+        await writeJson(jsonFiles.settings, merged);
+      }
+      sendJson(res, 200, { fileName: storedName });
+    } catch (error) {
+      console.error(error);
+      sendJson(res, 400, { error: 'invalid_logo' });
+    }
     return;
   }
 

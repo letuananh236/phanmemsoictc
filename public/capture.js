@@ -401,8 +401,12 @@ export function createCaptureView(appState) {
     const uploads = [];
     for (let i = 0; i < selectedImages.length; i += 1) {
       const image = selectedImages[i];
-      const uploadResult = await storage.uploadImage(examId, i + 1, image.dataUrl);
-      uploads.push({ path: uploadResult.path, dataUrl: image.dataUrl });
+      if (image?.dataUrl) {
+        const uploadResult = await storage.uploadImage(examId, i + 1, image.dataUrl);
+        uploads.push({ path: uploadResult.path, dataUrl: image.dataUrl });
+      } else if (image?.path) {
+        uploads.push({ path: image.path, dataUrl: image.dataUrl });
+      }
     }
     document.dispatchEvent(new CustomEvent('images:selected', { detail: uploads }));
     showToast('Đã gửi ảnh sang phiếu khám');
@@ -418,7 +422,7 @@ export function createCaptureView(appState) {
   return {
     render(target) {
       container = document.createElement('section');
-      container.className = 'card capture-view';
+      container.className = 'card capture-view wide-card';
       container.innerHTML = `
         <div class="capture-layout">
           <div class="capture-controls">

@@ -117,9 +117,13 @@ body {
   padding-bottom: 8px;
 }
 
-.exam-view {
-  width: min(88vw, 1360px);
+.wide-card {
+  width: min(96vw, 1500px);
   margin: 0 auto;
+}
+
+.exam-view {
+  width: 100%;
 }
 
 .grid-2,
@@ -245,6 +249,12 @@ textarea {
   gap: 14px;
 }
 
+.exam-view .image-grid,
+.exam-search-view .image-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
 .image-slot {
   border: 2px dashed #bfc9d9;
   border-radius: 12px;
@@ -256,6 +266,11 @@ textarea {
   flex-direction: column;
   color: #64748b;
   font-size: 17px;
+}
+
+.exam-view .image-slot,
+.exam-search-view .image-slot {
+  font-size: 20px;
 }
 
 .image-slot img {
@@ -404,6 +419,26 @@ textarea {
   padding: 24px;
   width: min(480px, 100%);
   box-shadow: 0 24px 60px rgb(15 91 167 / 0.35);
+}
+
+.login-modal .modal-card {
+  width: min(600px, 100%);
+  padding: 30px;
+  font-size: 1.25em;
+}
+
+.login-modal label,
+.login-modal input,
+.login-modal button {
+  font-size: 1em;
+}
+
+.login-modal input {
+  padding: 12px;
+}
+
+.login-modal .toolbar button {
+  padding: 12px 18px;
 }
 
 .toast {
