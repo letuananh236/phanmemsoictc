@@ -4,10 +4,10 @@ Bộ khung phần mềm soi cổ tử cung chạy offline 100% trên Node.js + H
 
 ## Chức năng nổi bật
 - **Đăng nhập & bản quyền**: popup đăng nhập (mặc định `admin` / `123`) mở khoá thanh menu. Máy chủ tự tạo giấy phép trial 30 ngày, hiển thị màn hình License để kích hoạt các gói trả phí.
-- **Thanh menu + phím tắt**: F3 (Khám bệnh), F4 (Lấy hình), Ctrl+P (Tìm bệnh nhân), Ctrl+E (Tìm phiếu). Nút Thoát đưa về màn hình đăng nhập.
+- **Thanh menu + phím tắt**: F3 (Khám bệnh), F4 (Lấy hình), Ctrl+E (Tìm phiếu). Nút Thoát đưa về màn hình đăng nhập.
 - **Khám bệnh (exam-form.js)**: Form 3 vùng (bệnh nhân, phiếu khám, ảnh). Hỗ trợ sinh mã BN/HA, chọn bác sỹ, chèn mô tả mặc định, nhận 2/3/4 ảnh từ màn hình Capture, lưu xuống `data/patients.json` & `data/exams.json`, in khổ A4 qua `print.js`.
 - **Lấy hình ảnh (capture.js)**: Liệt kê camera `getUserMedia`, bật preview, chụp nhiều ảnh, chọn tối đa số ảnh cấu hình. Khi chấp nhận, ảnh được lưu thành file PNG tại `data/images/YYYY/MM/ID_x.png` thông qua API `/api/images` rồi đẩy ngược về form.
-- **Tìm kiếm & danh sách**: `search-patient.js`, `search-exam.js`, `daily-lists.js` lọc nhanh bệnh nhân, phiếu khám và thống kê trong ngày.
+- **Tìm kiếm phiếu**: `search-exam.js` lọc nhanh phiếu khám theo mã/BN/BS.
 - **Quản trị**: `settings.js` chỉnh thông tin bệnh viện, logo, prefix, số ảnh mặc định, mô tả mẫu, quyền xoá dữ liệu. `doctors.js` quản lý bác sỹ, `result-templates.js` lưu mẫu kết quả. `license-ui.js` hiển thị trạng thái giấy phép, kích hoạt gói tháng/năm/vĩnh viễn. API `/api/backup` và `/api/restore` cho phép sao lưu/phục hồi toàn bộ thư mục `data/`.
 
 ## Cấu trúc thư mục
@@ -17,7 +17,7 @@ project-root/
   src/server.js
   public/
     index.html, styles.css, app.js, login.js, exam-form.js, capture.js,
-    search-patient.js, search-exam.js, daily-lists.js, settings.js,
+    search-exam.js, settings.js,
     doctors.js, result-templates.js, print.js, license-ui.js, storage.js,
     assets/ (.gitkeep + logo-default.svg mẫu văn bản, có thể thay logo riêng)
   data/
@@ -57,7 +57,7 @@ Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `a
 1. **F3 – Khám bệnh**: điền thông tin BN, phiếu khám, chọn bác sỹ, lưu phiếu. Nút “Lấy hình ảnh (F4)” chuyển sang màn hình camera.
 2. **F4 – Lấy hình**: bật camera, chụp, tick tối đa số ảnh cấu hình, bấm “Chấp nhận (F10)” để tải ảnh lên thư mục `data/images/` và đưa về form.
 3. **In phiếu**: tại Khám bệnh bấm “In phiếu” → `print.js` dựng trang A4 với logo bệnh viện, mô tả, ảnh.
-4. **Tìm kiếm/Danh sách**: dùng các màn hình phụ để lọc bệnh nhân, phiếu, danh sách trong ngày.
+4. **Tìm phiếu**: dùng màn hình phụ để lọc phiếu khám.
 5. **Cấu hình/Doctor/Mẫu**: quản lý dữ liệu nền trực tiếp qua giao diện, dữ liệu được ghi vào JSON tương ứng.
 
 ## API chính (server.js)

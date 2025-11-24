@@ -1,9 +1,7 @@
 import { initLogin } from './login.js';
 import { createExamFormView } from './exam-form.js';
 import { createCaptureView } from './capture.js';
-import { createPatientSearchView } from './search-patient.js';
 import { createExamSearchView } from './search-exam.js';
-import { createDailyListsView } from './daily-lists.js';
 import { createSettingsView } from './settings.js';
 import { createDoctorsView } from './doctors.js';
 import { createResultTemplatesView } from './result-templates.js';
@@ -24,9 +22,7 @@ const appState = {
 const views = {
   exam: createExamFormView(appState),
   capture: createCaptureView(appState),
-  'search-patient': createPatientSearchView(appState),
   'search-exam': createExamSearchView(appState),
-  'daily-lists': createDailyListsView(appState),
   settings: createSettingsView(appState),
   doctors: createDoctorsView(appState),
   'result-templates': createResultTemplatesView(appState),
@@ -92,10 +88,6 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'F4') {
     event.preventDefault();
     renderView('capture');
-  }
-  if (event.ctrlKey && (event.key === 'p' || event.key === 'P')) {
-    event.preventDefault();
-    renderView('search-patient');
   }
   if (event.ctrlKey && (event.key === 'e' || event.key === 'E')) {
     event.preventDefault();
