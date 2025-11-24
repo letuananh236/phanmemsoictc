@@ -1,119 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Phiếu khám bệnh</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phần mềm soi cổ tử cung</title>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="page">
-      <header class="page__header">
-        <div class="hospital-meta">
-          <img
-            src="logo.svg"
-            alt="Logo bệnh viện"
-            class="hospital-meta__logo"
-            id="hospital-logo"
-          />
-          <div>
-            <h1>BỆNH VIỆN XYZ</h1>
-            <p>Khoa: Tai Mũi Họng</p>
-            <p>Địa chỉ: Số 123 Đường ABC, Quận Hoàn Kiếm, Hà Nội</p>
-            <p>Điện thoại: (024) 1234 5678</p>
-            <p>Website: www.benhvienxyz.vn</p>
+    <header class="topbar">
+      <div class="topbar-title">PHẦN MỀM SOI CỔ TỬ CUNG</div>
+      <span class="sr-only">Phiếu khám bệnh · BỆNH VIỆN XYZ</span>
+      <nav class="menu" id="app-menu">
+        <button data-view="exam" class="menu-btn">Khám bệnh (F3)</button>
+        <button data-view="capture" class="menu-btn">Lấy hình ảnh (F4)</button>
+        <button data-view="search-patient" class="menu-btn">Tìm bệnh nhân (Ctrl+P)</button>
+        <button data-view="search-exam" class="menu-btn">Tìm phiếu khám (Ctrl+E)</button>
+        <button data-view="daily-lists" class="menu-btn">Danh sách trong ngày</button>
+        <div class="menu-group">
+          <button data-view="settings" class="menu-btn">Cấu hình</button>
+          <div class="menu-submenu">
+            <button data-view="doctors" data-parent="settings" class="menu-btn menu-sub">Bác sỹ</button>
+            <button data-view="result-templates" data-parent="settings" class="menu-btn menu-sub">Mẫu kết quả</button>
+            <button data-view="license" data-parent="settings" class="menu-btn menu-sub">Bản quyền</button>
           </div>
         </div>
-        <div class="page__actions no-print">
-          <label class="upload-logo">
-            Thay logo bệnh viện
-            <input type="file" id="logo-input" accept="image/*" />
-          </label>
-          <button type="button" id="print-button">In phiếu</button>
-        </div>
-      </header>
+        <button data-action="logout" class="menu-btn danger">Thoát</button>
+      </nav>
+    </header>
 
-      <section class="form-section">
-        <h2 class="section-title">THÔNG TIN KHÁM BỆNH</h2>
-        <form class="exam-form" id="exam-form">
-          <div class="form-grid">
-            <label>
-              Mã số BN
-              <input type="text" name="patientCode" placeholder="Ví dụ: BN0001" />
-            </label>
-            <label>
-              Họ và tên
-              <input type="text" name="patientName" placeholder="Nguyễn Văn A" />
-            </label>
-            <label>
-              Tuổi
-              <input type="number" name="age" min="0" max="120" />
-            </label>
-            <label>
-              Giới tính
-              <select name="gender">
-                <option value="">-- Chọn --</option>
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
-            </label>
-            <label>
-              Địa chỉ
-              <input type="text" name="address" />
-            </label>
-            <label>
-              Lý do khám
-              <input type="text" name="reason" />
-            </label>
-            <label class="full-width">
-              Kết quả soi
-              <textarea name="result" rows="3"></textarea>
-            </label>
-            <label class="full-width">
-              Chẩn đoán
-              <textarea name="diagnosis" rows="3"></textarea>
-            </label>
-            <label class="full-width">
-              Hướng điều trị
-              <textarea name="treatment" rows="3"></textarea>
-            </label>
-            <label class="full-width">
-              Dặn dò sau điều trị
-              <textarea name="note" rows="3"></textarea>
-            </label>
-          </div>
-        </form>
-      </section>
+    <main id="app-content" class="content"></main>
 
-      <section class="form-section">
-        <h2 class="section-title">HÌNH ẢNH THĂM KHÁM</h2>
-        <div class="camera-panel no-print">
-          <video id="camera" autoplay playsinline></video>
-          <div class="camera-panel__controls">
-            <button type="button" id="start-camera">Bật camera</button>
-            <button type="button" id="capture" disabled>Chụp hình</button>
-            <button type="button" id="clear-photos" disabled>Xóa hình</button>
-          </div>
-        </div>
-        <div class="photo-gallery" id="photo-gallery">
-          <p class="photo-gallery__placeholder">Chưa có hình ảnh nào</p>
-        </div>
-      </section>
+    <section id="login-modal" class="modal hidden" aria-label="Đăng nhập hệ thống"></section>
+    <section id="license-modal" class="modal hidden" aria-label="Thông tin bản quyền"></section>
 
-      <footer class="page__footer">
-        <div>
-          <p>Ngày khám: <span contenteditable="true">.../.../....</span></p>
-          <p>Bác sĩ khám bệnh: <span contenteditable="true">................................</span></p>
-        </div>
-        <div class="signature">
-          <p>Chữ ký bác sĩ</p>
-          <div class="signature__line"></div>
-        </div>
-      </footer>
-    </main>
+    <div id="toast" class="toast hidden"></div>
 
-    <canvas id="snapshot-canvas" class="visually-hidden"></canvas>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "BN000001",
+    "name": "Nguyễn Văn A",
+    "age": 32,
+    "gender": "Nữ",
+    "address": "123 Đường ABC",
+    "phone": "0901234567",
+    "reason": "Khám định kỳ",
+    "createdAt": "2024-01-01T08:00:00.000Z"
+  },
+  {
+    "id": "BN519706",
+    "name": "lê tuấn anh",
+    "age": 1111,
+    "gender": "Nam",
+    "address": "ha noi",
+    "phone": "2424242",
+    "reason": "ddd",
+    "createdAt": "2025-11-17T07:51:18.201Z"
+  }
+]

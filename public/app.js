@@ -1,105 +1,123 @@
-const cameraElement = document.getElementById('camera');
-const startCameraButton = document.getElementById('start-camera');
-const captureButton = document.getElementById('capture');
-const clearPhotosButton = document.getElementById('clear-photos');
-const gallery = document.getElementById('photo-gallery');
-const canvas = document.getElementById('snapshot-canvas');
-const printButton = document.getElementById('print-button');
-const logoInput = document.getElementById('logo-input');
-const logoImage = document.getElementById('hospital-logo');
+import { initLogin } from './login.js';
+import { createExamFormView } from './exam-form.js';
+import { createCaptureView } from './capture.js';
+import { createPatientSearchView } from './search-patient.js';
+import { createExamSearchView } from './search-exam.js';
+import { createDailyListsView } from './daily-lists.js';
+import { createSettingsView } from './settings.js';
+import { createDoctorsView } from './doctors.js';
+import { createResultTemplatesView } from './result-templates.js';
+import { createLicenseView } from './license-ui.js';
+import { storage, showToast } from './storage.js';
 
-let mediaStream = null;
+const menu = document.getElementById('app-menu');
+const content = document.getElementById('app-content');
 
-function updateGalleryPlaceholder() {
-  const hasPhotos = gallery.querySelectorAll('img').length > 0;
-  let placeholder = gallery.querySelector('.photo-gallery__placeholder');
+const appState = {
+  currentView: 'exam',
+  selectedImages: [],
+  user: null,
+  license: null,
+  settings: null
+};
 
-  if (hasPhotos) {
-    placeholder?.remove();
-  } else if (!placeholder) {
-    placeholder = document.createElement('p');
-    placeholder.className = 'photo-gallery__placeholder';
-    placeholder.textContent = 'Chưa có hình ảnh nào';
-    gallery.appendChild(placeholder);
-  }
-}
+const views = {
+  exam: createExamFormView(appState),
+  capture: createCaptureView(appState),
+  'search-patient': createPatientSearchView(appState),
+  'search-exam': createExamSearchView(appState),
+  'daily-lists': createDailyListsView(appState),
+  settings: createSettingsView(appState),
+  doctors: createDoctorsView(appState),
+  'result-templates': createResultTemplatesView(appState),
+  license: createLicenseView(appState)
+};
 
-async function startCamera() {
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    cameraElement.srcObject = mediaStream;
-    captureButton.disabled = false;
-    startCameraButton.disabled = true;
-  } catch (error) {
-    alert('Không thể bật camera. Vui lòng kiểm tra quyền truy cập.');
-    console.error(error);
-  }
-}
-
-function capturePhoto() {
-  if (!mediaStream) return;
-
-  const [track] = mediaStream.getVideoTracks();
-  const settings = track.getSettings();
-  const width = settings.width || 640;
-  const height = settings.height || 480;
-
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(cameraElement, 0, 0, width, height);
-
-  canvas.toBlob((blob) => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const image = document.createElement('img');
-    image.src = url;
-    image.alt = 'Ảnh khám bệnh';
-    gallery.appendChild(image);
-    updateGalleryPlaceholder();
-    clearPhotosButton.disabled = false;
-  }, 'image/jpeg', 0.9);
-}
-
-function clearPhotos() {
-  gallery.querySelectorAll('img').forEach((img) => {
-    URL.revokeObjectURL(img.src);
-    img.remove();
+function setMenuEnabled(enabled) {
+  menu.querySelectorAll('button').forEach((btn) => {
+    btn.disabled = !enabled && btn.dataset.view !== 'license';
   });
-  updateGalleryPlaceholder();
-  clearPhotosButton.disabled = true;
+  menu.style.opacity = enabled ? '1' : '0.4';
 }
 
-function handlePrint() {
-  window.print();
+async function loadSettings() {
+  appState.settings = await storage.getSettings();
 }
 
-function handleLogoChange(event) {
-  const [file] = event.target.files ?? [];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    logoImage.src = reader.result;
-  };
-  reader.readAsDataURL(file);
+async function checkLicense() {
+  const data = await storage.getLicense();
+  appState.license = data.license;
+  if (!data.valid) {
+    showToast('Bản quyền hết hạn - hãy kích hoạt để tiếp tục');
+    renderView('license');
+  }
 }
 
-startCameraButton?.addEventListener('click', startCamera);
-captureButton?.addEventListener('click', capturePhoto);
-clearPhotosButton?.addEventListener('click', clearPhotos);
-printButton?.addEventListener('click', handlePrint);
-logoInput?.addEventListener('change', handleLogoChange);
+function renderView(viewKey) {
+  const view = views[viewKey];
+  if (!view) {
+    console.warn('View not found', viewKey);
+    return;
+  }
+  appState.currentView = viewKey;
+  content.innerHTML = '';
+  view.render(content);
+  const activeButton = menu.querySelector(`button[data-view="${viewKey}"]`);
+  const parentView = activeButton?.dataset.parent;
+  menu.querySelectorAll('button').forEach((btn) => {
+    const isActive = btn.dataset.view === viewKey;
+    const isParentActive = parentView && btn.dataset.view === parentView;
+    btn.classList.toggle('active', isActive);
+    btn.classList.toggle('active-parent', isParentActive);
+  });
+}
 
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && mediaStream) {
-    mediaStream.getTracks().forEach((track) => track.stop());
-    mediaStream = null;
-    cameraElement.srcObject = null;
-    startCameraButton.disabled = false;
-    captureButton.disabled = true;
+menu.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.action === 'logout') {
+    window.location.reload();
+    return;
+  }
+  if (button.dataset.view) {
+    renderView(button.dataset.view);
   }
 });
 
-updateGalleryPlaceholder();
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'F3') {
+    event.preventDefault();
+    renderView('exam');
+  }
+  if (event.key === 'F4') {
+    event.preventDefault();
+    renderView('capture');
+  }
+  if (event.ctrlKey && (event.key === 'p' || event.key === 'P')) {
+    event.preventDefault();
+    renderView('search-patient');
+  }
+  if (event.ctrlKey && (event.key === 'e' || event.key === 'E')) {
+    event.preventDefault();
+    renderView('search-exam');
+  }
+});
+
+document.addEventListener('navigate', (event) => {
+  if (event.detail?.view) {
+    renderView(event.detail.view);
+  }
+});
+
+initLogin({
+  onSuccess: async (user) => {
+    appState.user = user;
+    await loadSettings();
+    await checkLicense();
+    setMenuEnabled(true);
+    renderView('exam');
+  }
+});
+
+setMenuEnabled(false);
+renderView('license');
