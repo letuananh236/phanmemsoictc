@@ -53,8 +53,8 @@ export function createCaptureView(appState) {
     localStorage.setItem(CAMERA_SETTINGS_KEY, JSON.stringify(settings));
   }
 
-  async function startCamera(deviceId) {
-    const settings = getCameraSettings();
+  async function startCamera(deviceId, explicitSettings) {
+    const settings = explicitSettings || getCameraSettings();
 
     if (currentStream) {
       currentStream.getTracks().forEach((track) => track.stop());
@@ -74,6 +74,73 @@ export function createCaptureView(appState) {
     } catch (error) {
       console.error('Unable to start camera', error);
       showToast('Không mở được camera đã chọn');
+    }
+  }
+
+  function getActiveTrack() {
+    if (!currentStream) return null;
+    const [track] = currentStream.getVideoTracks();
+    return track || null;
+  }
+
+  function filterPresetsByCapabilities(capabilities) {
+    const presets = [
+      { label: '320 x 240 (QVGA)', width: 320, height: 240, frameRate: 30 },
+      { label: '640 x 480 (VGA)', width: 640, height: 480, frameRate: 30 },
+      { label: '960 x 720 (HD-ready 4:3)', width: 960, height: 720, frameRate: 30 },
+      { label: '1280 x 720 (HD)', width: 1280, height: 720, frameRate: 30 },
+      { label: '1920 x 1080 (Full HD)', width: 1920, height: 1080, frameRate: 30 },
+      { label: '2560 x 1440 (QHD)', width: 2560, height: 1440, frameRate: 30 }
+    ];
+
+    const widthRange = capabilities.width;
+    const heightRange = capabilities.height;
+    const frameRateRange = capabilities.frameRate;
+
+    return presets.filter((preset) => {
+      const widthOk = widthRange
+        ? preset.width >= widthRange.min && preset.width <= widthRange.max
+        : true;
+      const heightOk = heightRange
+        ? preset.height >= heightRange.min && preset.height <= heightRange.max
+        : true;
+      const frameRateOk = frameRateRange
+        ? preset.frameRate >= frameRateRange.min && preset.frameRate <= frameRateRange.max
+        : true;
+      return widthOk && heightOk && frameRateOk;
+    });
+  }
+
+  async function loadCapabilities(deviceId) {
+    const activeTrack = getActiveTrack();
+    if (activeTrack && activeTrack.getCapabilities) {
+      return activeTrack.getCapabilities();
+    }
+
+    try {
+      const probeStream = await navigator.mediaDevices.getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        audio: false
+      });
+      const [probeTrack] = probeStream.getVideoTracks();
+      const capabilities = probeTrack?.getCapabilities ? probeTrack.getCapabilities() : null;
+      probeStream.getTracks().forEach((track) => track.stop());
+      return capabilities;
+    } catch (error) {
+      console.error('Unable to load camera capabilities', error);
+      return null;
+    }
+  }
+
+  function syncSettingsFromPreset(form, presets) {
+    const presetValue = form.preset.value;
+    if (!presetValue) return;
+    const selectedPreset = presets.find((preset) => preset.label === presetValue);
+    if (!selectedPreset) return;
+    form.width.value = selectedPreset.width;
+    form.height.value = selectedPreset.height;
+    if (selectedPreset.frameRate) {
+      form.frameRate.value = selectedPreset.frameRate;
     }
   }
 
@@ -98,7 +165,7 @@ export function createCaptureView(appState) {
     showToast('Đã lưu camera mặc định');
   }
 
-  function openCameraSettings(selectEl) {
+  async function openCameraSettings(selectEl) {
     const existingModal = document.getElementById('camera-settings-modal');
     if (existingModal) {
       existingModal.remove();
@@ -109,24 +176,45 @@ export function createCaptureView(appState) {
     modal.id = 'camera-settings-modal';
 
     const settings = getCameraSettings();
+    const deviceId = selectEl.value;
+    const capabilities = (await loadCapabilities(deviceId)) || {};
+    const presets = filterPresetsByCapabilities(capabilities);
+
+    const activeTrack = getActiveTrack();
+    const activeSettings = activeTrack?.getSettings ? activeTrack.getSettings() : {};
+    const currentWidth = activeSettings.width || settings.width;
+    const currentHeight = activeSettings.height || settings.height;
+    const currentFrameRate = activeSettings.frameRate || settings.frameRate;
 
     modal.innerHTML = `
       <div class="modal-card">
         <h3>Cài đặt thông số camera</h3>
         <form id="camera-settings-form">
+          <div class="form-row">
+            <label for="camera-preset">Chọn phân giải</label>
+            <select id="camera-preset" name="preset">
+              <option value="">Tùy chỉnh</option>
+              ${presets
+                .map(
+                  (preset) =>
+                    `<option value="${preset.label}">${preset.label} - ${preset.frameRate} fps</option>`
+                )
+                .join('')}
+            </select>
+          </div>
           <div class="form-row inline-fields">
             <div class="field">
               <label for="camera-width">Độ rộng (px)</label>
-              <input type="number" id="camera-width" name="width" min="320" value="${settings.width}" />
+              <input type="number" id="camera-width" name="width" min="320" value="${currentWidth}" />
             </div>
             <div class="field">
               <label for="camera-height">Chiều cao (px)</label>
-              <input type="number" id="camera-height" name="height" min="240" value="${settings.height}" />
+              <input type="number" id="camera-height" name="height" min="240" value="${currentHeight}" />
             </div>
           </div>
           <div class="form-row">
             <label for="camera-framerate">Tốc độ khung hình (fps)</label>
-            <input type="number" id="camera-framerate" name="frameRate" min="1" value="${settings.frameRate}" />
+            <input type="number" id="camera-framerate" name="frameRate" min="1" value="${currentFrameRate}" />
           </div>
           <div class="toolbar">
             <button type="submit">Lưu và áp dụng</button>
@@ -147,6 +235,17 @@ export function createCaptureView(appState) {
     });
 
     const form = modal.querySelector('#camera-settings-form');
+    const presetSelect = form.querySelector('#camera-preset');
+
+    const presetMatchesCurrent = presets.find(
+      (preset) => preset.width === currentWidth && preset.height === currentHeight
+    );
+    if (presetMatchesCurrent) {
+      presetSelect.value = presetMatchesCurrent.label;
+    }
+
+    presetSelect.addEventListener('change', () => syncSettingsFromPreset(form, presets));
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const width = Number(form.width.value) || DEFAULT_CAMERA_SETTINGS.width;
@@ -157,7 +256,7 @@ export function createCaptureView(appState) {
       saveCameraSettings(newSettings);
       closeModal();
       const deviceId = selectEl.value;
-      startCamera(deviceId);
+      startCamera(deviceId, newSettings);
       showToast('Đã lưu cài đặt camera');
     });
 
