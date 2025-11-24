@@ -267,7 +267,7 @@ textarea {
 
 .capture-layout {
   display: grid;
-  grid-template-columns: 280px 2.1fr 412px;
+  grid-template-columns: 290px 2.1fr 290px;
   gap: 16px;
   align-items: start;
 }
@@ -349,12 +349,11 @@ textarea {
 
 .gallery-thumb {
   width: 100%;
-  max-width: 260px;
   aspect-ratio: 4 / 3;
   border-radius: 6px;
   overflow: hidden;
   background: #f4f6fb;
-  align-self: center;
+  align-self: stretch;
 }
 
 .gallery-thumb img {
