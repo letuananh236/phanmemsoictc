@@ -2,8 +2,5 @@ node_modules/
 package-lock.json
 .DS_Store
 dist/
-data/
-Data/Database/
-Data/Images/*
-!Data/Images/.gitkeep
-Data/Config/backups/
+data/images/
+!data/images/.gitkeep
