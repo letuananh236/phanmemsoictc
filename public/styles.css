@@ -118,18 +118,19 @@ body {
 }
 
 .wide-card {
-  width: min(96vw, 1500px);
+  width: min(96vw, 2300px);
   margin: 0 auto;
 }
 
 .capture-view.wide-card,
 .exam-search-view.wide-card {
-  width: min(96vw, 1500px);
+  width: min(96vw, 2300px);
   margin: 0 auto;
 }
 
 .exam-view {
-  width: 100%;
+  width: min(96vw, 2300px);
+  margin: 0 auto;
 }
 
 .grid-2,
