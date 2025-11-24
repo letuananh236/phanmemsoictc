@@ -80,13 +80,13 @@ export function createCaptureView(appState) {
     capturedImages.forEach((image, index) => {
       const item = document.createElement('div');
       item.className = 'gallery-item';
+      item.classList.toggle('selected', selectedImages.includes(image));
       item.innerHTML = `
-        <input type="checkbox" ${selectedImages.includes(image) ? 'checked' : ''} />
-        <img src="${image.dataUrl}" alt="Ảnh ${index + 1}" />
-        <span>${image.name}</span>
+        <div class="gallery-thumb">
+          <img src="${image.dataUrl}" alt="Ảnh ${index + 1}" />
+        </div>
       `;
-      const checkbox = item.querySelector('input');
-      checkbox.addEventListener('change', () => toggleSelection(image));
+      item.addEventListener('click', () => toggleSelection(image));
       galleryEl.appendChild(item);
     });
     renderSelectedPreview();
