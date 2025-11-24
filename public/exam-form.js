@@ -174,11 +174,11 @@ export function createExamFormView(appState) {
                     <label>Điện thoại</label>
                     <input name="patientPhone" />
                   </div>
-                  <div class="form-row">
-                    <label>Lý do khám</label>
-                    <input name="patientReason" />
-                  </div>
                 </div>
+              </div>
+              <div class="form-row">
+                <label>Lý do khám</label>
+                <input name="patientReason" />
               </div>
             </div>
             <div class="card exam-details">
