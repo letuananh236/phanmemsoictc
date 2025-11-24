@@ -160,6 +160,50 @@ export function createCaptureView(appState) {
     }
   }
 
+  function describeCapability(capability, currentValue) {
+    if (!capability) return null;
+
+    if (Array.isArray(capability)) {
+      const currentLabel = currentValue ?? '—';
+      return `${currentLabel} (hỗ trợ: ${capability.join(', ')})`;
+    }
+
+    const hasRange = typeof capability === 'object' && capability.min !== undefined && capability.max !== undefined;
+    if (hasRange) {
+      const stepText = capability.step ? `, bước ${capability.step}` : '';
+      const currentLabel = currentValue ?? '—';
+      return `${currentLabel} (từ ${capability.min} đến ${capability.max}${stepText})`;
+    }
+
+    return null;
+  }
+
+  function buildCapabilityDetails(capabilities, settings) {
+    const mapping = [
+      { key: 'width', label: 'Độ rộng (px)' },
+      { key: 'height', label: 'Chiều cao (px)' },
+      { key: 'frameRate', label: 'Tốc độ khung hình (fps)' },
+      { key: 'brightness', label: 'Độ sáng' },
+      { key: 'contrast', label: 'Độ tương phản' },
+      { key: 'saturation', label: 'Độ bão hòa' },
+      { key: 'sharpness', label: 'Độ sắc nét' },
+      { key: 'exposureCompensation', label: 'Bù phơi sáng' },
+      { key: 'exposureTime', label: 'Thời gian phơi sáng' },
+      { key: 'zoom', label: 'Thu phóng' },
+      { key: 'focusDistance', label: 'Lấy nét' },
+      { key: 'whiteBalanceMode', label: 'Chế độ cân bằng trắng' },
+      { key: 'colorTemperature', label: 'Nhiệt độ màu' }
+    ];
+
+    return mapping
+      .map(({ key, label }) => {
+        const detail = describeCapability(capabilities[key], settings[key]);
+        if (!detail) return null;
+        return `<li><strong>${label}:</strong> ${detail}</li>`;
+      })
+      .filter(Boolean);
+  }
+
   function autoStartCamera(selectEl) {
     const preferredId = getPreferredCameraId();
     const options = Array.from(selectEl.options).map((option) => option.value);
@@ -198,6 +242,7 @@ export function createCaptureView(appState) {
 
     const activeTrack = getActiveTrack();
     const activeSettings = activeTrack?.getSettings ? activeTrack.getSettings() : {};
+    const capabilityDetails = buildCapabilityDetails(capabilities, activeSettings);
     const currentWidth = activeSettings.width || settings.width;
     const currentHeight = activeSettings.height || settings.height;
     const currentFrameRate = activeSettings.frameRate || settings.frameRate;
@@ -228,6 +273,12 @@ export function createCaptureView(appState) {
           <div class="form-row">
             <label for="camera-framerate">Tốc độ khung hình (fps)</label>
             <input type="number" id="camera-framerate" name="frameRate" min="1" value="${currentFrameRate}" />
+          </div>
+          <div class="form-row">
+            <h4>Thông tin khả năng camera</h4>
+            <ul class="capabilities-list">
+              ${capabilityDetails.length > 0 ? capabilityDetails.join('') : '<li>Không đọc được khả năng camera</li>'}
+            </ul>
           </div>
           <div class="toolbar">
             <button type="submit">Lưu và áp dụng</button>
