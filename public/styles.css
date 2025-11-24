@@ -151,7 +151,7 @@ textarea {
   border-radius: 6px;
   border: 1px solid #cbd5e1;
   background: #fdfefe;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 textarea {
@@ -267,7 +267,7 @@ textarea {
 
 .capture-layout {
   display: grid;
-  grid-template-columns: 280px 2.1fr 412px;
+  grid-template-columns: 290px 2.1fr 290px;
   gap: 16px;
   align-items: start;
 }
@@ -294,12 +294,11 @@ textarea {
 }
 
 .capture-gallery {
-  max-height: 600px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
 }
+
 
 .capture-preview {
   display: flex;
@@ -348,12 +347,12 @@ textarea {
 }
 
 .gallery-thumb {
-  width: 150%;
+  width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: 6px;
   overflow: hidden;
   background: #f4f6fb;
-  align-self: center;
+  align-self: stretch;
 }
 
 .gallery-thumb img {
