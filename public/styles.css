@@ -294,12 +294,11 @@ textarea {
 }
 
 .capture-gallery {
-  max-height: 600px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
 }
+
 
 .capture-preview {
   display: flex;
