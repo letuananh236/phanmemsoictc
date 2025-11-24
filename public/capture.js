@@ -1,5 +1,7 @@
 import { storage, showToast } from './storage.js';
 
+const PREFERRED_CAMERA_KEY = 'preferredCameraId';
+
 export function createCaptureView(appState) {
   let container;
   let videoEl;
@@ -27,16 +29,50 @@ export function createCaptureView(appState) {
     });
   }
 
+  function getPreferredCameraId() {
+    return localStorage.getItem(PREFERRED_CAMERA_KEY);
+  }
+
+  function setPreferredCameraId(deviceId) {
+    localStorage.setItem(PREFERRED_CAMERA_KEY, deviceId);
+  }
+
   async function startCamera(deviceId) {
     if (currentStream) {
       currentStream.getTracks().forEach((track) => track.stop());
     }
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
-      audio: false
-    });
-    videoEl.srcObject = currentStream;
-    await videoEl.play();
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        audio: false
+      });
+      videoEl.srcObject = currentStream;
+      await videoEl.play();
+    } catch (error) {
+      console.error('Unable to start camera', error);
+      showToast('Không mở được camera đã chọn');
+    }
+  }
+
+  function autoStartCamera(selectEl) {
+    const preferredId = getPreferredCameraId();
+    const options = Array.from(selectEl.options).map((option) => option.value);
+    const targetId = options.includes(preferredId) ? preferredId : options[0];
+    if (targetId) {
+      selectEl.value = targetId;
+      startCamera(targetId);
+    }
+  }
+
+  function saveCameraSelection(selectEl) {
+    const deviceId = selectEl.value;
+    if (!deviceId) {
+      showToast('Vui lòng chọn camera');
+      return;
+    }
+    setPreferredCameraId(deviceId);
+    startCamera(deviceId);
+    showToast('Đã lưu camera mặc định');
   }
 
   function renderGallery() {
@@ -112,6 +148,7 @@ export function createCaptureView(appState) {
     }
     document.dispatchEvent(new CustomEvent('images:selected', { detail: uploads }));
     showToast('Đã gửi ảnh sang phiếu khám');
+    document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'exam' } }));
   }
 
   function clearImages() {
@@ -132,7 +169,7 @@ export function createCaptureView(appState) {
               <select id="camera-select"></select>
             </div>
             <div class="form-row">
-              <button type="button" id="start-camera">Bật camera</button>
+              <button type="button" id="start-camera">Lưu camera</button>
             </div>
             <div class="form-row">
               <button type="button" id="capture-photo">Chụp hình</button>
@@ -162,9 +199,9 @@ export function createCaptureView(appState) {
       selectedEl = container.querySelector('#selected-images');
 
       const selectEl = container.querySelector('#camera-select');
-      listCameras(selectEl);
+      listCameras(selectEl).then(() => autoStartCamera(selectEl));
 
-      container.querySelector('#start-camera').addEventListener('click', () => startCamera(selectEl.value));
+      container.querySelector('#start-camera').addEventListener('click', () => saveCameraSelection(selectEl));
       container.querySelector('#capture-photo').addEventListener('click', capturePhoto);
       container.querySelector('#accept-images').addEventListener('click', acceptImages);
       container.querySelector('#clear-images').addEventListener('click', clearImages);
