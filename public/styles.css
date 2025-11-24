@@ -267,7 +267,7 @@ textarea {
 
 .capture-layout {
   display: grid;
-  grid-template-columns: 280px 2.1fr 275px;
+  grid-template-columns: 280px 2.1fr 412px;
   gap: 16px;
   align-items: start;
 }
@@ -303,8 +303,8 @@ textarea {
 
 .capture-preview {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   aspect-ratio: 4 / 3;
   width: 100%;
   min-height: 0;
@@ -314,9 +314,9 @@ textarea {
 }
 
 .capture-preview video {
-  width: 70%;
+  width: 80%;
   height: auto;
-  max-height: 70%;
+  max-height: 80%;
   object-fit: contain;
   aspect-ratio: 4 / 3;
   background: transparent;
@@ -328,6 +328,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  align-items: stretch;
 }
 
 .gallery-item {
@@ -347,11 +348,12 @@ textarea {
 }
 
 .gallery-thumb {
-  width: 100%;
+  width: 150%;
   aspect-ratio: 4 / 3;
   border-radius: 6px;
   overflow: hidden;
   background: #f4f6fb;
+  align-self: center;
 }
 
 .gallery-thumb img {
