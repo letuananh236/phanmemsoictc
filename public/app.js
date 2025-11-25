@@ -19,6 +19,19 @@ const appState = {
   settings: null
 };
 
+function updateUiScale() {
+  const baseWidth = 1920;
+  const baseHeight = 1080;
+  const scale = Math.max(
+    0.75,
+    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.35)
+  );
+  document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
+}
+
+window.addEventListener('resize', updateUiScale);
+updateUiScale();
+
 const views = {
   exam: createExamFormView(appState),
   capture: createCaptureView(appState),

@@ -2,6 +2,7 @@
   font-family: 'Segoe UI', 'Roboto', sans-serif;
   color: #1f2a37;
   background-color: #eef2f7;
+  --ui-scale: 1;
 }
 
 * {
@@ -24,6 +25,14 @@ body {
   min-height: 100vh;
   background: #eef2f7;
   color: #1f2a37;
+  display: flex;
+  justify-content: center;
+}
+
+.app-shell {
+  width: calc(100% / var(--ui-scale));
+  transform: scale(var(--ui-scale));
+  transform-origin: top center;
 }
 
 .topbar {
