@@ -94,6 +94,21 @@ export function createSettingsView(appState) {
             <ul id="user-list"></ul>
           </div>
         </div>
+        <div class="card" id="data-tools">
+          <h4>Sao lưu và dữ liệu</h4>
+          <div class="form-row data-actions">
+            <button type="button" id="backup-btn">Tải backup</button>
+            <label for="restore-file" class="button-like">Khôi phục backup</label>
+            <input type="file" id="restore-file" accept=".zip" hidden />
+            <span class="hint">Nên sao lưu trước khi khôi phục để tránh mất dữ liệu.</span>
+          </div>
+          <div class="form-row">
+            <button type="button" id="clear-data-btn" class="danger">
+              Xóa tất cả dữ liệu
+            </button>
+            <span class="hint">Xóa toàn bộ bệnh nhân, phiếu khám, bác sỹ, mẫu kết quả và ảnh đã lưu (giữ cấu hình hiện tại).</span>
+          </div>
+        </div>
       `;
       target.appendChild(wrapper);
 
@@ -102,6 +117,9 @@ export function createSettingsView(appState) {
       const logoCurrent = form.querySelector('#logo-current');
       const userList = wrapper.querySelector('#user-list');
       const userForm = wrapper.querySelector('#user-form');
+      const backupBtn = wrapper.querySelector('#backup-btn');
+      const restoreInput = wrapper.querySelector('#restore-file');
+      const clearDataBtn = wrapper.querySelector('#clear-data-btn');
 
       storage.listUsers().then((users) => {
         userList.innerHTML = '';
@@ -186,6 +204,56 @@ export function createSettingsView(appState) {
           }
         };
         reader.readAsDataURL(file);
+      });
+
+      backupBtn.addEventListener('click', async () => {
+        try {
+          const blob = await storage.downloadBackup();
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = `backup-${new Date().toISOString().slice(0, 10)}.zip`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+          showToast('Đã tải backup dữ liệu');
+        } catch (error) {
+          console.error('Backup failed', error);
+          showToast('Không tải được backup');
+        }
+      });
+
+      restoreInput.addEventListener('change', async () => {
+        const file = restoreInput.files?.[0];
+        if (!file) return;
+        const confirmRestore = window.confirm('Khôi phục backup sẽ ghi đè dữ liệu hiện tại. Tiếp tục?');
+        if (!confirmRestore) {
+          restoreInput.value = '';
+          return;
+        }
+        try {
+          await storage.restoreBackup(file);
+          showToast('Đã khôi phục dữ liệu từ backup');
+        } catch (error) {
+          console.error('Restore failed', error);
+          showToast('Không thể khôi phục backup');
+        } finally {
+          restoreInput.value = '';
+        }
+      });
+
+      clearDataBtn.addEventListener('click', async () => {
+        const confirmed = window.confirm('Xóa toàn bộ dữ liệu (bệnh nhân, phiếu, bác sỹ, mẫu, ảnh)?');
+        if (!confirmed) return;
+        try {
+          await storage.clearData();
+          showToast('Đã xóa toàn bộ dữ liệu và đặt lại bộ đếm');
+        } catch (error) {
+          console.error('Clear data failed', error);
+          const message = error?.message?.includes('delete_disabled')
+            ? 'Vui lòng bật "Cho phép xóa dữ liệu" trước khi xóa'
+            : 'Không thể xóa dữ liệu';
+          showToast(message);
+        }
       });
     }
   };

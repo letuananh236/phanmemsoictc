@@ -368,6 +368,28 @@ async function copyDirectory(source, destination) {
   );
 }
 
+async function clearAllData() {
+  const currentSettings = await readJson(jsonFiles.settings).catch(() => defaultData.settings);
+  const currentLicense = await readJson(jsonFiles.license).catch(() => ({}));
+  await fsPromises.rm(imagesDir, { recursive: true, force: true });
+  await fsPromises.mkdir(imagesDir, { recursive: true });
+
+  const resetSettings = {
+    ...defaultData.settings,
+    ...currentSettings,
+    nextPatientNumber: 1,
+    nextExamNumber: 1
+  };
+
+  await writeJson(jsonFiles.patients, []);
+  await writeJson(jsonFiles.exams, []);
+  await writeJson(jsonFiles.doctors, defaultData.doctors);
+  await writeJson(jsonFiles.templates, defaultData.templates);
+  await writeJson(jsonFiles.users, defaultData.users);
+  await writeJson(jsonFiles.settings, resetSettings);
+  await writeJson(jsonFiles.license, currentLicense);
+}
+
 async function handleApi(req, res, pathname) {
   const license = await ensureLicense();
   const licenseExemptPaths = ['/api/login', '/api/meta'];
@@ -754,6 +776,23 @@ async function handleApi(req, res, pathname) {
     } catch (error) {
       console.error(error);
       sendJson(res, 500, { error: 'restore_failed' });
+    }
+    return;
+  }
+
+  if (pathname === '/api/data/clear' && req.method === 'POST') {
+    const settings = await readJson(jsonFiles.settings);
+    const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
+    if (!mergedSettings.allowDeleteData) {
+      sendJson(res, 403, { error: 'delete_disabled' });
+      return;
+    }
+    try {
+      await clearAllData();
+      sendJson(res, 200, { success: true });
+    } catch (error) {
+      console.error(error);
+      sendJson(res, 500, { error: 'clear_failed' });
     }
     return;
   }

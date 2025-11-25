@@ -184,8 +184,51 @@ textarea {
   min-height: 90px;
 }
 
+.intro-steps {
+  padding-left: 18px;
+  color: #0f172a;
+}
+
+.intro-steps li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
 .form-row {
   margin-bottom: 12px;
+}
+
+.data-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button-like {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: #0f5ba7;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.button-like:hover {
+  background: #0c4a84;
+}
+
+button.danger {
+  background: #c62828;
+  color: #fff;
+}
+
+.hint {
+  color: #475569;
+  font-size: 13px;
 }
 
 .inline-fields {

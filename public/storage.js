@@ -116,7 +116,8 @@ export const storage = {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify(payload)
-  })
+  }),
+  clearData: () => request('/api/data/clear', { method: 'POST' })
 };
 
 export function showToast(message) {
