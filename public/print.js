@@ -113,14 +113,17 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             font-weight: 800;
             text-transform: uppercase;
             margin: 6px 0 20px;
+            letter-spacing: 0.3px;
           }
           .info-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 16px;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            margin-bottom: 12px;
+            font-size: 15px;
           }
           .info-table td {
-            padding: 6px 10px 6px 0;
+            padding: 2px 10px 2px 0;
             vertical-align: top;
           }
           .info-table tr td:first-child,
@@ -130,21 +133,39 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .label {
             font-weight: 700;
           }
-          .description-block,
-          .result-block,
-          .treatment-block,
-          .advice-block {
-            margin-bottom: 16px;
+          .inline-label {
+            font-weight: 700;
+            margin-left: 14px;
+          }
+          .print-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 16px;
+            align-items: start;
+            margin-top: 10px;
+          }
+          .content-sections > div {
+            margin-bottom: 14px;
+          }
+          .section-heading {
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-decoration: underline;
           }
           .text-content {
             white-space: pre-wrap;
             margin-left: 4px;
+            min-height: 40px;
+          }
+          .image-panel-title {
+            font-weight: 700;
+            margin-bottom: 8px;
           }
           .print-images {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-            margin: 16px 0 20px;
+            margin-top: 6px;
           }
           .print-image {
             width: 100%;
@@ -154,6 +175,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             align-items: center;
             justify-content: center;
             background: #f8fafc;
+            overflow: hidden;
           }
           .print-image img {
             width: 100%;
@@ -166,13 +188,8 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             font-style: italic;
             font-size: 13px;
           }
-          .section-heading {
-            font-weight: 700;
-            text-decoration: underline;
-            margin-bottom: 4px;
-          }
           .signature-block {
-            margin-top: 28px;
+            margin-top: 10px;
             text-align: right;
           }
           .signature-block .doctor-title {
@@ -182,7 +199,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .footer-note {
             border-top: 1px solid #111827;
-            margin-top: 28px;
+            margin-top: 22px;
             padding-top: 10px;
             font-style: italic;
             font-size: 14px;
@@ -252,6 +269,8 @@ function normalizeExamCode(code = '') {
 
 function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
   const patientCode = normalizeExamCode(patient?.id || exam?.examNumber || exam?.id || '');
+  const insuranceNumber = exam?.insuranceNumber || '';
+  const diagnosis = exam?.diagnosis || exam?.result || reason;
 
   const imageRow = examImages
     .map((image, index) => {
@@ -281,45 +300,48 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
 
       <table class="info-table">
         <tr>
-          <td colspan="2"><span class="label">Mã số BN:</span> ${patientCode}</td>
+          <td colspan="2"><span class="label">Họ và tên:</span> ${patient?.name || ''} <span class="inline-label">Mã BN:</span> ${patientCode}</td>
         </tr>
         <tr>
-          <td><span class="label">Họ và tên:</span> ${patient?.name || ''}</td>
-          <td>
-            <span class="label">Tuổi:</span> ${patient?.age || ''}
-            &nbsp;&nbsp;
-            <span class="label">Giới tính:</span> ${patient?.gender || ''}
-          </td>
+          <td><span class="label">Tuổi:</span> ${patient?.age || ''} &nbsp;&nbsp; <span class="label">Giới tính:</span> ${patient?.gender || ''}</td>
+          <td><span class="label">Mã số BH:</span> ${insuranceNumber}</td>
         </tr>
         <tr>
           <td><span class="label">Địa chỉ:</span> ${patient?.address || ''}</td>
           <td><span class="label">ĐT liên hệ:</span> ${patient?.phone || ''}</td>
         </tr>
         <tr>
-          <td colspan="2"><span class="label">Lý do khám:</span> ${reason}</td>
+          <td colspan="2"><span class="label">Bệnh:</span> ${diagnosis || ''}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><span class="label">Trực nhật:</span> ${doctorName}</td>
         </tr>
       </table>
 
-      <div class="description-block">
-        <span class="label">Mô tả:</span>
-        <div class="text-content">${exam?.description || ''}</div>
-      </div>
+      <div class="print-body">
+        <div class="content-sections">
+          <div class="description-block">
+            <div class="section-heading">Mô tả</div>
+            <div class="text-content">${exam?.description || ''}</div>
+          </div>
+          <div class="result-block">
+            <div class="section-heading">Kết quả soi cổ tử cung</div>
+            <div class="text-content">${exam?.result || ''}</div>
+          </div>
+          <div class="treatment-block">
+            <div class="section-heading">Các bước điều trị</div>
+            <div class="text-content">${exam?.treatmentSteps || ''}</div>
+          </div>
+          <div class="advice-block">
+            <div class="section-heading">Lời dặn của bác sỹ</div>
+            <div class="text-content">${exam?.doctorAdvice || ''}</div>
+          </div>
+        </div>
 
-      <div class="print-images">${imageRow}</div>
-
-      <div class="result-block">
-        <span class="label">Kết quả soi tử cung:</span>
-        <div class="text-content">${exam?.result || ''}</div>
-      </div>
-
-      <div class="treatment-block">
-        <div class="section-heading">Các bước điều trị:</div>
-        <div class="text-content">${exam?.treatmentSteps || ''}</div>
-      </div>
-
-      <div class="advice-block">
-        <div class="section-heading">Lời dặn của bác sỹ:</div>
-        <div class="text-content">${exam?.doctorAdvice || ''}</div>
+        <div class="image-panel">
+          <div class="image-panel-title">Kết quả soi cổ tử cung</div>
+          <div class="print-images">${imageRow}</div>
+        </div>
       </div>
 
       <div class="signature-block">
