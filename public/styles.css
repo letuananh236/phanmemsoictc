@@ -286,10 +286,14 @@ textarea {
 
 .save-status {
   font-weight: 700;
-  color: #0f5ba7;
-  min-height: 20px;
+  color: #166534;
+  min-height: 24px;
   display: inline-flex;
   align-items: center;
+  border: 2px solid #22c55e;
+  background: #ecfdf3;
+  padding: 6px 10px;
+  border-radius: 8px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }

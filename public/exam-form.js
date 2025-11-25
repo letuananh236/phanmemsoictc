@@ -173,6 +173,11 @@ export function createExamFormView(appState) {
   }
 
   async function handleSave(form) {
+    if (!form.reportValidity()) {
+      updateSaveStatus('Vui lòng nhập đầy đủ các trường bắt buộc');
+      return;
+    }
+
     const { patient, exam } = getFormValues(form);
 
     let savedPatient;
