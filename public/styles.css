@@ -252,6 +252,11 @@ textarea {
   text-align: left;
 }
 
+.data-table tbody tr.selected {
+  font-weight: 700;
+  background: #eef2ff;
+}
+
 .toolbar button.secondary {
   background: #6b7280;
 }
@@ -266,6 +271,32 @@ textarea {
 .exam-search-view .image-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 18px;
+}
+
+.exam-search-view #exam-detail .detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px 16px;
+  margin: 10px 0 12px;
+}
+
+.exam-search-view #exam-detail .detail-block {
+  margin-bottom: 10px;
+}
+
+.exam-search-view #exam-detail .detail-label {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.exam-search-view #exam-detail .detail-text {
+  margin: 0;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px;
+  white-space: pre-wrap;
+  font-size: 15px;
+  border: 1px solid #e2e8f0;
 }
 
 .image-slot {

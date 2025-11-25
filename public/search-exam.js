@@ -26,34 +26,49 @@ function normalizeExamCode(code = '') {
 export function createExamSearchView(appState) {
   let exams = [];
   let patients = [];
+  let selectedExamId = null;
 
   function renderRows(body, detailPanel, keyword) {
     body.innerHTML = '';
-    exams
-      .filter((exam) => {
-        if (!keyword) return true;
-        const normalized = keyword.toLowerCase();
-        const patient = patients.find((p) => p.id === exam.patientId);
-        const examCode = normalizeExamCode(exam.id || '');
-        return (
-          exam.id.toLowerCase().includes(normalized) ||
-          examCode.toLowerCase().includes(normalized) ||
-          (exam.result || '').toLowerCase().includes(normalized) ||
-          (patient?.name || '').toLowerCase().includes(normalized)
-        );
-      })
-      .forEach((exam) => {
-        const patient = patients.find((p) => p.id === exam.patientId);
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${normalizeExamCode(exam.id)}</td>
-          <td>${patient?.name || ''}</td>
-          <td>${exam.date}</td>
-          <td>${exam.result || ''}</td>
-        `;
-        row.addEventListener('click', () => renderDetail(detailPanel, exam, patient));
-        body.appendChild(row);
+    const filtered = exams.filter((exam) => {
+      if (!keyword) return true;
+      const normalized = keyword.toLowerCase();
+      const patient = patients.find((p) => p.id === exam.patientId);
+      const examCode = normalizeExamCode(exam.id || '');
+      return (
+        exam.id.toLowerCase().includes(normalized) ||
+        examCode.toLowerCase().includes(normalized) ||
+        (exam.result || '').toLowerCase().includes(normalized) ||
+        (patient?.name || '').toLowerCase().includes(normalized)
+      );
+    });
+
+    let selectedFound = false;
+    filtered.forEach((exam) => {
+      const patient = patients.find((p) => p.id === exam.patientId);
+      const row = document.createElement('tr');
+      row.dataset.examId = exam.id;
+      row.innerHTML = `
+        <td>${normalizeExamCode(exam.id)}</td>
+        <td>${patient?.name || ''}</td>
+        <td>${exam.date}</td>
+        <td>${exam.result || ''}</td>
+      `;
+      if (exam.id === selectedExamId) {
+        row.classList.add('selected');
+        selectedFound = true;
+      }
+      row.addEventListener('click', () => {
+        selectedExamId = exam.id;
+        body.querySelectorAll('tr').forEach((tr) => tr.classList.toggle('selected', tr === row));
+        renderDetail(detailPanel, exam, patient);
       });
+      body.appendChild(row);
+    });
+
+    if (selectedExamId && !selectedFound) {
+      detailPanel.innerHTML = '<p>Chọn phiếu để xem chi tiết</p>';
+    }
   }
 
   function renderDetail(panel, exam, patient) {
@@ -64,10 +79,28 @@ export function createExamSearchView(appState) {
         <button type="button" data-action="print">In lại phiếu</button>
         <button type="button" class="secondary" data-action="edit">Sửa phiếu</button>
       </div>
-      <p><strong>Bệnh nhân:</strong> ${patient?.name || ''}</p>
-      <p><strong>Kết quả:</strong> ${exam.result || ''}</p>
-      <p><strong>Mô tả:</strong></p>
-      <pre>${exam.description || ''}</pre>
+      <div class="detail-grid">
+        <div><strong>Mã phiếu:</strong> ${normalizeExamCode(exam.id)}</div>
+        <div><strong>Ngày khám:</strong> ${exam.date || ''}</div>
+        <div><strong>Họ và tên:</strong> ${patient?.name || ''}</div>
+        <div><strong>Tuổi / Giới tính:</strong> ${patient?.age || ''} / ${patient?.gender || ''}</div>
+        <div><strong>Địa chỉ:</strong> ${patient?.address || ''}</div>
+        <div><strong>SĐT:</strong> ${patient?.phone || ''}</div>
+        <div><strong>Lý do khám:</strong> ${patient?.reason || ''}</div>
+        <div><strong>Kết quả:</strong> ${exam.result || ''}</div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Mô tả</div>
+        <pre class="detail-text">${exam.description || ''}</pre>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Các bước điều trị</div>
+        <pre class="detail-text">${exam.treatmentSteps || ''}</pre>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Lời dặn của bác sỹ</div>
+        <pre class="detail-text">${exam.doctorAdvice || ''}</pre>
+      </div>
       <div class="image-grid"></div>
     `;
     const grid = panel.querySelector('.image-grid');

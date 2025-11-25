@@ -141,15 +141,13 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin-left: 4px;
           }
           .print-images {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             margin: 16px 0 20px;
           }
           .print-image {
-            flex: 0 0 calc((100% - 36px) / 4);
-            max-width: calc((100% - 36px) / 4);
+            width: 100%;
             aspect-ratio: 4 / 3;
             border: 1px solid #d1d5db;
             display: flex;
