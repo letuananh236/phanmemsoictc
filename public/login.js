@@ -19,8 +19,9 @@ export function initLogin({ onSuccess }) {
           <input id="password" type="password" name="password" required />
         </div>
         <div class="form-row inline-fields">
-          <label class="checkbox-label">
-            <input type="checkbox" id="remember" /> Lưu thông tin đăng nhập
+          <label class="checkbox-label" for="remember">
+            <input type="checkbox" id="remember" />
+            <span class="checkbox-text">Lưu thông tin đăng nhập</span>
           </label>
         </div>
         <p class="version-text" id="app-version">Phiên bản: ...</p>
