@@ -73,7 +73,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
           .print-image.placeholder { border-style: dashed; color: #94a3b8; font-style: italic; font-size: 13px; }
           .signature-block { margin-top: 26px; text-align: right; line-height: 1.8; }
-          .signature-block .doctor-title { font-weight: 700; text-align: center; margin-top: 10px; }
+            .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 10px; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; }
           @media print {
             body {
