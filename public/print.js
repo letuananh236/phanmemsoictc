@@ -31,9 +31,9 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             color: #111827;
             line-height: 1.6;
           }
-          body { margin: 0; background: #e5e7eb; padding: 16px; }
+          body { margin: 0; background: #f3f4f6; padding: 16px; }
           .print-wrapper { width: 100%; margin: 0 auto; }
-          .print-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px; position: sticky; top: 0; padding: 8px 0; background: #e5e7eb; z-index: 2; }
+          .print-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px; position: sticky; top: 0; padding: 8px 0; background: #f3f4f6; z-index: 2; }
           .print-actions button { border: 1px solid #cbd5e1; background: #0f5ba7; color: #fff; padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; }
           .print-actions button.secondary { background: #6b7280; }
           .print-sheet {
@@ -43,11 +43,11 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin: 0 auto;
             background: #fff;
             padding: 1.4cm 1.6cm;
-            box-shadow: 0 18px 45px rgb(0 0 0 / 0.18);
+            box-shadow: 0 18px 45px rgb(0 0 0 / 0.16);
             font-size: 17px;
           }
-          header { display: grid; grid-template-columns: 88px 1fr; gap: 16px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #0f172a; margin-bottom: 10px; }
-          .print-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 6px; border: 1px solid #e5e7eb; padding: 6px; }
+          header { display: grid; grid-template-columns: 92px 1fr; gap: 16px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #1f2937; margin-bottom: 14px; }
+          .print-logo { width: 84px; height: 84px; object-fit: contain; border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px; }
           .header-text { display: flex; flex-direction: column; gap: 4px; }
           .header-text .hospital-name, .header-text .department-name { text-transform: uppercase; font-weight: 700; }
           .header-text .hospital-name { font-size: 21px; }
@@ -61,10 +61,10 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin: 6px 0 18px;
             letter-spacing: 0.2px;
           }
-          .info-lines { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 15px; }
-          .info-line { display: flex; flex-wrap: wrap; gap: 14px; }
-          .info-line .label { font-weight: 700; margin-right: 6px; }
-          .section { margin: 12px 0; }
+          .info-lines { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; font-size: 15px; }
+          .info-line { display: flex; flex-wrap: wrap; gap: 16px; align-items: baseline; }
+          .info-line .label { font-weight: 700; margin-right: 6px; white-space: nowrap; }
+          .section { margin: 12px 0 14px; }
           .section-heading { font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 32px; padding-left: 4px; }
@@ -141,9 +141,11 @@ function normalizeExamCode(code = '') {
 function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
   const patientCode = normalizeExamCode(patient?.id || exam?.examNumber || exam?.id || '');
   const insuranceNumber = exam?.insuranceNumber || '';
-  const diagnosis = exam?.diagnosis || exam?.result || reason;
-  const nationalId = patient?.nationalId || '';
-  const occupation = patient?.occupation || 'Bệnh nhân';
+  const diagnosis = exam?.diagnosis || exam?.result || '';
+  const visitReason = patient?.reason || reason || '';
+  const address = patient?.address || '';
+  const age = patient?.age || '';
+  const gender = patient?.gender || '';
 
   const imageRow = examImages
     .map((image, index) => {
@@ -174,21 +176,19 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
       <div class="info-lines">
         <div class="info-line">
           <span class="label">Họ và tên:</span> ${patient?.name || ''}
-          <span class="label">Tuổi:</span> ${patient?.age || ''}
-          <span class="label">Giới tính:</span> ${patient?.gender || ''}
+          <span class="label">Tuổi:</span> ${age}
+          <span class="label">Giới tính:</span> ${gender}
           <span class="label">Mã số BN:</span> ${patientCode}
         </div>
+          <div class="info-line">
+            <span class="label">Họ đã đến khám:</span> ${visitReason || diagnosis || ''}
+            <span class="label">Mã số BH:</span> ${insuranceNumber}
+          </div>
         <div class="info-line">
-          <span class="label">CMND/CCCD:</span> ${nationalId}
-          <span class="label">Nghề:</span> ${occupation}
-          <span class="label">Mã số BH:</span> ${insuranceNumber}
+          <span class="label">Lý do khám:</span> ${visitReason || ''}
         </div>
         <div class="info-line">
-          <span class="label">Địa chỉ:</span> ${patient?.address || ''}
-          <span class="label">ĐT liên hệ:</span> ${patient?.phone || ''}
-        </div>
-        <div class="info-line">
-          <span class="label">Lý do khám:</span> ${reason || diagnosis || ''}
+          <span class="label">Địa chỉ:</span> ${address}
         </div>
       </div>
 
@@ -205,6 +205,11 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
       <div class="section">
         <div class="section-heading">Các biểu hiện khác:</div>
         <div class="text-content">${exam?.description || ''}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-heading">Các bước điều trị:</div>
+        <div class="text-content">${exam?.treatmentSteps || ''}</div>
       </div>
 
       <div class="section">
