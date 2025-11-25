@@ -413,7 +413,12 @@ export function createCaptureView(appState) {
     document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'exam' } }));
   }
 
-  function clearImages() {
+  function clearSelectedImages() {
+    selectedImages = [];
+    renderGallery();
+  }
+
+  function clearGalleryImages() {
     capturedImages = [];
     selectedImages = [];
     renderGallery();
@@ -438,20 +443,23 @@ export function createCaptureView(appState) {
             <div class="form-row">
               <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
             </div>
+            <div class="form-row action-row">
+              <button type="button" id="accept-images">Chấp nhận (F10)</button>
+              <button type="button" class="secondary" id="clear-images">Xóa tất cả</button>
+            </div>
             <div class="form-row">
               <h4>Ảnh đã chọn</h4>
               <div class="image-grid selected-grid" id="selected-images"></div>
-            </div>
-            <div class="form-row">
-              <button type="button" id="accept-images">Chấp nhận (F10)</button>
-              <button type="button" class="secondary" id="clear-images">Xóa tất cả</button>
             </div>
           </div>
           <div class="capture-preview">
             <video autoplay playsinline muted class="video"></video>
           </div>
           <div class="capture-gallery">
-            <h4>Gallery ảnh</h4>
+            <div class="gallery-header">
+              <h4>Gallery ảnh</h4>
+              <button type="button" class="secondary" id="clear-gallery">Xóa gallery</button>
+            </div>
             <div id="capture-gallery"></div>
           </div>
         </div>
@@ -471,7 +479,8 @@ export function createCaptureView(appState) {
         .addEventListener('click', () => openCameraSettings(selectEl));
       container.querySelector('#capture-photo').addEventListener('click', capturePhoto);
       container.querySelector('#accept-images').addEventListener('click', acceptImages);
-      container.querySelector('#clear-images').addEventListener('click', clearImages);
+      container.querySelector('#clear-images').addEventListener('click', clearSelectedImages);
+      container.querySelector('#clear-gallery').addEventListener('click', clearGalleryImages);
       selectedImages = appState.selectedImages || [];
       renderSelectedPreview();
 

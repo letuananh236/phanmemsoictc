@@ -398,6 +398,12 @@ textarea {
   top: 12px;
 }
 
+.capture-controls .action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .capture-controls #capture-photo {
   font-size: 1.4rem;
   padding: 14px 22px;
@@ -409,6 +415,14 @@ textarea {
   height: auto;
   max-height: none;
   overflow-y: visible;
+}
+
+.capture-gallery .gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 
