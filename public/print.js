@@ -126,6 +126,16 @@ function formatExamDate(dateString) {
   return `Ngày ${day} tháng ${month} năm ${year}`;
 }
 
+function formatVisitDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = `${date.getDate()}`.padStart(2, '0');
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 function normalizeImages(images = [], targetCount = 4) {
   const list = (images || []).slice(0, targetCount);
   while (list.length < targetCount) {
@@ -139,13 +149,14 @@ function normalizeExamCode(code = '') {
 }
 
 function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
-  const patientCode = normalizeExamCode(patient?.id || exam?.examNumber || exam?.id || '');
+  const patientCode = normalizeExamCode(exam?.examNumber || exam?.id || patient?.id || '');
   const insuranceNumber = exam?.insuranceNumber || '';
   const diagnosis = exam?.diagnosis || exam?.result || '';
   const visitReason = patient?.reason || reason || '';
   const address = patient?.address || '';
   const age = patient?.age || '';
   const gender = patient?.gender || '';
+  const visitDate = formatVisitDate(exam?.date);
 
   const imageRow = examImages
     .map((image, index) => {
@@ -180,12 +191,12 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
           <span class="label">Giới tính:</span> ${gender}
           <span class="label">Mã số BN:</span> ${patientCode}
         </div>
-          <div class="info-line">
-            <span class="label">Họ đã đến khám:</span> ${visitReason || diagnosis || ''}
-            <span class="label">Mã số BH:</span> ${insuranceNumber}
-          </div>
         <div class="info-line">
-          <span class="label">Lý do khám:</span> ${visitReason || ''}
+          <span class="label">Đến khám:</span> ${visitDate || ''}
+          <span class="label">Mã số BH:</span> ${insuranceNumber}
+        </div>
+        <div class="info-line">
+          <span class="label">Lý do khám:</span> ${visitReason}
         </div>
         <div class="info-line">
           <span class="label">Địa chỉ:</span> ${address}
