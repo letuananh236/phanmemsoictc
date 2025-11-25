@@ -127,18 +127,18 @@ body {
 }
 
 .wide-card {
-  width: min(96vw, 2300px);
+  width: min(100vw, 2000px);
   margin: 0 auto;
 }
 
 .capture-view.wide-card,
 .exam-search-view.wide-card {
-  width: min(96vw, 2300px);
+  width: min(100vw, 2000px);
   margin: 0 auto;
 }
 
 .exam-view {
-  width: min(96vw, 2300px);
+  width: min(100vw, 2000px);
   margin: 0 auto;
 }
 
@@ -276,7 +276,11 @@ textarea {
   gap: 14px;
 }
 
-.exam-view .image-grid,
+.exam-view .image-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .exam-search-view .image-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 18px;
