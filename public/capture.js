@@ -421,6 +421,7 @@ export function createCaptureView(appState) {
 
   return {
     render(target) {
+      const captureHotkey = (appState.settings?.captureHotkey || 'F9').toUpperCase();
       container = document.createElement('section');
       container.className = 'card capture-view wide-card';
       container.innerHTML = `
@@ -435,7 +436,7 @@ export function createCaptureView(appState) {
               <button type="button" class="secondary" id="open-camera-settings">Cấu hình camera</button>
             </div>
             <div class="form-row">
-              <button type="button" id="capture-photo">Chụp hình</button>
+              <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
             </div>
             <div class="form-row">
               <h4>Ảnh đã chọn</h4>
@@ -478,7 +479,14 @@ export function createCaptureView(appState) {
         window.removeEventListener('keydown', keyHandler);
       }
       keyHandler = (event) => {
-        if (event.key === 'F10' && container.isConnected) {
+        if (!container.isConnected) return;
+        const key = `${event.key || ''}`.toUpperCase();
+        if (captureHotkey && key === captureHotkey) {
+          event.preventDefault();
+          capturePhoto();
+          return;
+        }
+        if (key === 'F10') {
           event.preventDefault();
           acceptImages();
         }

@@ -398,6 +398,13 @@ textarea {
   top: 12px;
 }
 
+.capture-controls #capture-photo {
+  font-size: 1.4rem;
+  padding: 14px 22px;
+  font-weight: 700;
+  min-width: 160px;
+}
+
 .capture-gallery {
   height: auto;
   max-height: none;

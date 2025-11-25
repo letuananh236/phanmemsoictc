@@ -45,6 +45,7 @@ const defaultData = {
     nextPatientNumber: 1,
     nextExamNumber: 1,
     defaultImageCount: 4,
+    captureHotkey: 'F9',
     defaultDescription: 'Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n',
     defaultResult: '',
     defaultConclusion: '',

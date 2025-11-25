@@ -46,6 +46,14 @@ export function createSettingsView(appState) {
               </select>
             </div>
             <div class="form-row">
+              <label>Phím chụp nhanh</label>
+              <select name="captureHotkey">
+                ${Array.from({ length: 12 })
+                  .map((_, idx) => `<option value="F${idx + 1}">F${idx + 1}</option>`)
+                  .join('')}
+              </select>
+            </div>
+            <div class="form-row">
               <label>Mô tả mặc định</label>
               <textarea name="defaultDescription"></textarea>
             </div>
