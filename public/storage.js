@@ -109,6 +109,9 @@ export const storage = {
     headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   }),
+  resetLicense: () => request('/api/license/reset', {
+    method: 'POST'
+  }),
   uploadLogo: (payload) => request('/api/logo', {
     method: 'POST',
     headers: JSON_HEADERS,

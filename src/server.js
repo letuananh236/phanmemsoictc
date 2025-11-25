@@ -66,6 +66,28 @@ function normalizeLicenseKey(key) {
   return (key || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
 }
 
+function normalizeLicenseType(type) {
+  const value = (type || '').toString().toLowerCase();
+  if (['monthly', 'month', '30-day', '30day', '30_days', 'thirty_day'].includes(value)) return 'thirty_day';
+  if (value === 'lifetime') return 'lifetime';
+  if (value === 'trial') return 'trial';
+  return 'yearly';
+}
+
+function expectedLicenseKeys(machineId, licenseType) {
+  const normalizedType = normalizeLicenseType(licenseType);
+  const keys = [
+    generateLicenseKey(machineId, normalizedType),
+    generateLicenseKey(machineId)
+  ];
+  const fallbackTypes = ['yearly', 'lifetime', 'thirty_day'];
+  fallbackTypes.forEach((type) => {
+    const derived = generateLicenseKey(machineId, type);
+    if (!keys.includes(derived)) keys.push(derived);
+  });
+  return keys.map(normalizeLicenseKey);
+}
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -134,9 +156,10 @@ async function ensureLicense() {
     return fallback;
   })();
 
+  const normalizedType = normalizeLicenseType(license?.licenseType || 'trial');
   const normalized = {
     machineId,
-    licenseType: license?.licenseType || 'trial',
+    licenseType: normalizedType,
     licenseKey: license?.licenseKey || '',
     startDate: startDate.toISOString().slice(0, 10),
     expireDate: expireDate.toISOString().slice(0, 10),
@@ -153,9 +176,9 @@ function isLicenseValid(license) {
   if (!license) return false;
   const machineId = generateMachineKey();
   if (license.machineId !== machineId) return false;
-  const expected = normalizeLicenseKey(generateLicenseKey(machineId));
   const provided = normalizeLicenseKey(license.licenseKey);
-  if (!provided || provided !== expected) return false;
+  const expectedKeys = expectedLicenseKeys(machineId, license.licenseType);
+  if (!provided || !expectedKeys.includes(provided)) return false;
   if (license.status !== 'valid') return false;
   const expire = new Date(license.expireDate);
   return !Number.isNaN(expire.getTime()) && expire >= new Date();
@@ -633,7 +656,8 @@ async function handleApi(req, res, pathname) {
   if (pathname === '/api/license/activate' && req.method === 'POST') {
     const payload = await parseBody(req);
     const machineId = generateMachineKey();
-    const expectedKey = generateLicenseKey(machineId);
+    const normalizedType = normalizeLicenseType(payload.licenseType || 'yearly');
+    const expectedKey = generateLicenseKey(machineId, normalizedType);
     const providedKey = normalizeLicenseKey(payload.licenseKey);
     if (!providedKey || providedKey !== normalizeLicenseKey(expectedKey)) {
       sendJson(res, 400, { error: 'invalid_license_key', machineId });
@@ -641,16 +665,16 @@ async function handleApi(req, res, pathname) {
     }
     const now = new Date();
     const expire = new Date(now);
-    if (payload.licenseType === 'lifetime') {
+    if (normalizedType === 'lifetime') {
       expire.setFullYear(expire.getFullYear() + 100);
-    } else if (payload.licenseType === 'yearly') {
+    } else if (normalizedType === 'yearly') {
       expire.setFullYear(expire.getFullYear() + 1);
     } else {
-      expire.setMonth(expire.getMonth() + 1);
+      expire.setDate(expire.getDate() + 30);
     }
     const updated = {
       machineId,
-      licenseType: payload.licenseType || 'monthly',
+      licenseType: normalizedType,
       licenseKey: expectedKey,
       startDate: now.toISOString().slice(0, 10),
       expireDate: expire.toISOString().slice(0, 10),
@@ -658,6 +682,24 @@ async function handleApi(req, res, pathname) {
     };
     await writeJson(jsonFiles.license, updated);
     sendJson(res, 200, { license: updated, valid: true });
+    return;
+  }
+
+  if (pathname === '/api/license/reset' && req.method === 'POST') {
+    const machineId = generateMachineKey();
+    const now = new Date();
+    const expire = new Date(now);
+    expire.setDate(expire.getDate() + 30);
+    const cleared = {
+      machineId,
+      licenseType: 'trial',
+      licenseKey: '',
+      startDate: now.toISOString().slice(0, 10),
+      expireDate: expire.toISOString().slice(0, 10),
+      status: 'invalid'
+    };
+    await writeJson(jsonFiles.license, cleared);
+    sendJson(res, 200, { license: cleared, valid: false });
     return;
   }
 

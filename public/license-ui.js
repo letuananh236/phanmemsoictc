@@ -1,10 +1,9 @@
 import { storage, showToast } from './storage.js';
 
 const PLANS = [
-  { id: 'trial', label: 'Dùng thử 30 ngày', price: '0đ' },
-  { id: 'monthly', label: 'Gói 1 tháng', price: 'Liên hệ' },
-  { id: 'yearly', label: '1 năm - 500.000đ', price: '500k' },
-  { id: 'lifetime', label: 'Vĩnh viễn - 1.000.000đ', price: '1tr' }
+  { id: 'thirty_day', label: 'Kích hoạt 30 ngày' },
+  { id: 'yearly', label: 'Kích hoạt 1 năm' },
+  { id: 'lifetime', label: 'Kích hoạt vĩnh viễn' }
 ];
 
 export function createLicenseView(appState) {
@@ -14,6 +13,12 @@ export function createLicenseView(appState) {
     wrapper.querySelector('#license-status').textContent = valid ? 'Hợp lệ' : 'Hết hạn';
     wrapper.querySelector('#license-machine').textContent = license.machineId;
     wrapper.querySelector('#license-expire').textContent = license.expireDate;
+    const planSelect = wrapper.querySelector('select[name="licenseType"]');
+    if (planSelect) {
+      const availableIds = PLANS.map((plan) => plan.id);
+      const desired = availableIds.includes(license.licenseType) ? license.licenseType : 'thirty_day';
+      planSelect.value = desired;
+    }
   }
 
   return {
@@ -41,7 +46,10 @@ export function createLicenseView(appState) {
                 <label>Mã kích hoạt</label>
                 <input name="licenseKey" placeholder="Nhập key" />
               </div>
-              <button type="submit">Kích hoạt</button>
+              <div class="toolbar license-actions">
+                <button type="submit">Kích hoạt</button>
+                <button type="button" class="secondary" id="license-reset">Xóa kích hoạt</button>
+              </div>
             </form>
           </div>
         </div>
@@ -61,6 +69,19 @@ export function createLicenseView(appState) {
           document.dispatchEvent(new CustomEvent('license:activated'));
         } catch (error) {
           showToast(error.message || 'Kích hoạt thất bại');
+        }
+      });
+
+      const resetBtn = wrapper.querySelector('#license-reset');
+      resetBtn.addEventListener('click', async () => {
+        try {
+          const result = await storage.resetLicense();
+          appState.license = result.license;
+          showToast('Đã xóa kích hoạt, quay lại trạng thái thử');
+          renderLicense(wrapper);
+          document.dispatchEvent(new CustomEvent('license:activated'));
+        } catch (error) {
+          showToast(error.message || 'Không thể xóa kích hoạt');
         }
       });
 

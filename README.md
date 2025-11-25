@@ -61,8 +61,9 @@ Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `a
 5. **Cấu hình/Doctor/Mẫu**: quản lý dữ liệu nền trực tiếp qua giao diện, dữ liệu được ghi vào JSON tương ứng.
 
 ## Kích hoạt bản quyền theo mã máy
-- Chạy `node scripts/generate-license-key.js` để đọc serial CPU, serial ổ cứng chính (nếu OS cho phép) và dung lượng RAM, sau đó băm SHA-256 để tạo `machineId` dạng `XXXX-XXXX-XXXX` **và** sinh `licenseKey` (HMAC SHA-256 cố định) gắn với mã máy.
-- Mã máy và license key này được dùng ngay trong API `/api/license/activate` hoặc trong tab "Bản quyền" trên giao diện; khi chưa kích hoạt hợp lệ, toàn bộ API (trừ login/license/meta) bị chặn.
+- Chạy `node scripts/generate-license-key.js` để đọc serial CPU, serial ổ cứng chính (nếu OS cho phép) và dung lượng RAM, sau đó băm SHA-256 để tạo `machineId` dạng `XXXX-XXXX-XXXX` **và** sinh 3 mã bản quyền (30 ngày / 1 năm / vĩnh viễn) gắn với mã máy.
+- Có thể truyền `--machine <MA_SO_MAY>` để nhập thủ công, ví dụ: `node scripts/generate-license-key.js --machine B6E0-887A-97B9` sẽ in ra lần lượt `1C5E-C5DD-7304-D51B` (30 ngày), `4601-8654-B2E5-7240` (1 năm) và `CFA8-E394-D802-617F` (vĩnh viễn).
+- Mã máy và license key được dùng ngay trong API `/api/license/activate` hoặc trong tab "Bản quyền" trên giao diện; khi chưa kích hoạt hợp lệ, toàn bộ API (trừ login/license/meta) bị chặn.
 - Nếu không lấy được serial từ hệ điều hành, key sẽ rơi về hostname để đảm bảo luôn sinh ra giá trị ổn định.
 
 Mẫu code (nằm trong `scripts/generate-license-key.js`):
@@ -87,7 +88,7 @@ console.log('License key:', licenseKey);
 - `GET/POST/PUT/DELETE /api/exams`
 - `GET/POST/PUT/DELETE /api/doctors`
 - `GET/POST/PUT/DELETE /api/result-templates`
-- `GET /api/license`, `POST /api/license/activate`
+- `GET /api/license`, `POST /api/license/activate`, `POST /api/license/reset`
 - `POST /api/images` (upload PNG → `data/images/YYYY/MM/ID_x.png`)
 - `GET /api/backup` (trả về ZIP thư mục `data/`)
 - `POST /api/restore` (upload ZIP để giải nén đè `data/`)

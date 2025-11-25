@@ -67,8 +67,18 @@ export function generateMachineKey() {
   return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}`;
 }
 
-export function generateLicenseKey(machineKey) {
-  const normalized = (machineKey || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
-  const hash = crypto.createHmac('sha256', 'SOICTC_LICENSE_V1').update(normalized).digest('hex').toUpperCase();
+const LICENSE_SEEDS = {
+  yearly: 'SOICTC_LICENSE_V1',
+  lifetime: 'SOICTC_LICENSE_V1_LIFETIME',
+  thirty_day: 'SOICTC_LICENSE_V1_30DAY',
+  trial: 'SOICTC_LICENSE_V1_TRIAL',
+  default: 'SOICTC_LICENSE_V1'
+};
+
+export function generateLicenseKey(machineKey, licenseType = 'yearly') {
+  const normalizedMachine = (machineKey || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  const normalizedType = (licenseType || 'yearly').toLowerCase();
+  const seed = LICENSE_SEEDS[normalizedType] || LICENSE_SEEDS.default;
+  const hash = crypto.createHmac('sha256', seed).update(normalizedMachine).digest('hex').toUpperCase();
   return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}`;
 }
