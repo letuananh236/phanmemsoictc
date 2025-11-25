@@ -251,44 +251,38 @@ export function createExamFormView(appState) {
           <div>
             <div class="card patient-card">
               <h3>Thông tin bệnh nhân</h3>
-              <div class="form-row inline-fields">
-                <div class="field short-field">
+              <div class="patient-grid">
+                <div class="field">
                   <label>Mã</label>
                   <input class="input-short" name="patientId" readonly />
                 </div>
-                <div class="field">
+                <div class="field full-name">
                   <label>Họ tên *</label>
                   <input name="patientName" required />
                 </div>
-              </div>
-              <div class="patient-columns">
-                <div class="patient-col">
-                  <div class="form-row">
-                    <label>Tuổi *</label>
-                    <input name="patientAge" type="number" min="0" required />
-                  </div>
-                  <div class="form-row">
-                    <label>Giới tính</label>
-                    <select name="patientGender">
-                      <option>Nam</option>
-                      <option>Nữ</option>
-                    </select>
-                  </div>
+                <div class="field compact">
+                  <label>Tuổi *</label>
+                  <input name="patientAge" type="number" min="0" required />
                 </div>
-                <div class="patient-col">
-                  <div class="form-row">
-                    <label>Địa chỉ</label>
-                    <input name="patientAddress" />
-                  </div>
-                  <div class="form-row">
-                    <label>Điện thoại</label>
-                    <input name="patientPhone" />
-                  </div>
+                <div class="field compact">
+                  <label>Giới tính</label>
+                  <select name="patientGender">
+                    <option>Nam</option>
+                    <option>Nữ</option>
+                  </select>
                 </div>
-              </div>
-              <div class="form-row">
-                <label>Lý do khám</label>
-                <input name="patientReason" />
+                <div class="field address">
+                  <label>Địa chỉ</label>
+                  <input name="patientAddress" />
+                </div>
+                <div class="field phone">
+                  <label>Điện thoại</label>
+                  <input name="patientPhone" />
+                </div>
+                <div class="field reason">
+                  <label>Lý do khám</label>
+                  <input name="patientReason" />
+                </div>
               </div>
             </div>
             <div class="card exam-details">
