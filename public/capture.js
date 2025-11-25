@@ -352,10 +352,12 @@ export function createCaptureView(appState) {
 
   function toggleSelection(image) {
     const limit = appState.settings?.defaultImageCount || 4;
+    const currentCount = selectedImages.filter(Boolean).length;
+
     if (selectedImages.includes(image)) {
       selectedImages = selectedImages.filter((img) => img !== image);
     } else {
-      if (selectedImages.length >= limit) {
+      if (currentCount >= limit) {
         alert(`Chỉ được chọn tối đa ${limit} ảnh`);
         return;
       }
@@ -481,7 +483,7 @@ export function createCaptureView(appState) {
       container.querySelector('#accept-images').addEventListener('click', acceptImages);
       container.querySelector('#clear-images').addEventListener('click', clearSelectedImages);
       container.querySelector('#clear-gallery').addEventListener('click', clearGalleryImages);
-      selectedImages = appState.selectedImages || [];
+      selectedImages = (appState.selectedImages || []).filter(Boolean);
       renderSelectedPreview();
 
       if (keyHandler) {

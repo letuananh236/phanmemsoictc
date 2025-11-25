@@ -1,4 +1,4 @@
-import { storage, showToast } from './storage.js';
+import { storage } from './storage.js';
 import { openPrintPreview } from './print.js';
 
 function formatCode(prefix, number) {
@@ -67,6 +67,22 @@ export function createExamFormView(appState) {
 
   function getImageCount() {
     return appState.settings?.defaultImageCount || 4;
+  }
+
+  function updateSaveStatus(message) {
+    const statusEl = container?.querySelector('#exam-save-status');
+    if (!statusEl) return;
+
+    statusEl.textContent = message || '';
+    statusEl.classList.toggle('visible', Boolean(message));
+
+    clearTimeout(updateSaveStatus.timeoutId);
+    if (message) {
+      updateSaveStatus.timeoutId = setTimeout(() => {
+        statusEl.textContent = '';
+        statusEl.classList.remove('visible');
+      }, 3000);
+    }
   }
 
   function renderImageSlots(wrapper, images) {
@@ -181,7 +197,7 @@ export function createExamFormView(appState) {
     form.examId.value = savedExam.id;
     form.examNumber.value = savedExam.examNumber || savedExam.id;
     await refreshSettings();
-    showToast('Đã lưu phiếu khám');
+    updateSaveStatus('Đã lưu phiếu khám');
   }
 
   function handlePrint(form) {
@@ -197,6 +213,7 @@ export function createExamFormView(appState) {
     renderImageSlots(container.querySelector('.image-grid'), []);
     currentExam = null;
     currentPatient = null;
+    updateSaveStatus('');
     persistDraft(form);
   }
 
@@ -243,7 +260,10 @@ export function createExamFormView(appState) {
           <button type="button" data-action="new">Tạo PK mới</button>
           <button type="button" data-action="save">Lưu</button>
           <button type="button" data-action="print">In phiếu</button>
-          <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
+          <div class="toolbar-group">
+            <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
+            <span class="save-status" id="exam-save-status" aria-live="polite"></span>
+          </div>
         </div>
         <form class="grid-2" id="exam-form">
           <input type="hidden" name="examId" />
