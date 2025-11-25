@@ -317,12 +317,12 @@ export function createExamFormView(appState) {
                 <input type="date" name="examDate" />
               </div>
               <div class="form-row">
-                <label>Mô tả soi CTC</label>
-                <textarea name="description"></textarea>
-              </div>
-              <div class="form-row">
                 <label>KQ soi tử cung</label>
                 <textarea name="result"></textarea>
+              </div>
+              <div class="form-row">
+                <label>Mô tả soi CTC</label>
+                <textarea name="description"></textarea>
               </div>
               <div class="form-row">
                 <label>Các bước điều trị</label>
