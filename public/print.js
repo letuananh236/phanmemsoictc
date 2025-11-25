@@ -75,6 +75,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block { margin-top: 26px; text-align: right; line-height: 1.8; }
             .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 10px; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; }
+          .print-note { margin-top: 28px; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
               background: #fff;
@@ -232,6 +233,10 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
         <div>${formattedDate}</div>
         <div class="doctor-title">Bác sỹ khám bệnh</div>
         <div class="doctor-name">${doctorName}</div>
+      </div>
+
+      <div class="print-note">
+        Xin hãy giữ lại giấy khám này và mang đến cho lần khám tiếp theo.
       </div>
     </div>
   `;
