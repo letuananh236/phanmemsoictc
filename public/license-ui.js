@@ -53,9 +53,15 @@ export function createLicenseView(appState) {
         event.preventDefault();
         const formData = new FormData(form);
         const payload = Object.fromEntries(formData.entries());
-        await storage.activateLicense(payload);
-        showToast('Đã kích hoạt bản quyền');
-        renderLicense(wrapper);
+        try {
+          const result = await storage.activateLicense(payload);
+          appState.license = result.license;
+          showToast('Đã kích hoạt bản quyền');
+          renderLicense(wrapper);
+          document.dispatchEvent(new CustomEvent('license:activated'));
+        } catch (error) {
+          showToast(error.message || 'Kích hoạt thất bại');
+        }
       });
 
       renderLicense(wrapper);

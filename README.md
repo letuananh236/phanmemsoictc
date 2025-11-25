@@ -53,30 +53,32 @@ cd phanmemsoictc
 npm install
 npm start
 ```
-Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (mặc định trial 30 ngày) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/` và chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`, sau đó khởi động lại server.
+Sau khi server báo địa chỉ, mở `http://localhost:3000`, đăng nhập `admin` / `123`, kiểm tra giấy phép (lần chạy đầu tiên sẽ yêu cầu mã bản quyền dựa trên mã máy) rồi sử dụng menu/phím tắt. Nếu muốn thay logo, chép file (ví dụ `logo-benhvien.png`) vào `public/assets/` và chỉnh `data/settings.json` → `"logoFileName": "logo-benhvien.png"`, sau đó khởi động lại server.
 1. **F3 – Khám bệnh**: điền thông tin BN, phiếu khám, chọn bác sỹ, lưu phiếu. Nút “Lấy hình ảnh (F4)” chuyển sang màn hình camera.
 2. **F4 – Lấy hình**: bật camera, chụp, tick tối đa số ảnh cấu hình, bấm “Chấp nhận (F10)” để tải ảnh lên thư mục `data/images/` và đưa về form.
 3. **In phiếu**: tại Khám bệnh bấm “In phiếu” → `print.js` dựng trang A4 với logo bệnh viện, mô tả, ảnh.
 4. **Tìm phiếu**: dùng màn hình phụ để lọc phiếu khám.
 5. **Cấu hình/Doctor/Mẫu**: quản lý dữ liệu nền trực tiếp qua giao diện, dữ liệu được ghi vào JSON tương ứng.
 
-## Tạo key phần mềm theo phần cứng
-- Chạy `node scripts/generate-license-key.js` để đọc serial CPU, serial ổ cứng chính (nếu OS cho phép) và dung lượng RAM, sau đó băm SHA-256 để tạo `machineId` dạng `XXXX-XXXX-XXXX` cho giấy phép.
-- Mã được dùng ngay trong API `/api/license/activate` và hiển thị ở `data/license.json`.
+## Kích hoạt bản quyền theo mã máy
+- Chạy `node scripts/generate-license-key.js` để đọc serial CPU, serial ổ cứng chính (nếu OS cho phép) và dung lượng RAM, sau đó băm SHA-256 để tạo `machineId` dạng `XXXX-XXXX-XXXX` **và** sinh `licenseKey` (HMAC SHA-256 cố định) gắn với mã máy.
+- Mã máy và license key này được dùng ngay trong API `/api/license/activate` hoặc trong tab "Bản quyền" trên giao diện; khi chưa kích hoạt hợp lệ, toàn bộ API (trừ login/license/meta) bị chặn.
 - Nếu không lấy được serial từ hệ điều hành, key sẽ rơi về hostname để đảm bảo luôn sinh ra giá trị ổn định.
 
 Mẫu code (nằm trong `scripts/generate-license-key.js`):
 
 ```js
-import { collectHardwareInfo, generateMachineKey } from '../src/hardware-id.js';
+import { collectHardwareInfo, generateLicenseKey, generateMachineKey } from '../src/hardware-id.js';
 
 const info = collectHardwareInfo();
-const key = generateMachineKey();
+const machineKey = generateMachineKey();
+const licenseKey = generateLicenseKey(machineKey);
 
 console.log('CPU Serial:', info.cpuSerial);
 console.log('Ổ cứng Serial:', info.diskSerial);
 console.log('RAM (MB):', info.ramMb);
-console.log('Machine key:', key);
+console.log('Machine key:', machineKey);
+console.log('License key:', licenseKey);
 ```
 
 ## API chính (server.js)

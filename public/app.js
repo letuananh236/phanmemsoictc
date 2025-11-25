@@ -57,9 +57,13 @@ async function checkLicense() {
   const data = await storage.getLicense();
   appState.license = data.license;
   if (!data.valid) {
+    setMenuEnabled(false);
     showToast('Bản quyền hết hạn - hãy kích hoạt để tiếp tục');
     renderView('license');
+    return false;
   }
+  setMenuEnabled(true);
+  return true;
 }
 
 function renderView(viewKey) {
@@ -117,11 +121,18 @@ document.addEventListener('navigate', (event) => {
 initLogin({
   onSuccess: async (user) => {
     appState.user = user;
+    const valid = await checkLicense();
+    if (!valid) return;
     await loadSettings();
-    await checkLicense();
-    setMenuEnabled(true);
     renderView('exam');
   }
+});
+
+document.addEventListener('license:activated', async () => {
+  const valid = await checkLicense();
+  if (!valid) return;
+  await loadSettings();
+  renderView('exam');
 });
 
 setMenuEnabled(false);

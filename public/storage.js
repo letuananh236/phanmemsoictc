@@ -2,12 +2,16 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 async function request(path, options = {}) {
   const response = await fetch(path, options);
+  const contentType = response.headers.get('content-type') || '';
   if (!response.ok) {
+    if (contentType.includes('application/json')) {
+      const errorJson = await response.json();
+      throw new Error(errorJson.error || 'Yêu cầu thất bại');
+    }
     const errorText = await response.text();
     throw new Error(errorText || 'Yêu cầu thất bại');
   }
-  const type = response.headers.get('content-type') || '';
-  if (type.includes('application/json')) {
+  if (contentType.includes('application/json')) {
     return response.json();
   }
   return response.text();

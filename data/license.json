@@ -1,8 +1,8 @@
 {
-  "machineId": "LOCAL-DEMO",
+  "machineId": "F0B7-2E48-3587",
   "licenseType": "trial",
   "licenseKey": "",
-  "startDate": "2025-01-01",
-  "expireDate": "2025-12-31",
-  "status": "valid"
+  "startDate": "2025-11-25",
+  "expireDate": "2025-12-25",
+  "status": "invalid"
 }

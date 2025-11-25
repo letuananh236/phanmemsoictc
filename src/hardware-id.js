@@ -66,3 +66,9 @@ export function generateMachineKey() {
     .toUpperCase();
   return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}`;
 }
+
+export function generateLicenseKey(machineKey) {
+  const normalized = (machineKey || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  const hash = crypto.createHmac('sha256', 'SOICTC_LICENSE_V1').update(normalized).digest('hex').toUpperCase();
+  return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}`;
+}

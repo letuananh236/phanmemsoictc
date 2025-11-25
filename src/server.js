@@ -6,7 +6,7 @@ import fsPromises from 'fs/promises';
 import os from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { generateMachineKey } from './hardware-id.js';
+import { generateLicenseKey, generateMachineKey } from './hardware-id.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -61,6 +61,10 @@ const defaultData = {
   license: {},
   users: [{ username: 'admin', password: '123' }]
 };
+
+function normalizeLicenseKey(key) {
+  return (key || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -117,25 +121,41 @@ async function ensureLicense() {
   } catch {
     license = null;
   }
-  if (!license || !license.startDate) {
-    const now = new Date();
-    const expire = new Date(now);
-    expire.setDate(expire.getDate() + 30);
-    license = {
-      machineId: generateMachineKey(),
-      licenseType: 'trial',
-      licenseKey: '',
-      startDate: now.toISOString().slice(0, 10),
-      expireDate: expire.toISOString().slice(0, 10),
-      status: 'valid'
-    };
-    await writeJson(jsonFiles.license, license);
-  }
-  return license;
+  const machineId = generateMachineKey();
+  const now = new Date();
+  const startDate = license?.startDate && !Number.isNaN(new Date(license.startDate))
+    ? new Date(license.startDate)
+    : now;
+  const expireDate = (() => {
+    const candidate = license?.expireDate && new Date(license.expireDate);
+    if (candidate && !Number.isNaN(candidate)) return candidate;
+    const fallback = new Date(startDate);
+    fallback.setDate(fallback.getDate() + 30);
+    return fallback;
+  })();
+
+  const normalized = {
+    machineId,
+    licenseType: license?.licenseType || 'trial',
+    licenseKey: license?.licenseKey || '',
+    startDate: startDate.toISOString().slice(0, 10),
+    expireDate: expireDate.toISOString().slice(0, 10),
+    status: license?.status || 'invalid'
+  };
+
+  const valid = isLicenseValid(normalized);
+  normalized.status = valid ? 'valid' : 'invalid';
+  await writeJson(jsonFiles.license, normalized);
+  return normalized;
 }
 
 function isLicenseValid(license) {
   if (!license) return false;
+  const machineId = generateMachineKey();
+  if (license.machineId !== machineId) return false;
+  const expected = normalizeLicenseKey(generateLicenseKey(machineId));
+  const provided = normalizeLicenseKey(license.licenseKey);
+  if (!provided || provided !== expected) return false;
   if (license.status !== 'valid') return false;
   const expire = new Date(license.expireDate);
   return !Number.isNaN(expire.getTime()) && expire >= new Date();
@@ -612,6 +632,13 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/license/activate' && req.method === 'POST') {
     const payload = await parseBody(req);
+    const machineId = generateMachineKey();
+    const expectedKey = generateLicenseKey(machineId);
+    const providedKey = normalizeLicenseKey(payload.licenseKey);
+    if (!providedKey || providedKey !== normalizeLicenseKey(expectedKey)) {
+      sendJson(res, 400, { error: 'invalid_license_key', machineId });
+      return;
+    }
     const now = new Date();
     const expire = new Date(now);
     if (payload.licenseType === 'lifetime') {
@@ -622,9 +649,9 @@ async function handleApi(req, res, pathname) {
       expire.setMonth(expire.getMonth() + 1);
     }
     const updated = {
-      machineId: generateMachineKey(),
-      licenseType: payload.licenseType || 'trial',
-      licenseKey: payload.licenseKey || '',
+      machineId,
+      licenseType: payload.licenseType || 'monthly',
+      licenseKey: expectedKey,
       startDate: now.toISOString().slice(0, 10),
       expireDate: expire.toISOString().slice(0, 10),
       status: 'valid'
