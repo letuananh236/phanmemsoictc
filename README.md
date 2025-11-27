@@ -28,8 +28,8 @@ Mở `http://localhost:3000`, đăng nhập, nhập mã bản quyền nếu đư
 - `src/db.js`: cấu hình đường dẫn, khởi tạo SQLite và tiện ích đọc/ghi.
 - `src/models/`: xử lý nghiệp vụ (exam, patient, image, license, settings, backup, user).
 - `src/views/`: `layout.ejs`, `home.ejs` và các template view (`login.ejs`, `exam-form.ejs`, `exam-detail.ejs`, `camera.ejs`).
-- `public/css`: stylesheet; `public/js`: toàn bộ logic frontend; `public/images`: logo mặc định dùng để sao chép vào kho logo.
-- `database/`: chứa file SQLite, thư mục ảnh chụp (`database/images/`), thư mục logo tải lên (`database/logo/`) và các `.gitkeep` để giữ cấu trúc.
+- `public/css`: stylesheet; `public/js`: toàn bộ logic frontend.
+- `database/`: chứa file SQLite, thư mục ảnh chụp (`database/images/`), thư mục logo tải lên (`database/logo/`) và các `.gitkeep` để giữ cấu trúc; logo mặc định được sinh vào `database/logo/logo-default.svg`.
 
 ## Kiểm thử
 ```bash

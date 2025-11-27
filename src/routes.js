@@ -5,11 +5,14 @@ import { ensureInfrastructure, getDefaultData, getPaths } from './db.js';
 import { addUser, listUsers } from './models/user.model.js';
 import {
   createExam,
+  createDoctor,
   getExam,
   listDoctors,
   listExams,
   listTemplates,
+  removeDoctor,
   removeExam,
+  updateDoctor,
   updateExam
 } from './models/exam.model.js';
 import { createPatient, getPatient, listPatients, removePatient, updatePatient } from './models/patient.model.js';
@@ -268,9 +271,45 @@ async function handleApi(req, res, pathname) {
     }
   }
 
-  if (pathname === '/api/doctors' && req.method === 'GET') {
-    sendJson(res, 200, listDoctors());
-    return true;
+  if (pathname === '/api/doctors') {
+    if (req.method === 'GET') {
+      sendJson(res, 200, listDoctors());
+      return true;
+    }
+    if (req.method === 'POST') {
+      const payload = await parseBody(req);
+      const doctor = createDoctor(payload);
+      if (doctor?.error === 'doctor_exists') {
+        sendJson(res, 409, { error: 'doctor_exists' });
+        return true;
+      }
+      if (doctor?.error) {
+        sendJson(res, 400, doctor);
+        return true;
+      }
+      sendJson(res, 201, doctor);
+      return true;
+    }
+  }
+
+  if (pathname.startsWith('/api/doctors/')) {
+    const id = decodeURIComponent(pathname.split('/').pop() || '');
+    if (req.method === 'PUT') {
+      const payload = await parseBody(req);
+      const updated = updateDoctor(id, payload);
+      sendJson(res, updated ? 200 : 404, updated || { error: 'not_found' });
+      return true;
+    }
+    if (req.method === 'DELETE') {
+      const settings = getSettings();
+      if (!settings.allowDeleteData) {
+        sendJson(res, 403, { error: 'delete_disabled' });
+        return true;
+      }
+      removeDoctor(id, true);
+      sendJson(res, 200, { success: true });
+      return true;
+    }
   }
 
   if (pathname === '/api/templates' && req.method === 'GET') {

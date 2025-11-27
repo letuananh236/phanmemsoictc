@@ -8,11 +8,25 @@ import { DatabaseSync } from 'node:sqlite';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
-const publicDir = path.join(rootDir, 'public');
 const databaseDir = path.join(rootDir, 'database');
 const imagesDir = path.join(databaseDir, 'images');
 const logoDir = path.join(databaseDir, 'logo');
 const dbPath = path.join(databaseDir, 'database.sqlite');
+
+const defaultLogoSvg = `<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2f80ed" />
+      <stop offset="100%" stop-color="#56ccf2" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="76" height="76" rx="12" fill="url(#grad)" stroke="#1b4f8c" stroke-width="4" />
+  <path d="M20 45 L30 30 L38 38 L50 22 L60 35 L68 25 L68 58 L20 58 Z" fill="rgba(255,255,255,0.9)" />
+  <circle cx="32" cy="32" r="6" fill="#1b4f8c" opacity="0.6" />
+  <text x="40" y="72" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#ffffff">
+    MED
+  </text>
+</svg>`;
 
 const defaultData = {
   settings: {
@@ -47,7 +61,7 @@ const defaultData = {
 let db;
 
 function getPaths() {
-  return { rootDir, publicDir, imagesDir, logoDir, databaseDir };
+  return { rootDir, publicDir: path.join(rootDir, 'public'), imagesDir, logoDir, databaseDir };
 }
 
 async function ensureDefaultLogo() {
@@ -56,8 +70,7 @@ async function ensureDefaultLogo() {
   try {
     await fsPromises.access(target, fs.constants.F_OK);
   } catch {
-    const source = path.join(publicDir, 'images', 'logo-default.svg');
-    await fsPromises.copyFile(source, target);
+    await fsPromises.writeFile(target, defaultLogoSvg.trim(), 'utf-8');
   }
 }
 
@@ -74,7 +87,7 @@ async function copyIfExists(source, destination) {
 
 async function migrateLegacyAssets() {
   const legacyImages = path.join(rootDir, 'data', 'images');
-  const legacyLogos = path.join(publicDir, 'images', 'logo');
+  const legacyLogos = path.join(rootDir, 'public', 'images', 'logo');
   await copyIfExists(legacyImages, imagesDir);
   await copyIfExists(legacyLogos, logoDir);
 }

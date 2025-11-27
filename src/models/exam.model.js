@@ -11,6 +11,31 @@ function listDoctors() {
   return listRecords('doctors');
 }
 
+function createDoctor(payload) {
+  const id = (payload.id || '').trim();
+  const name = (payload.name || '').trim();
+  if (!id || !name) return { error: 'invalid_doctor' };
+  const exists = getRecord('doctors', id);
+  if (exists) return { error: 'doctor_exists' };
+  const doctor = { id, name, active: payload.active !== false };
+  upsertRecord('doctors', id, doctor);
+  return doctor;
+}
+
+function updateDoctor(id, payload) {
+  const doctor = getRecord('doctors', id);
+  if (!doctor) return null;
+  const updated = { ...doctor, ...payload, id: doctor.id };
+  upsertRecord('doctors', id, updated);
+  return updated;
+}
+
+function removeDoctor(id, canDelete) {
+  if (!canDelete) return false;
+  deleteRecord('doctors', id);
+  return true;
+}
+
 function listTemplates() {
   return listRecords('templates');
 }
@@ -78,6 +103,9 @@ export {
   listDoctors,
   listExams,
   listTemplates,
+  createDoctor,
+  updateDoctor,
+  removeDoctor,
   removeExam,
   resetCoreData,
   updateExam
