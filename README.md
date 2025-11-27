@@ -1,6 +1,6 @@
 # phanmemsoictc
 
-Ứng dụng soi cổ tử cung chạy offline trên Node.js với frontend HTML/CSS/JS thuần. Server phục vụ file tĩnh và API CRUD lưu vào SQLite (`data/database.sqlite`) và thư mục ảnh (`data/images/`), không còn sử dụng các file JSON.
+Ứng dụng soi cổ tử cung chạy offline trên Node.js với frontend HTML/CSS/JS thuần. Server phục vụ file tĩnh và API CRUD lưu vào SQLite (`database/database.sqlite`) và thư mục ảnh (`data/images/`), không còn sử dụng các file JSON.
 
 ## Chức năng chính
 - Đăng nhập (mặc định `admin` / `123`), kiểm tra bản quyền theo mã máy và hiển thị ngày sử dụng còn lại.
@@ -19,8 +19,16 @@ npm start
 Mở `http://localhost:3000`, đăng nhập, nhập mã bản quyền nếu được yêu cầu (tạo bằng `node scripts/generate-license-key.js`).
 
 ## Sao lưu & khôi phục
-- `GET /api/backup`: tải ZIP chứa `data/database.sqlite` và `data/images/`.
+- `GET /api/backup`: tải ZIP chứa `database/database.sqlite` và `data/images/`.
 - `POST /api/restore`: tải lên ZIP để ghi đè dữ liệu.
+
+## Cấu trúc dự án (MVC tối giản)
+- `src/app.js`: khởi tạo HTTP server, dùng `src/routes.js` để định tuyến.
+- `src/routes.js`: tập trung toàn bộ API, trang HTML và phục vụ tĩnh.
+- `src/db.js`: cấu hình đường dẫn, khởi tạo SQLite và tiện ích đọc/ghi.
+- `src/models/`: xử lý nghiệp vụ (exam, patient, image, license, settings, backup, user).
+- `src/views/`: khung EJS đơn giản hiển thị SPA frontend.
+- `public/`: CSS/JS/ảnh tĩnh; `data/` chứa ảnh chụp; `database/` lưu file SQLite.
 
 ## Kiểm thử
 ```bash

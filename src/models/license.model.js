@@ -1,4 +1,4 @@
-import { getLicense as getStoredLicense, saveLicense as saveStoredLicense } from './database.js';
+import { getLicense as getStoredLicense, saveLicense as saveStoredLicense } from '../db.js';
 import { generateLicenseKey, generateMachineKey } from '../utils/hardware-id.js';
 
 function normalizeLicenseKey(key) {

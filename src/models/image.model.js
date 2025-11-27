@@ -1,6 +1,6 @@
 import path from 'path';
 import fsPromises from 'fs/promises';
-import { getPaths } from './app-model.js';
+import { getPaths } from '../db.js';
 
 async function saveImageFromDataUrl({ examId, index, dataUrl }) {
   const { imagesDir, rootDir } = getPaths();

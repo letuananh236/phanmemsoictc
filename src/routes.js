@@ -1,23 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import { getDefaultData, getPaths } from '../models/app-model.js';
-import { mergeSettings, getSettings, saveSettings } from '../models/settings-model.js';
+import { URL } from 'url';
+import { ensureInfrastructure, getDefaultData, getPaths } from './db.js';
+import { addUser, listUsers } from './models/user.model.js';
 import {
-  addUser,
   createExam,
-  createPatient,
   getExam,
-  getPatient,
   listDoctors,
   listExams,
-  listPatients,
   listTemplates,
-  listUsers,
   removeExam,
-  removePatient,
-  updateExam,
-  updatePatient
-} from '../models/records-model.js';
+  updateExam
+} from './models/exam.model.js';
+import { createPatient, getPatient, listPatients, removePatient, updatePatient } from './models/patient.model.js';
+import { mergeSettings, getSettings, saveSettings } from './models/settings.model.js';
 import {
   calculateDaysRemaining,
   detectLicenseTypeFromKey,
@@ -25,11 +21,99 @@ import {
   isLicenseValid,
   normalizeLicenseKey,
   resetLicense
-} from '../models/license-model.js';
-import { saveImageFromDataUrl, saveLogoFile } from '../models/files-model.js';
-import { clearAllData, createZipBuffer, extractZipBuffer } from '../models/backup-model.js';
-import { generateMachineKey } from '../utils/hardware-id.js';
-import { parseBody, sendBuffer, sendJson } from '../utils/http-helpers.js';
+} from './models/license.model.js';
+import { saveImageFromDataUrl, saveLogoFile } from './models/image.model.js';
+import { clearAllData, createZipBuffer, extractZipBuffer } from './models/backup.model.js';
+import { generateMachineKey } from './utils/hardware-id.js';
+import { parseBody, sendBuffer, sendJson } from './utils/http-helpers.js';
+
+const viewCache = new Map();
+const bootstrapPromise = ensureInfrastructure().then(() => ensureLicense(getDefaultData().license));
+
+function normalizePath(requestPath) {
+  const safePath = requestPath.replace(/\.\./g, '');
+  if (safePath === '/' || safePath === '') return 'index.html';
+  return safePath.replace(/^\//, '');
+}
+
+function renderView(viewName) {
+  const cacheKey = `view:${viewName}`;
+  if (viewCache.has(cacheKey)) return viewCache.get(cacheKey);
+  const { rootDir } = getPaths();
+  const layoutPath = path.join(rootDir, 'src', 'views', 'layout.ejs');
+  const viewPath = path.join(rootDir, 'src', 'views', `${viewName}.ejs`);
+  const layout = fs.readFileSync(layoutPath, 'utf8');
+  const body = fs.readFileSync(viewPath, 'utf8');
+  const rendered = layout.replace('<!-- BODY -->', body);
+  viewCache.set(cacheKey, rendered);
+  return rendered;
+}
+
+async function serveStatic(res, requestPath) {
+  const { publicDir } = getPaths();
+  const relative = normalizePath(requestPath);
+  const filePath = path.join(publicDir, relative);
+  if (!filePath.startsWith(publicDir)) {
+    return false;
+  }
+  let finalPath = filePath;
+  try {
+    const stat = fs.statSync(filePath);
+    if (stat.isDirectory()) {
+      finalPath = path.join(filePath, 'index.html');
+    }
+  } catch {
+    // fallthrough
+  }
+  if (!fs.existsSync(finalPath)) return false;
+  const ext = path.extname(finalPath).toLowerCase();
+  const MIME_TYPES = {
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon'
+  };
+  const data = fs.readFileSync(finalPath);
+  res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+  res.end(data);
+  return true;
+}
+
+async function serveDataFile(res, requestPath) {
+  const { rootDir, dataDir } = getPaths();
+  const safePath = normalizePath(requestPath);
+  const filePath = path.join(rootDir, safePath);
+  if (!filePath.startsWith(dataDir)) {
+    sendJson(res, 403, { error: 'forbidden' });
+    return true;
+  }
+  try {
+    const data = fs.readFileSync(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const MIME_TYPES = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.svg': 'image/svg+xml'
+    };
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+    res.end(data);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      sendJson(res, 404, { error: 'not_found' });
+    } else {
+      console.error(error);
+      sendJson(res, 500, { error: 'server_error' });
+    }
+    return true;
+  }
+}
 
 async function handleApi(req, res, pathname) {
   const license = await ensureLicense(getDefaultData().license);
@@ -294,4 +378,37 @@ async function handleApi(req, res, pathname) {
   return false;
 }
 
-export { handleApi };
+async function handleRequest(req, res) {
+  await bootstrapPromise;
+  if (!req.url) {
+    sendJson(res, 400, { error: 'invalid_request' });
+    return;
+  }
+  const url = new URL(req.url, 'http://localhost');
+  if (url.pathname === '/health') {
+    sendJson(res, 200, { status: 'ok' });
+    return;
+  }
+  if (url.pathname === '/') {
+    const html = renderView('home');
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+    return;
+  }
+  if (url.pathname.startsWith('/api/')) {
+    const handled = await handleApi(req, res, url.pathname);
+    if (handled) return;
+    sendJson(res, 404, { error: 'not_found' });
+    return;
+  }
+  if (url.pathname.startsWith('/data/images/')) {
+    const served = await serveDataFile(res, url.pathname);
+    if (served) return;
+  }
+  const served = await serveStatic(res, url.pathname);
+  if (!served) {
+    sendJson(res, 404, { error: 'not_found' });
+  }
+}
+
+export { handleRequest };

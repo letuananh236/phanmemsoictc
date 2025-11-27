@@ -2,9 +2,9 @@ import path from 'path';
 import fsPromises from 'fs/promises';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { getPaths, getTempDir } from './app-model.js';
-import { resetCoreData } from './records-model.js';
-import { ensureLicense } from './license-model.js';
+import { getPaths, getTempDir } from '../db.js';
+import { resetCoreData } from './exam.model.js';
+import { ensureLicense } from './license.model.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -29,14 +29,19 @@ async function copyDirectory(source, destination) {
 }
 
 async function createZipBuffer() {
-  const { rootDir } = getPaths();
+  const { rootDir, dataDir, databaseDir } = getPaths();
   const tempDir = await getTempDir('pmzip-');
+  const stagingDir = path.join(tempDir, 'staging');
   const zipPath = path.join(tempDir, 'backup.zip');
+
+  await copyDirectory(dataDir, path.join(stagingDir, 'data'));
+  await copyDirectory(databaseDir, path.join(stagingDir, 'database'));
+
   if (process.platform === 'win32') {
-    const script = `Compress-Archive -Path '${windowsPath(path.join(rootDir, 'data', '*'))}' -DestinationPath '${windowsPath(zipPath)}' -Force`;
+    const script = `Compress-Archive -Path '${windowsPath(path.join(stagingDir, '*'))}' -DestinationPath '${windowsPath(zipPath)}' -Force`;
     await execFileAsync('powershell', ['-NoLogo', '-Command', script]);
   } else {
-    await execFileAsync('zip', ['-r', zipPath, 'data'], { cwd: rootDir });
+    await execFileAsync('zip', ['-r', zipPath, '.'], { cwd: stagingDir });
   }
   const buffer = await fsPromises.readFile(zipPath);
   await fsPromises.rm(tempDir, { recursive: true, force: true });
@@ -44,7 +49,7 @@ async function createZipBuffer() {
 }
 
 async function extractZipBuffer(buffer) {
-  const { rootDir, dataDir } = getPaths();
+  const { dataDir, databaseDir } = getPaths();
   const tempDir = await getTempDir('pmzip-');
   const zipPath = path.join(tempDir, 'upload.zip');
   await fsPromises.writeFile(zipPath, buffer);
@@ -57,12 +62,16 @@ async function extractZipBuffer(buffer) {
     await execFileAsync('unzip', ['-o', zipPath, '-d', extractDir]);
   }
   const extractedData = path.join(extractDir, 'data');
-  const stats = await fsPromises.stat(extractedData).catch(() => null);
-  if (!stats) {
+  const extractedDb = path.join(extractDir, 'database');
+  const dataStats = await fsPromises.stat(extractedData).catch(() => null);
+  const dbStats = await fsPromises.stat(extractedDb).catch(() => null);
+  if (!dataStats || !dbStats) {
     throw new Error('invalid_backup');
   }
   await fsPromises.rm(dataDir, { recursive: true, force: true });
+  await fsPromises.rm(databaseDir, { recursive: true, force: true });
   await copyDirectory(extractedData, dataDir);
+  await copyDirectory(extractedDb, databaseDir);
   await fsPromises.rm(tempDir, { recursive: true, force: true });
 }
 
