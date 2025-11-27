@@ -279,15 +279,19 @@ async function handleApi(req, res, pathname) {
   if (pathname === '/api/license' && req.method === 'GET') {
     const machineId = generateMachineKey();
     const detectedType = detectLicenseTypeFromKey(license?.licenseKey, machineId);
-    sendJson(res, 200, {
+    const enriched = {
       ...license,
+      machineId: license?.machineId || machineId,
+      machineKey: machineId,
       daysRemaining: calculateDaysRemaining(license),
       licenseType: detectedType || license.licenseType || 'trial'
-    });
+    };
+    const valid = isLicenseValid(enriched);
+    sendJson(res, 200, { license: enriched, valid });
     return true;
   }
 
-  if (pathname === '/api/license' && req.method === 'POST') {
+  if ((pathname === '/api/license' || pathname === '/api/license/activate') && req.method === 'POST') {
     const body = await parseBody(req);
     const machineId = generateMachineKey();
     const detectedType = detectLicenseTypeFromKey(body?.licenseKey, machineId);
@@ -308,7 +312,7 @@ async function handleApi(req, res, pathname) {
     saved.status = valid ? 'valid' : 'invalid';
     await ensureLicense(getDefaultData().license, saved);
     sendJson(res, valid ? 200 : 400, {
-      license: { ...saved, daysRemaining: calculateDaysRemaining(saved) },
+      license: { ...saved, machineKey: machineId, daysRemaining: calculateDaysRemaining(saved) },
       valid
     });
     return true;
