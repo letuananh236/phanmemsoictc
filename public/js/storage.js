@@ -2,12 +2,16 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 async function request(path, options = {}) {
   const response = await fetch(path, options);
+  const contentType = response.headers.get('content-type') || '';
   if (!response.ok) {
+    if (contentType.includes('application/json')) {
+      const errorJson = await response.json();
+      throw new Error(errorJson.error || 'Yêu cầu thất bại');
+    }
     const errorText = await response.text();
     throw new Error(errorText || 'Yêu cầu thất bại');
   }
-  const type = response.headers.get('content-type') || '';
-  if (type.includes('application/json')) {
+  if (contentType.includes('application/json')) {
     return response.json();
   }
   return response.text();
@@ -88,12 +92,32 @@ export const storage = {
     }
     return response.json();
   },
+  login: (payload) => request('/api/login', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
+  }),
+  listUsers: () => request('/api/users'),
+  createUser: (payload) => request('/api/users', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
+  }),
   getLicense: () => request('/api/license'),
   activateLicense: (payload) => request('/api/license/activate', {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify(payload)
-  })
+  }),
+  resetLicense: () => request('/api/license/reset', {
+    method: 'POST'
+  }),
+  uploadLogo: (payload) => request('/api/logo', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload)
+  }),
+  clearData: () => request('/api/data/clear', { method: 'POST' })
 };
 
 export function showToast(message) {

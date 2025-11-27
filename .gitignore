@@ -4,3 +4,9 @@ package-lock.json
 dist/
 data/images/
 !data/images/.gitkeep
+database/*.sqlite*
+database/*.db*
+database/*.sqlite-wal
+database/*.sqlite-shm
+database/*.db-wal
+database/*.db-shm
