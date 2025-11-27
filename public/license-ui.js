@@ -1,11 +1,5 @@
 import { storage, showToast } from './storage.js';
 
-const PLANS = [
-  { id: 'thirty_day', label: 'Kích hoạt 30 ngày' },
-  { id: 'yearly', label: 'Kích hoạt 1 năm' },
-  { id: 'lifetime', label: 'Kích hoạt vĩnh viễn' }
-];
-
 export function createLicenseView(appState) {
   async function renderLicense(wrapper) {
     const { license, valid } = await storage.getLicense();
@@ -13,11 +7,9 @@ export function createLicenseView(appState) {
     wrapper.querySelector('#license-status').textContent = valid ? 'Hợp lệ' : 'Hết hạn';
     wrapper.querySelector('#license-machine').textContent = license.machineId;
     wrapper.querySelector('#license-expire').textContent = license.expireDate;
-    const planSelect = wrapper.querySelector('select[name="licenseType"]');
-    if (planSelect) {
-      const availableIds = PLANS.map((plan) => plan.id);
-      const desired = availableIds.includes(license.licenseType) ? license.licenseType : 'thirty_day';
-      planSelect.value = desired;
+    const remaining = wrapper.querySelector('#license-remaining');
+    if (remaining) {
+      remaining.textContent = `${license.daysRemaining ?? 0} ngày`;
     }
   }
 
@@ -33,15 +25,10 @@ export function createLicenseView(appState) {
             <p>Trạng thái: <strong id="license-status">Đang kiểm tra...</strong></p>
             <p>Mã máy: <span id="license-machine"></span></p>
             <p>Hết hạn: <span id="license-expire"></span></p>
+            <p>Ngày còn lại: <span id="license-remaining">0 ngày</span></p>
           </div>
           <div>
             <form id="license-form">
-              <div class="form-row">
-                <label>Chọn gói</label>
-                <select name="licenseType">
-                  ${PLANS.map((plan) => `<option value="${plan.id}">${plan.label}</option>`).join('')}
-                </select>
-              </div>
               <div class="form-row">
                 <label>Mã kích hoạt</label>
                 <input name="licenseKey" placeholder="Nhập key" />

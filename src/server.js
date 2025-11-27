@@ -6,11 +6,25 @@ import fsPromises from 'fs/promises';
 import os from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import {
+  initDatabase,
+  getSettings as getStoredSettings,
+  saveSettings as saveStoredSettings,
+  listRecords,
+  getRecord,
+  upsertRecord,
+  deleteRecord,
+  resetTable,
+  getLicense as getStoredLicense,
+  saveLicense as saveStoredLicense
+} from './database.js';
 import { generateLicenseKey, generateMachineKey } from './hardware-id.js';
 
 const execFileAsync = promisify(execFile);
 
-const packageJson = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'));
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8')
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,16 +33,6 @@ const publicDir = path.join(rootDir, 'public');
 const dataDir = path.join(rootDir, 'data');
 const imagesDir = path.join(dataDir, 'images');
 const logoDir = path.join(publicDir, 'logo');
-
-const jsonFiles = {
-  settings: path.join(dataDir, 'settings.json'),
-  patients: path.join(dataDir, 'patients.json'),
-  exams: path.join(dataDir, 'exams.json'),
-  doctors: path.join(dataDir, 'doctors.json'),
-  templates: path.join(dataDir, 'result-templates.json'),
-  users: path.join(dataDir, 'users.json'),
-  license: path.join(dataDir, 'license.json')
-};
 
 const defaultData = {
   settings: {
@@ -55,11 +59,21 @@ const defaultData = {
   patients: [],
   exams: [],
   doctors: [{ id: 'D001', name: 'BS Trần Văn B', active: true }],
-  templates: [
-    { id: 'T001', name: 'Bình thường', content: 'Mô tả kết quả bình thường...' }
-  ],
+  templates: [{ id: 'T001', name: 'Bình thường', content: 'Mô tả kết quả bình thường...' }],
   license: {},
   users: [{ username: 'admin', password: '123' }]
+};
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
 };
 
 function normalizeLicenseKey(key) {
@@ -74,46 +88,43 @@ function normalizeLicenseType(type) {
   return 'yearly';
 }
 
-function expectedLicenseKeys(machineId, licenseType) {
-  const normalizedType = normalizeLicenseType(licenseType);
-  const keys = [
-    generateLicenseKey(machineId, normalizedType),
-    generateLicenseKey(machineId)
-  ];
-  const fallbackTypes = ['yearly', 'lifetime', 'thirty_day'];
-  fallbackTypes.forEach((type) => {
-    const derived = generateLicenseKey(machineId, type);
-    if (!keys.includes(derived)) keys.push(derived);
-  });
-  return keys.map(normalizeLicenseKey);
+function detectLicenseTypeFromKey(key, machineId) {
+  if (!key) return null;
+  const normalized = normalizeLicenseKey(key);
+  const types = ['thirty_day', 'yearly', 'lifetime'];
+  return (
+    types.find((type) => normalizeLicenseKey(generateLicenseKey(machineId, type)) === normalized) || null
+  );
 }
 
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
-};
+function calculateDaysRemaining(license) {
+  const expire = license?.expireDate ? new Date(license.expireDate) : null;
+  if (!expire || Number.isNaN(expire)) return 0;
+  const diffMs = expire.getTime() - Date.now();
+  return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+}
+
+function ensureDateString(value, fallback) {
+  const parsed = value ? new Date(value) : null;
+  if (!parsed || Number.isNaN(parsed)) return fallback;
+  return parsed.toISOString().slice(0, 10);
+}
+
+function isLicenseValid(license) {
+  if (!license) return false;
+  const machineId = generateMachineKey();
+  const detectedType = detectLicenseTypeFromKey(license.licenseKey, machineId);
+  if (!detectedType) return false;
+  const expire = new Date(license.expireDate);
+  if (Number.isNaN(expire.getTime()) || expire < new Date()) return false;
+  return license.machineId === machineId && license.status === 'valid';
+}
 
 async function ensureDirectories() {
   await fsPromises.mkdir(dataDir, { recursive: true });
   await fsPromises.mkdir(imagesDir, { recursive: true });
   await ensureDefaultLogo();
-  await Promise.all(
-    Object.entries(jsonFiles).map(async ([key, filePath]) => {
-      try {
-        await fsPromises.access(filePath, fs.constants.F_OK);
-      } catch {
-        const seed = key === 'license' ? {} : defaultData[key];
-        await fsPromises.writeFile(filePath, JSON.stringify(seed, null, 2), 'utf8');
-      }
-    })
-  );
+  initDatabase(defaultData);
 }
 
 async function ensureDefaultLogo() {
@@ -127,61 +138,40 @@ async function ensureDefaultLogo() {
   }
 }
 
-async function readJson(filePath) {
-  const content = await fsPromises.readFile(filePath, 'utf8');
-  return JSON.parse(content || 'null');
+function getSettings() {
+  return getStoredSettings(defaultData.settings);
 }
 
-async function writeJson(filePath, data) {
-  await fsPromises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+function saveSettings(data) {
+  return saveStoredSettings(data);
 }
 
 async function ensureLicense() {
-  let license;
-  try {
-    license = await readJson(jsonFiles.license);
-  } catch {
-    license = null;
-  }
+  const stored = getStoredLicense();
   const machineId = generateMachineKey();
   const now = new Date();
-  const startDate = license?.startDate && !Number.isNaN(new Date(license.startDate))
-    ? new Date(license.startDate)
-    : now;
+  const startDate = ensureDateString(stored?.startDate, now.toISOString().slice(0, 10));
   const expireDate = (() => {
-    const candidate = license?.expireDate && new Date(license.expireDate);
-    if (candidate && !Number.isNaN(candidate)) return candidate;
+    if (stored?.expireDate && !Number.isNaN(new Date(stored.expireDate))) return stored.expireDate;
     const fallback = new Date(startDate);
     fallback.setDate(fallback.getDate() + 30);
-    return fallback;
+    return fallback.toISOString().slice(0, 10);
   })();
-
-  const normalizedType = normalizeLicenseType(license?.licenseType || 'trial');
+  const detectedType = detectLicenseTypeFromKey(stored?.licenseKey, machineId);
+  const normalizedType = detectedType || normalizeLicenseType(stored?.licenseType || 'trial');
+  const normalizedKey = normalizeLicenseKey(stored?.licenseKey || '');
   const normalized = {
     machineId,
     licenseType: normalizedType,
-    licenseKey: license?.licenseKey || '',
-    startDate: startDate.toISOString().slice(0, 10),
-    expireDate: expireDate.toISOString().slice(0, 10),
-    status: license?.status || 'invalid'
+    licenseKey: normalizedKey,
+    startDate,
+    expireDate,
+    status: stored?.status || 'invalid'
   };
-
   const valid = isLicenseValid(normalized);
   normalized.status = valid ? 'valid' : 'invalid';
-  await writeJson(jsonFiles.license, normalized);
+  saveStoredLicense(normalized);
   return normalized;
-}
-
-function isLicenseValid(license) {
-  if (!license) return false;
-  const machineId = generateMachineKey();
-  if (license.machineId !== machineId) return false;
-  const provided = normalizeLicenseKey(license.licenseKey);
-  const expectedKeys = expectedLicenseKeys(machineId, license.licenseType);
-  if (!provided || !expectedKeys.includes(provided)) return false;
-  if (license.status !== 'valid') return false;
-  const expire = new Date(license.expireDate);
-  return !Number.isNaN(expire.getTime()) && expire >= new Date();
 }
 
 function sendJson(res, status, payload) {
@@ -256,7 +246,7 @@ async function serveStatic(res, requestPath) {
         finalPath = path.join(filePath, 'index.html');
       }
     } catch {
-      // ignore, attempt to read file
+      // ignore
     }
     const data = await fsPromises.readFile(finalPath);
     const ext = path.extname(finalPath).toLowerCase();
@@ -282,11 +272,7 @@ async function saveImageFromDataUrl({ examId, index, dataUrl }) {
   }
   const buffer = Buffer.from(matches[2], 'base64');
   const now = new Date();
-  const folder = path.join(
-    imagesDir,
-    String(now.getFullYear()),
-    String(now.getMonth() + 1).padStart(2, '0')
-  );
+  const folder = path.join(imagesDir, String(now.getFullYear()), String(now.getMonth() + 1).padStart(2, '0'));
   await fsPromises.mkdir(folder, { recursive: true });
   const safeExam = examId || 'EXAM';
   const name = `${safeExam}_${String(index).padStart(2, '0')}.png`;
@@ -349,6 +335,7 @@ async function extractZipBuffer(buffer) {
   }
   await fsPromises.rm(dataDir, { recursive: true, force: true });
   await copyDirectory(extractedData, dataDir);
+  initDatabase(defaultData);
   await fsPromises.rm(tempDir, { recursive: true, force: true });
 }
 
@@ -369,25 +356,23 @@ async function copyDirectory(source, destination) {
 }
 
 async function clearAllData() {
-  const currentSettings = await readJson(jsonFiles.settings).catch(() => defaultData.settings);
-  const currentLicense = await readJson(jsonFiles.license).catch(() => ({}));
+  const currentSettings = getSettings();
+  const currentLicense = getStoredLicense();
   await fsPromises.rm(imagesDir, { recursive: true, force: true });
   await fsPromises.mkdir(imagesDir, { recursive: true });
-
   const resetSettings = {
     ...defaultData.settings,
     ...currentSettings,
     nextPatientNumber: 1,
     nextExamNumber: 1
   };
-
-  await writeJson(jsonFiles.patients, []);
-  await writeJson(jsonFiles.exams, []);
-  await writeJson(jsonFiles.doctors, defaultData.doctors);
-  await writeJson(jsonFiles.templates, defaultData.templates);
-  await writeJson(jsonFiles.users, defaultData.users);
-  await writeJson(jsonFiles.settings, resetSettings);
-  await writeJson(jsonFiles.license, currentLicense);
+  resetTable('patients');
+  resetTable('exams');
+  resetTable('doctors', defaultData.doctors);
+  resetTable('templates', defaultData.templates);
+  resetTable('users', defaultData.users.map((user) => ({ id: user.username, ...user })));
+  saveSettings(resetSettings);
+  saveStoredLicense(currentLicense || {});
 }
 
 async function handleApi(req, res, pathname) {
@@ -395,14 +380,17 @@ async function handleApi(req, res, pathname) {
   const licenseExemptPaths = ['/api/login', '/api/meta'];
   const isLicenseExempt = licenseExemptPaths.includes(pathname);
   if (!pathname.startsWith('/api/license') && !isLicenseExempt && !isLicenseValid(license)) {
-    sendJson(res, 403, { error: 'license_expired', license });
+    sendJson(res, 403, {
+      error: 'license_expired',
+      license: { ...license, daysRemaining: calculateDaysRemaining(license) }
+    });
     return;
   }
 
   if (pathname === '/api/login' && req.method === 'POST') {
     const payload = await parseBody(req);
-    const users = (await readJson(jsonFiles.users).catch(() => null)) || defaultData.users;
-    const matched = (users || []).find(
+    const users = listRecords('users');
+    const matched = users.find(
       (user) => user.username === payload.username && user.password === payload.password
     );
     if (matched) {
@@ -415,25 +403,24 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/settings') {
     if (req.method === 'GET') {
-      const settings = await readJson(jsonFiles.settings);
-      const merged = { ...defaultData.settings, ...(settings || {}) };
-      sendJson(res, 200, merged);
+      const settings = getSettings();
+      sendJson(res, 200, settings);
       return;
     }
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const current = await readJson(jsonFiles.settings);
+      const current = getSettings();
       const merged = { ...defaultData.settings, ...(current || {}), ...(payload || {}) };
-      await writeJson(jsonFiles.settings, merged);
+      saveSettings(merged);
       sendJson(res, 200, merged);
       return;
     }
   }
 
   if (pathname === '/api/users') {
-    const users = (await readJson(jsonFiles.users).catch(() => null)) || defaultData.users;
+    const users = listRecords('users');
     if (req.method === 'GET') {
-      const sanitized = (users || []).map((user) => ({ username: user.username }));
+      const sanitized = users.map((user) => ({ username: user.username }));
       sendJson(res, 200, sanitized);
       return;
     }
@@ -443,12 +430,12 @@ async function handleApi(req, res, pathname) {
         sendJson(res, 400, { error: 'invalid_user' });
         return;
       }
-      if ((users || []).some((u) => u.username === payload.username)) {
+      if (users.some((u) => u.username === payload.username)) {
         sendJson(res, 409, { error: 'user_exists' });
         return;
       }
-      const updated = [...(users || []), { username: payload.username, password: payload.password }];
-      await writeJson(jsonFiles.users, updated);
+      const record = { id: payload.username, username: payload.username, password: payload.password };
+      upsertRecord('users', record.id, record);
       sendJson(res, 201, { username: payload.username });
       return;
     }
@@ -456,28 +443,24 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/patients') {
     if (req.method === 'GET') {
-      const patients = await readJson(jsonFiles.patients);
+      const patients = listRecords('patients');
       sendJson(res, 200, patients);
       return;
     }
     if (req.method === 'POST') {
       const payload = await parseBody(req);
-      const patients = await readJson(jsonFiles.patients);
-      const settings = await readJson(jsonFiles.settings);
-      const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
-      const nextPatientNumber = mergedSettings.nextPatientNumber || 1;
-      const generatedId = formatCode(mergedSettings.patientCodePrefix, nextPatientNumber);
+      const settings = getSettings();
+      const nextPatientNumber = settings.nextPatientNumber || 1;
+      const generatedId = formatCode(settings.patientCodePrefix, nextPatientNumber);
       const shouldAutoIncrement = !payload.id || payload.id === generatedId;
       const assignedId = payload.id?.trim() || generatedId;
       const updatedSettings = {
-        ...mergedSettings,
-        nextPatientNumber: shouldAutoIncrement ? nextPatientNumber + 1 : mergedSettings.nextPatientNumber
+        ...settings,
+        nextPatientNumber: shouldAutoIncrement ? nextPatientNumber + 1 : settings.nextPatientNumber
       };
-      await writeJson(jsonFiles.settings, updatedSettings);
-
+      saveSettings(updatedSettings);
       const patient = { ...payload, id: assignedId, createdAt: new Date().toISOString() };
-      patients.push(patient);
-      await writeJson(jsonFiles.patients, patients);
+      upsertRecord('patients', assignedId, patient);
       sendJson(res, 201, patient);
       return;
     }
@@ -487,26 +470,23 @@ async function handleApi(req, res, pathname) {
     const id = decodeURIComponent(pathname.split('/').pop() || '');
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const patients = await readJson(jsonFiles.patients);
-      const index = patients.findIndex((p) => p.id === id);
-      if (index === -1) {
+      const patient = getRecord('patients', id);
+      if (!patient) {
         sendJson(res, 404, { error: 'not_found' });
         return;
       }
-      patients[index] = { ...patients[index], ...payload };
-      await writeJson(jsonFiles.patients, patients);
-      sendJson(res, 200, patients[index]);
+      const updated = { ...patient, ...payload };
+      upsertRecord('patients', id, updated);
+      sendJson(res, 200, updated);
       return;
     }
     if (req.method === 'DELETE') {
-      const settings = await readJson(jsonFiles.settings);
+      const settings = getSettings();
       if (!settings.allowDeleteData) {
         sendJson(res, 403, { error: 'delete_disabled' });
         return;
       }
-      const patients = await readJson(jsonFiles.patients);
-      const remaining = patients.filter((p) => p.id !== id);
-      await writeJson(jsonFiles.patients, remaining);
+      deleteRecord('patients', id);
       sendJson(res, 200, { success: true });
       return;
     }
@@ -514,30 +494,26 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/exams') {
     if (req.method === 'GET') {
-      const exams = await readJson(jsonFiles.exams);
+      const exams = listRecords('exams');
       sendJson(res, 200, exams);
       return;
     }
     if (req.method === 'POST') {
       const payload = await parseBody(req);
-      const exams = await readJson(jsonFiles.exams);
       const now = new Date().toISOString();
-      const settings = await readJson(jsonFiles.settings);
-      const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
-      const nextExamNumber = mergedSettings.nextExamNumber || 1;
-      const generatedExamId = formatCode(mergedSettings.examCodePrefix, nextExamNumber);
+      const settings = getSettings();
+      const nextExamNumber = settings.nextExamNumber || 1;
+      const generatedExamId = formatCode(settings.examCodePrefix, nextExamNumber);
       const shouldAutoIncrement = !payload.id || payload.id === generatedExamId;
       const examId = payload.id?.trim() || generatedExamId;
       const examNumber = payload.examNumber || generatedExamId;
       const updatedSettings = {
-        ...mergedSettings,
-        nextExamNumber: shouldAutoIncrement ? nextExamNumber + 1 : mergedSettings.nextExamNumber
+        ...settings,
+        nextExamNumber: shouldAutoIncrement ? nextExamNumber + 1 : settings.nextExamNumber
       };
-      await writeJson(jsonFiles.settings, updatedSettings);
-
+      saveSettings(updatedSettings);
       const exam = { ...payload, id: examId, examNumber, createdAt: now, updatedAt: now };
-      exams.push(exam);
-      await writeJson(jsonFiles.exams, exams);
+      upsertRecord('exams', examId, exam);
       sendJson(res, 201, exam);
       return;
     }
@@ -547,26 +523,23 @@ async function handleApi(req, res, pathname) {
     const id = decodeURIComponent(pathname.split('/').pop() || '');
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const exams = await readJson(jsonFiles.exams);
-      const index = exams.findIndex((e) => e.id === id);
-      if (index === -1) {
+      const exam = getRecord('exams', id);
+      if (!exam) {
         sendJson(res, 404, { error: 'not_found' });
         return;
       }
-      exams[index] = { ...exams[index], ...payload, updatedAt: new Date().toISOString() };
-      await writeJson(jsonFiles.exams, exams);
-      sendJson(res, 200, exams[index]);
+      const updated = { ...exam, ...payload, updatedAt: new Date().toISOString() };
+      upsertRecord('exams', id, updated);
+      sendJson(res, 200, updated);
       return;
     }
     if (req.method === 'DELETE') {
-      const settings = await readJson(jsonFiles.settings);
+      const settings = getSettings();
       if (!settings.allowDeleteData) {
         sendJson(res, 403, { error: 'delete_disabled' });
         return;
       }
-      const exams = await readJson(jsonFiles.exams);
-      const remaining = exams.filter((e) => e.id !== id);
-      await writeJson(jsonFiles.exams, remaining);
+      deleteRecord('exams', id);
       sendJson(res, 200, { success: true });
       return;
     }
@@ -574,15 +547,13 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/doctors') {
     if (req.method === 'GET') {
-      const doctors = await readJson(jsonFiles.doctors);
+      const doctors = listRecords('doctors');
       sendJson(res, 200, doctors);
       return;
     }
     if (req.method === 'POST') {
       const payload = await parseBody(req);
-      const doctors = await readJson(jsonFiles.doctors);
-      doctors.push(payload);
-      await writeJson(jsonFiles.doctors, doctors);
+      upsertRecord('doctors', payload.id, payload);
       sendJson(res, 201, payload);
       return;
     }
@@ -592,26 +563,23 @@ async function handleApi(req, res, pathname) {
     const id = decodeURIComponent(pathname.split('/').pop() || '');
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const doctors = await readJson(jsonFiles.doctors);
-      const index = doctors.findIndex((d) => d.id === id);
-      if (index === -1) {
+      const doctor = getRecord('doctors', id);
+      if (!doctor) {
         sendJson(res, 404, { error: 'not_found' });
         return;
       }
-      doctors[index] = { ...doctors[index], ...payload };
-      await writeJson(jsonFiles.doctors, doctors);
-      sendJson(res, 200, doctors[index]);
+      const updated = { ...doctor, ...payload };
+      upsertRecord('doctors', id, updated);
+      sendJson(res, 200, updated);
       return;
     }
     if (req.method === 'DELETE') {
-      const settings = await readJson(jsonFiles.settings);
+      const settings = getSettings();
       if (!settings.allowDeleteData) {
         sendJson(res, 403, { error: 'delete_disabled' });
         return;
       }
-      const doctors = await readJson(jsonFiles.doctors);
-      const remaining = doctors.filter((d) => d.id !== id);
-      await writeJson(jsonFiles.doctors, remaining);
+      deleteRecord('doctors', id);
       sendJson(res, 200, { success: true });
       return;
     }
@@ -619,15 +587,13 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === '/api/result-templates') {
     if (req.method === 'GET') {
-      const templates = await readJson(jsonFiles.templates);
+      const templates = listRecords('templates');
       sendJson(res, 200, templates);
       return;
     }
     if (req.method === 'POST') {
       const payload = await parseBody(req);
-      const templates = await readJson(jsonFiles.templates);
-      templates.push(payload);
-      await writeJson(jsonFiles.templates, templates);
+      upsertRecord('templates', payload.id, payload);
       sendJson(res, 201, payload);
       return;
     }
@@ -637,26 +603,23 @@ async function handleApi(req, res, pathname) {
     const id = decodeURIComponent(pathname.split('/').pop() || '');
     if (req.method === 'PUT') {
       const payload = await parseBody(req);
-      const templates = await readJson(jsonFiles.templates);
-      const index = templates.findIndex((t) => t.id === id);
-      if (index === -1) {
+      const template = getRecord('templates', id);
+      if (!template) {
         sendJson(res, 404, { error: 'not_found' });
         return;
       }
-      templates[index] = { ...templates[index], ...payload };
-      await writeJson(jsonFiles.templates, templates);
-      sendJson(res, 200, templates[index]);
+      const updated = { ...template, ...payload };
+      upsertRecord('templates', id, updated);
+      sendJson(res, 200, updated);
       return;
     }
     if (req.method === 'DELETE') {
-      const settings = await readJson(jsonFiles.settings);
+      const settings = getSettings();
       if (!settings.allowDeleteData) {
         sendJson(res, 403, { error: 'delete_disabled' });
         return;
       }
-      const templates = await readJson(jsonFiles.templates);
-      const remaining = templates.filter((t) => t.id !== id);
-      await writeJson(jsonFiles.templates, remaining);
+      deleteRecord('templates', id);
       sendJson(res, 200, { success: true });
       return;
     }
@@ -665,7 +628,10 @@ async function handleApi(req, res, pathname) {
   if (pathname === '/api/license') {
     if (req.method === 'GET') {
       const freshLicense = await ensureLicense();
-      sendJson(res, 200, { license: freshLicense, valid: isLicenseValid(freshLicense) });
+      sendJson(res, 200, {
+        license: { ...freshLicense, daysRemaining: calculateDaysRemaining(freshLicense) },
+        valid: isLicenseValid(freshLicense)
+      });
       return;
     }
   }
@@ -678,32 +644,34 @@ async function handleApi(req, res, pathname) {
   if (pathname === '/api/license/activate' && req.method === 'POST') {
     const payload = await parseBody(req);
     const machineId = generateMachineKey();
-    const normalizedType = normalizeLicenseType(payload.licenseType || 'yearly');
-    const expectedKey = generateLicenseKey(machineId, normalizedType);
     const providedKey = normalizeLicenseKey(payload.licenseKey);
-    if (!providedKey || providedKey !== normalizeLicenseKey(expectedKey)) {
+    const detectedType = detectLicenseTypeFromKey(providedKey, machineId);
+    if (!detectedType) {
       sendJson(res, 400, { error: 'invalid_license_key', machineId });
       return;
     }
     const now = new Date();
     const expire = new Date(now);
-    if (normalizedType === 'lifetime') {
+    if (detectedType === 'lifetime') {
       expire.setFullYear(expire.getFullYear() + 100);
-    } else if (normalizedType === 'yearly') {
+    } else if (detectedType === 'yearly') {
       expire.setFullYear(expire.getFullYear() + 1);
     } else {
       expire.setDate(expire.getDate() + 30);
     }
     const updated = {
       machineId,
-      licenseType: normalizedType,
-      licenseKey: expectedKey,
+      licenseType: detectedType,
+      licenseKey: providedKey,
       startDate: now.toISOString().slice(0, 10),
       expireDate: expire.toISOString().slice(0, 10),
       status: 'valid'
     };
-    await writeJson(jsonFiles.license, updated);
-    sendJson(res, 200, { license: updated, valid: true });
+    saveStoredLicense(updated);
+    sendJson(res, 200, {
+      license: { ...updated, daysRemaining: calculateDaysRemaining(updated) },
+      valid: true
+    });
     return;
   }
 
@@ -720,8 +688,8 @@ async function handleApi(req, res, pathname) {
       expireDate: expire.toISOString().slice(0, 10),
       status: 'invalid'
     };
-    await writeJson(jsonFiles.license, cleared);
-    sendJson(res, 200, { license: cleared, valid: false });
+    saveStoredLicense(cleared);
+    sendJson(res, 200, { license: { ...cleared, daysRemaining: calculateDaysRemaining(cleared) }, valid: false });
     return;
   }
 
@@ -730,9 +698,9 @@ async function handleApi(req, res, pathname) {
       const body = await parseBody(req);
       const storedName = await saveLogoFile(body || {});
       if (body?.setDefault) {
-        const current = await readJson(jsonFiles.settings);
+        const current = getSettings();
         const merged = { ...defaultData.settings, ...(current || {}), logoFileName: storedName };
-        await writeJson(jsonFiles.settings, merged);
+        saveSettings(merged);
       }
       sendJson(res, 200, { fileName: storedName });
     } catch (error) {
@@ -781,9 +749,8 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === '/api/data/clear' && req.method === 'POST') {
-    const settings = await readJson(jsonFiles.settings);
-    const mergedSettings = { ...defaultData.settings, ...(settings || {}) };
-    if (!mergedSettings.allowDeleteData) {
+    const settings = getSettings();
+    if (!settings.allowDeleteData) {
       sendJson(res, 403, { error: 'delete_disabled' });
       return;
     }
