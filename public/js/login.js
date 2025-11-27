@@ -6,32 +6,38 @@ export function initLogin({ onSuccess }) {
   const modal = document.getElementById('login-modal');
   modal.classList.add('login-modal');
   modal.classList.remove('hidden');
-  modal.innerHTML = `
-    <div class="modal-card">
-      <h2>Đăng nhập</h2>
-      <form id="login-form">
-        <div class="form-row">
-          <label for="username">Tên truy cập</label>
-          <input id="username" name="username" required />
-        </div>
-        <div class="form-row">
-          <label for="password">Mật khẩu</label>
-          <input id="password" type="password" name="password" required />
-        </div>
-        <div class="form-row inline-fields">
-          <label class="checkbox-label" for="remember">
-            <input type="checkbox" id="remember" />
-            <span class="checkbox-text">Lưu thông tin đăng nhập</span>
-          </label>
-        </div>
-        <p class="version-text" id="app-version">Phiên bản: ...</p>
-        <div class="toolbar">
-          <button type="submit">Đăng nhập</button>
-          <button type="button" class="secondary" id="login-exit">Thoát</button>
-        </div>
-      </form>
-    </div>
-  `;
+  const template = document.getElementById('tpl-login-modal');
+  if (template?.content) {
+    modal.innerHTML = '';
+    modal.appendChild(template.content.cloneNode(true));
+  } else {
+    modal.innerHTML = `
+      <div class="modal-card">
+        <h2>Đăng nhập</h2>
+        <form id="login-form">
+          <div class="form-row">
+            <label for="username">Tên truy cập</label>
+            <input id="username" name="username" required />
+          </div>
+          <div class="form-row">
+            <label for="password">Mật khẩu</label>
+            <input id="password" type="password" name="password" required />
+          </div>
+          <div class="form-row inline-fields">
+            <label class="checkbox-label" for="remember">
+              <input type="checkbox" id="remember" />
+              <span class="checkbox-text">Lưu thông tin đăng nhập</span>
+            </label>
+          </div>
+          <p class="version-text" id="app-version">Phiên bản: ...</p>
+          <div class="toolbar">
+            <button type="submit">Đăng nhập</button>
+            <button type="button" class="secondary" id="login-exit">Thoát</button>
+          </div>
+        </form>
+      </div>
+    `;
+  }
 
   const form = modal.querySelector('#login-form');
   const usernameInput = modal.querySelector('#username');

@@ -174,7 +174,7 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
   return `
     <div class="print-sheet">
       <header>
-        <img class="print-logo" src="./logo/${settings.logoFileName}" alt="Logo bệnh viện" />
+        <img class="print-logo" src="./images/logo/${settings.logoFileName}" alt="Logo bệnh viện" />
         <div class="header-text">
           <div class="hospital-name">${settings.hospitalName || ''}</div>
           <div class="department-name">${settings.departmentName || ''}</div>

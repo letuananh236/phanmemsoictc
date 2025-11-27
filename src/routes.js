@@ -43,7 +43,22 @@ function renderView(viewName) {
   const layoutPath = path.join(rootDir, 'src', 'views', 'layout.ejs');
   const viewPath = path.join(rootDir, 'src', 'views', `${viewName}.ejs`);
   const layout = fs.readFileSync(layoutPath, 'utf8');
-  const body = fs.readFileSync(viewPath, 'utf8');
+  let body = fs.readFileSync(viewPath, 'utf8');
+
+  if (viewName === 'home') {
+    const templateNames = ['login', 'exam-form', 'exam-detail', 'camera'];
+    const templateMarkup = templateNames
+      .map((name) => path.join(rootDir, 'src', 'views', `${name}.ejs`))
+      .filter((filePath) => fs.existsSync(filePath))
+      .map((filePath) => fs.readFileSync(filePath, 'utf8'))
+      .join('\n');
+
+    body = body.replace(
+      '<!-- VIEW-TEMPLATES -->',
+      `<div id="view-templates" class="sr-only" aria-hidden="true">${templateMarkup}</div>`
+    );
+  }
+
   const rendered = layout.replace('<!-- BODY -->', body);
   viewCache.set(cacheKey, rendered);
   return rendered;

@@ -11,7 +11,7 @@ const rootDir = path.join(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
 const dataDir = path.join(rootDir, 'data');
 const imagesDir = path.join(dataDir, 'images');
-const logoDir = path.join(publicDir, 'logo');
+const logoDir = path.join(publicDir, 'images', 'logo');
 const databaseDir = path.join(rootDir, 'database');
 const dbPath = path.join(databaseDir, 'database.sqlite');
 
@@ -57,7 +57,7 @@ async function ensureDefaultLogo() {
   try {
     await fsPromises.access(target, fs.constants.F_OK);
   } catch {
-    const source = path.join(publicDir, 'assets', 'logo-default.svg');
+    const source = path.join(publicDir, 'images', 'logo-default.svg');
     await fsPromises.copyFile(source, target);
   }
 }

@@ -429,43 +429,52 @@ export function createCaptureView(appState) {
   return {
     render(target) {
       const captureHotkey = (appState.settings?.captureHotkey || 'F9').toUpperCase();
-      container = document.createElement('section');
-      container.className = 'card capture-view wide-card';
-      container.innerHTML = `
-        <div class="capture-layout">
-          <div class="capture-controls">
-            <div class="form-row">
-              <label>Chọn camera</label>
-              <select id="camera-select"></select>
+      const template = document.getElementById('tpl-camera-view');
+      if (template?.content) {
+        container = template.content.firstElementChild.cloneNode(true);
+        const captureBtn = container.querySelector('#capture-photo');
+        if (captureBtn) {
+          captureBtn.textContent = `Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}`;
+        }
+      } else {
+        container = document.createElement('section');
+        container.className = 'card capture-view wide-card';
+        container.innerHTML = `
+          <div class="capture-layout">
+            <div class="capture-controls">
+              <div class="form-row">
+                <label>Chọn camera</label>
+                <select id="camera-select"></select>
+              </div>
+              <div class="form-row">
+                <button type="button" id="start-camera">Lưu camera</button>
+                <button type="button" class="secondary" id="open-camera-settings">Cấu hình camera</button>
+              </div>
+              <div class="form-row">
+                <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
+              </div>
+              <div class="form-row action-row">
+                <button type="button" id="accept-images">Chấp nhận (F10)</button>
+                <button type="button" class="secondary" id="clear-images">Xóa tất cả</button>
+              </div>
+              <div class="form-row">
+                <h4>Ảnh đã chọn</h4>
+                <div class="image-grid selected-grid" id="selected-images"></div>
+              </div>
             </div>
-            <div class="form-row">
-              <button type="button" id="start-camera">Lưu camera</button>
-              <button type="button" class="secondary" id="open-camera-settings">Cấu hình camera</button>
+            <div class="capture-preview">
+              <video autoplay playsinline muted class="video"></video>
             </div>
-            <div class="form-row">
-              <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
-            </div>
-            <div class="form-row action-row">
-              <button type="button" id="accept-images">Chấp nhận (F10)</button>
-              <button type="button" class="secondary" id="clear-images">Xóa tất cả</button>
-            </div>
-            <div class="form-row">
-              <h4>Ảnh đã chọn</h4>
-              <div class="image-grid selected-grid" id="selected-images"></div>
+            <div class="capture-gallery">
+              <div class="gallery-header">
+                <h4>Gallery ảnh</h4>
+                <button type="button" class="secondary" id="clear-gallery">Xóa gallery</button>
+              </div>
+              <div id="capture-gallery"></div>
             </div>
           </div>
-          <div class="capture-preview">
-            <video autoplay playsinline muted class="video"></video>
-          </div>
-          <div class="capture-gallery">
-            <div class="gallery-header">
-              <h4>Gallery ảnh</h4>
-              <button type="button" class="secondary" id="clear-gallery">Xóa gallery</button>
-            </div>
-            <div id="capture-gallery"></div>
-          </div>
-        </div>
-      `;
+        `;
+      }
       target.appendChild(container);
 
       videoEl = container.querySelector('video');

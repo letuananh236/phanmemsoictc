@@ -27,8 +27,9 @@ Mở `http://localhost:3000`, đăng nhập, nhập mã bản quyền nếu đư
 - `src/routes.js`: tập trung toàn bộ API, trang HTML và phục vụ tĩnh.
 - `src/db.js`: cấu hình đường dẫn, khởi tạo SQLite và tiện ích đọc/ghi.
 - `src/models/`: xử lý nghiệp vụ (exam, patient, image, license, settings, backup, user).
-- `src/views/`: chỉ còn `layout.ejs` + `home.ejs` để bọc SPA frontend.
-- `public/`: CSS/JS/ảnh tĩnh; `data/` chứa ảnh chụp; `database/` lưu file SQLite.
+- `src/views/`: `layout.ejs`, `home.ejs` và các template view (`login.ejs`, `exam-form.ejs`, `exam-detail.ejs`, `camera.ejs`).
+- `public/css`: stylesheet; `public/js`: toàn bộ logic frontend; `public/images`: logo mặc định và logo tải lên.
+- `data/images/`: thư mục lưu ảnh chụp; `database/`: chứa file SQLite (được git-ignore, giữ thư mục bằng `.gitkeep`).
 
 ## Kiểm thử
 ```bash

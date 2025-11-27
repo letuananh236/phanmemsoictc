@@ -258,95 +258,104 @@ export function createExamFormView(appState) {
 
   return {
     render(target) {
-      container = document.createElement('section');
-      container.className = 'card exam-view wide-card';
-      container.innerHTML = `
-        <div class="toolbar">
-          <button type="button" data-action="new">Tạo PK mới</button>
-          <button type="button" data-action="save">Lưu</button>
-          <button type="button" data-action="print">In phiếu</button>
-          <div class="toolbar-group">
-            <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
-            <span class="save-status" id="exam-save-status" aria-live="polite"></span>
+      const template = document.getElementById('tpl-exam-form');
+      if (template?.content) {
+        container = template.content.firstElementChild.cloneNode(true);
+        const note = container.querySelector('.image-count-note');
+        if (note) {
+          note.textContent = `Hiển thị ${getImageCount()} ảnh. Chọn tại màn hình Lấy hình ảnh.`;
+        }
+      } else {
+        container = document.createElement('section');
+        container.className = 'card exam-view wide-card';
+        container.innerHTML = `
+          <div class="toolbar">
+            <button type="button" data-action="new">Tạo PK mới</button>
+            <button type="button" data-action="save">Lưu</button>
+            <button type="button" data-action="print">In phiếu</button>
+            <div class="toolbar-group">
+              <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
+              <span class="save-status" id="exam-save-status" aria-live="polite"></span>
+            </div>
           </div>
-        </div>
-        <form class="grid-2" id="exam-form">
-          <input type="hidden" name="examId" />
-          <input type="hidden" name="examNumber" />
-          <div>
-            <div class="card patient-card">
-              <h3>Thông tin bệnh nhân</h3>
-              <div class="patient-grid">
-                <div class="field">
-                  <label>Mã</label>
-                  <input class="input-short" name="patientId" readonly />
+          <form class="grid-2" id="exam-form">
+            <input type="hidden" name="examId" />
+            <input type="hidden" name="examNumber" />
+            <div>
+              <div class="card patient-card">
+                <h3>Thông tin bệnh nhân</h3>
+                <div class="patient-grid">
+                  <div class="field">
+                    <label>Mã</label>
+                    <input class="input-short" name="patientId" readonly />
+                  </div>
+                  <div class="field full-name">
+                    <label>Họ tên *</label>
+                    <input name="patientName" required />
+                  </div>
+                  <div class="field compact">
+                    <label>Tuổi *</label>
+                    <input name="patientAge" type="number" min="0" required />
+                  </div>
+                  <div class="field compact">
+                    <label>Giới tính</label>
+                    <select name="patientGender">
+                      <option>Nam</option>
+                      <option>Nữ</option>
+                    </select>
+                  </div>
+                  <div class="field address">
+                    <label>Địa chỉ</label>
+                    <input name="patientAddress" />
+                  </div>
+                  <div class="field phone">
+                    <label>Điện thoại</label>
+                    <input name="patientPhone" />
+                  </div>
+                  <div class="field reason">
+                    <label>Lý do khám</label>
+                    <input name="patientReason" />
+                  </div>
                 </div>
-                <div class="field full-name">
-                  <label>Họ tên *</label>
-                  <input name="patientName" required />
+              </div>
+              <div class="card exam-details">
+                <h3>Kết quả khám</h3>
+                <div class="form-row">
+                  <label>Ngày khám</label>
+                  <input type="date" name="examDate" />
                 </div>
-                <div class="field compact">
-                  <label>Tuổi *</label>
-                  <input name="patientAge" type="number" min="0" required />
+                <div class="form-row">
+                  <label>KQ soi tử cung</label>
+                  <textarea name="result"></textarea>
                 </div>
-                <div class="field compact">
-                  <label>Giới tính</label>
-                  <select name="patientGender">
-                    <option>Nam</option>
-                    <option>Nữ</option>
-                  </select>
+                <div class="form-row">
+                  <label>Mô tả soi CTC</label>
+                  <textarea name="description"></textarea>
                 </div>
-                <div class="field address">
-                  <label>Địa chỉ</label>
-                  <input name="patientAddress" />
+                <div class="form-row">
+                  <label>Các bước điều trị</label>
+                  <textarea name="treatment"></textarea>
                 </div>
-                <div class="field phone">
-                  <label>Điện thoại</label>
-                  <input name="patientPhone" />
+                <div class="form-row">
+                  <label>Lời dặn của BS</label>
+                  <textarea name="advice"></textarea>
                 </div>
-                <div class="field reason">
-                  <label>Lý do khám</label>
-                  <input name="patientReason" />
+                <div class="form-row">
+                  <label>Bác sỹ khám</label>
+                  <select name="doctorName"></select>
                 </div>
               </div>
             </div>
-            <div class="card exam-details">
-              <h3>Kết quả khám</h3>
-              <div class="form-row">
-                <label>Ngày khám</label>
-                <input type="date" name="examDate" />
-              </div>
-              <div class="form-row">
-                <label>KQ soi tử cung</label>
-                <textarea name="result"></textarea>
-              </div>
-              <div class="form-row">
-                <label>Mô tả soi CTC</label>
-                <textarea name="description"></textarea>
-              </div>
-              <div class="form-row">
-                <label>Các bước điều trị</label>
-                <textarea name="treatment"></textarea>
-              </div>
-              <div class="form-row">
-                <label>Lời dặn của BS</label>
-                <textarea name="advice"></textarea>
-              </div>
-              <div class="form-row">
-                <label>Bác sỹ khám</label>
-                <select name="doctorName"></select>
+            <div>
+              <div class="card">
+                <h3>Ảnh soi</h3>
+                <p>Hiển thị ${getImageCount()} ảnh. Chọn tại màn hình Lấy hình ảnh.</p>
+                <div class="image-grid"></div>
               </div>
             </div>
-          </div>
-          <div>
-            <div class="card">
-              <h3>Ảnh soi</h3>
-              <p>Hiển thị ${getImageCount()} ảnh. Chọn tại màn hình Lấy hình ảnh.</p>
-              <div class="image-grid"></div>
-            </div>
-          </div>
-        </form>
-      `;
+          </form>
+        `;
+      }
 
       target.appendChild(container);
 
