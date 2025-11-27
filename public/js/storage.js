@@ -60,7 +60,7 @@ export const storage = {
     body: JSON.stringify(payload)
   }),
   deleteDoctor: (id) => request(`/api/doctors/${id}`, { method: 'DELETE' }),
-  listTemplates: () => request('/api/result-templates'),
+  listTemplates: () => request('/api/templates'),
   saveTemplate: (payload) => request('/api/result-templates', {
     method: 'POST',
     headers: JSON_HEADERS,
