@@ -9,10 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
 const publicDir = path.join(rootDir, 'public');
-const dataDir = path.join(rootDir, 'data');
-const imagesDir = path.join(dataDir, 'images');
-const logoDir = path.join(publicDir, 'images', 'logo');
 const databaseDir = path.join(rootDir, 'database');
+const imagesDir = path.join(databaseDir, 'images');
+const logoDir = path.join(databaseDir, 'logo');
 const dbPath = path.join(databaseDir, 'database.sqlite');
 
 const defaultData = {
@@ -48,7 +47,7 @@ const defaultData = {
 let db;
 
 function getPaths() {
-  return { rootDir, publicDir, dataDir, imagesDir, logoDir, databaseDir };
+  return { rootDir, publicDir, imagesDir, logoDir, databaseDir };
 }
 
 async function ensureDefaultLogo() {
@@ -60,6 +59,24 @@ async function ensureDefaultLogo() {
     const source = path.join(publicDir, 'images', 'logo-default.svg');
     await fsPromises.copyFile(source, target);
   }
+}
+
+async function copyIfExists(source, destination) {
+  try {
+    const stat = await fsPromises.stat(source);
+    if (!stat.isDirectory()) return;
+  } catch {
+    return;
+  }
+  await fsPromises.mkdir(destination, { recursive: true });
+  await fsPromises.cp(source, destination, { recursive: true, force: true });
+}
+
+async function migrateLegacyAssets() {
+  const legacyImages = path.join(rootDir, 'data', 'images');
+  const legacyLogos = path.join(publicDir, 'images', 'logo');
+  await copyIfExists(legacyImages, imagesDir);
+  await copyIfExists(legacyLogos, logoDir);
 }
 
 function ensureSingleton(table, value) {
@@ -106,9 +123,10 @@ function initDatabase() {
 }
 
 async function ensureInfrastructure() {
-  await fsPromises.mkdir(dataDir, { recursive: true });
-  await fsPromises.mkdir(imagesDir, { recursive: true });
   await fsPromises.mkdir(databaseDir, { recursive: true });
+  await fsPromises.mkdir(imagesDir, { recursive: true });
+  await fsPromises.mkdir(logoDir, { recursive: true });
+  await migrateLegacyAssets();
   await ensureDefaultLogo();
   initDatabase();
 }

@@ -29,12 +29,11 @@ async function copyDirectory(source, destination) {
 }
 
 async function createZipBuffer() {
-  const { rootDir, dataDir, databaseDir } = getPaths();
+  const { rootDir, databaseDir } = getPaths();
   const tempDir = await getTempDir('pmzip-');
   const stagingDir = path.join(tempDir, 'staging');
   const zipPath = path.join(tempDir, 'backup.zip');
 
-  await copyDirectory(dataDir, path.join(stagingDir, 'data'));
   await copyDirectory(databaseDir, path.join(stagingDir, 'database'));
 
   if (process.platform === 'win32') {
@@ -49,7 +48,7 @@ async function createZipBuffer() {
 }
 
 async function extractZipBuffer(buffer) {
-  const { dataDir, databaseDir } = getPaths();
+  const { databaseDir } = getPaths();
   const tempDir = await getTempDir('pmzip-');
   const zipPath = path.join(tempDir, 'upload.zip');
   await fsPromises.writeFile(zipPath, buffer);
@@ -61,16 +60,12 @@ async function extractZipBuffer(buffer) {
   } else {
     await execFileAsync('unzip', ['-o', zipPath, '-d', extractDir]);
   }
-  const extractedData = path.join(extractDir, 'data');
   const extractedDb = path.join(extractDir, 'database');
-  const dataStats = await fsPromises.stat(extractedData).catch(() => null);
   const dbStats = await fsPromises.stat(extractedDb).catch(() => null);
-  if (!dataStats || !dbStats) {
+  if (!dbStats) {
     throw new Error('invalid_backup');
   }
-  await fsPromises.rm(dataDir, { recursive: true, force: true });
   await fsPromises.rm(databaseDir, { recursive: true, force: true });
-  await copyDirectory(extractedData, dataDir);
   await copyDirectory(extractedDb, databaseDir);
   await fsPromises.rm(tempDir, { recursive: true, force: true });
 }

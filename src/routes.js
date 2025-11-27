@@ -100,10 +100,12 @@ async function serveStatic(res, requestPath) {
 }
 
 async function serveDataFile(res, requestPath) {
-  const { rootDir, dataDir } = getPaths();
+  const { rootDir, databaseDir, imagesDir, logoDir } = getPaths();
   const safePath = normalizePath(requestPath);
   const filePath = path.join(rootDir, safePath);
-  if (!filePath.startsWith(dataDir)) {
+  const allowedDirs = [imagesDir, logoDir];
+  const isAllowed = allowedDirs.some((dir) => filePath.startsWith(dir));
+  if (!isAllowed || filePath.startsWith(databaseDir) && filePath.endsWith('database.sqlite')) {
     sendJson(res, 403, { error: 'forbidden' });
     return true;
   }
@@ -420,8 +422,13 @@ async function handleRequest(req, res) {
     sendJson(res, 404, { error: 'not_found' });
     return;
   }
-  if (url.pathname.startsWith('/data/images/')) {
+  if (url.pathname.startsWith('/database/images/') || url.pathname.startsWith('/database/logo/')) {
     const served = await serveDataFile(res, url.pathname);
+    if (served) return;
+  }
+  if (url.pathname.startsWith('/data/images/')) {
+    const mappedPath = url.pathname.replace('/data/images/', '/database/images/');
+    const served = await serveDataFile(res, mappedPath);
     if (served) return;
   }
   const served = await serveStatic(res, url.pathname);
