@@ -27,7 +27,7 @@ Mở `http://localhost:3000`, đăng nhập, nhập mã bản quyền nếu đư
 - `src/routes.js`: tập trung toàn bộ API, trang HTML và phục vụ tĩnh.
 - `src/db.js`: cấu hình đường dẫn, khởi tạo SQLite và tiện ích đọc/ghi.
 - `src/models/`: xử lý nghiệp vụ (exam, patient, image, license, settings, backup, user).
-- `src/views/`: khung EJS đơn giản hiển thị SPA frontend.
+- `src/views/`: chỉ còn `layout.ejs` + `home.ejs` để bọc SPA frontend.
 - `public/`: CSS/JS/ảnh tĩnh; `data/` chứa ảnh chụp; `database/` lưu file SQLite.
 
 ## Kiểm thử
