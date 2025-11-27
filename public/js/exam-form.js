@@ -115,6 +115,12 @@ export function createExamFormView(appState) {
       phone: formData.get('patientPhone'),
       reason: formData.get('patientReason')
     };
+    const doctorSelect = form.querySelector('select[name="doctorId"]');
+    const doctorId = formData.get('doctorId');
+    const doctor = doctors.find((item) => item.id === doctorId);
+    const doctorNameFromSelect = doctorSelect?.selectedOptions?.[0]?.textContent?.trim();
+    const doctorNameField = formData.get('doctorName');
+
     const exam = {
       id: formData.get('examId'),
       examNumber: formData.get('examNumber'),
@@ -124,7 +130,8 @@ export function createExamFormView(appState) {
       result: formData.get('result'),
       treatmentSteps: formData.get('treatment'),
       doctorAdvice: formData.get('advice'),
-      doctorName: formData.get('doctorName'),
+      doctorId: doctorId || doctor?.id || '',
+      doctorName: doctor?.name || doctorNameFromSelect || doctorNameField || '',
       imagePaths: (appState.selectedImages || [])
         .filter(Boolean)
         .map((img) => img.path || img.dataUrl)
@@ -156,20 +163,57 @@ export function createExamFormView(appState) {
     form.result.value = settings?.defaultResult || '';
     form.advice.value = settings?.defaultDoctorAdvice || '';
     publishContext(form);
+    const doctorSelect = form.querySelector('select[name="doctorId"]');
+    const doctorNameInput = form.querySelector('input[name="doctorName"]');
+    syncDoctorName(doctorSelect, doctorNameInput);
   }
 
   async function refreshSettings() {
     appState.settings = await storage.getSettings();
   }
 
-  function populateDoctors(select) {
+  function syncDoctorName(select, hiddenInput) {
+    const selectedName = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+    if (hiddenInput) {
+      hiddenInput.value = selectedName;
+    }
+    if (select) {
+      select.dataset.selectedId = select.value;
+      select.dataset.selectedName = selectedName;
+    }
+  }
+
+  function populateDoctors(select, hiddenInput, selectedId, fallbackName) {
+    if (!select) return;
+
+    const desiredId = selectedId || select.dataset.selectedId || '';
+    const desiredName = fallbackName || select.dataset.selectedName || select.dataset.fallbackName || '';
+
     select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Chọn bác sỹ';
+    select.appendChild(placeholder);
+
     doctors.forEach((doctor) => {
       const option = document.createElement('option');
-      option.value = doctor.name;
+      option.value = doctor.id;
       option.textContent = doctor.name;
       select.appendChild(option);
     });
+
+    const matchedById = doctors.find((doctor) => doctor.id === desiredId);
+    const matchedByName = doctors.find((doctor) => doctor.name === desiredName);
+
+    if (matchedById) {
+      select.value = matchedById.id;
+    } else if (matchedByName) {
+      select.value = matchedByName.id;
+    } else if (doctors[0]) {
+      select.value = doctors[0].id;
+    }
+
+    syncDoctorName(select, hiddenInput);
   }
 
   async function handleSave(form) {
@@ -244,7 +288,10 @@ export function createExamFormView(appState) {
     form.result.value = exam?.result || fallbackSettings.defaultResult || '';
     form.treatment.value = exam?.treatmentSteps || '';
     form.advice.value = exam?.doctorAdvice || fallbackSettings.defaultDoctorAdvice || '';
-    form.doctorName.value = exam?.doctorName || form.doctorName.value;
+    form.doctorId.dataset.fallbackName = exam?.doctorName || '';
+    form.doctorId.value = exam?.doctorId || form.doctorId.value || '';
+    form.doctorName.value = exam?.doctorName || form.doctorName.value || '';
+    syncDoctorName(form.querySelector('select[name="doctorId"]'), form.querySelector('input[name="doctorName"]'));
 
     const imageList = normalizeImages(exam?.imagePaths, getImageCount());
     appState.selectedImages = imageList;
@@ -281,6 +328,7 @@ export function createExamFormView(appState) {
           <form class="grid-2" id="exam-form">
             <input type="hidden" name="examId" />
             <input type="hidden" name="examNumber" />
+            <input type="hidden" name="doctorName" />
             <div>
               <div class="card patient-card">
                 <h3>Thông tin bệnh nhân</h3>
@@ -342,7 +390,7 @@ export function createExamFormView(appState) {
                 </div>
                 <div class="form-row">
                   <label>Bác sỹ khám</label>
-                  <select name="doctorName"></select>
+                  <select name="doctorId"></select>
                 </div>
               </div>
             </div>
@@ -358,12 +406,9 @@ export function createExamFormView(appState) {
       }
 
       target.appendChild(container);
-
-      loadMetadata().then(() => {
-        populateDoctors(container.querySelector('select[name="doctorName"]'));
-      });
-
       const form = container.querySelector('#exam-form');
+      const doctorSelect = form.querySelector('select[name="doctorId"]');
+      const doctorNameInput = form.querySelector('input[name="doctorName"]');
       if (pendingExamLoad) {
         loadExamIntoForm(form, pendingExamLoad.exam, pendingExamLoad.patient);
         pendingExamLoad = null;
@@ -376,12 +421,24 @@ export function createExamFormView(appState) {
         persistDraft(form);
       }
 
+      loadMetadata().then(() => {
+        populateDoctors(
+          doctorSelect,
+          doctorNameInput,
+          doctorSelect?.value || appState.examDraft?.exam?.doctorId,
+          doctorNameInput?.value || appState.examDraft?.exam?.doctorName
+        );
+      });
+
       form.addEventListener('input', () => {
         publishContext(form);
         persistDraft(form);
       });
 
-      form.addEventListener('change', () => {
+      form.addEventListener('change', (event) => {
+        if (event.target === doctorSelect) {
+          syncDoctorName(doctorSelect, doctorNameInput);
+        }
         publishContext(form);
         persistDraft(form);
       });

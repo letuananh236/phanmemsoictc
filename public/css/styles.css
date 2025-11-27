@@ -600,23 +600,23 @@ button.danger {
 }
 
 .login-modal .modal-card {
-  width: clamp(320px, 70vw, 880px);
-  padding: clamp(28px, 4vw, 52px);
-  font-size: clamp(1.1em, 1vw + 1.1em, 1.9em);
+  width: clamp(288px, 63vw, 792px);
+  padding: clamp(25px, 3.6vw, 47px);
+  font-size: clamp(0.99em, 0.9vw + 0.99em, 1.71em);
 }
 
 .login-modal label,
 .login-modal input,
 .login-modal button {
-  font-size: clamp(1.05em, 0.6vw + 1em, 1.44em);
+  font-size: clamp(0.945em, 0.54vw + 0.9em, 1.296em);
 }
 
 .login-modal input {
-  padding: clamp(12px, 1.2vw + 8px, 16px);
+  padding: clamp(11px, 1.1vw + 7px, 14px);
 }
 
 .login-modal .toolbar button {
-  padding: clamp(12px, 1vw + 10px, 18px) clamp(18px, 1.5vw + 12px, 26px);
+  padding: clamp(11px, 0.9vw + 9px, 16px) clamp(16px, 1.35vw + 11px, 23px);
 }
 
 .login-modal .version-text {
@@ -629,14 +629,14 @@ button.danger {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: clamp(1.2em, 0.8vw + 1.05em, 1.6em);
+  font-size: clamp(1.08em, 0.72vw + 0.945em, 1.44em);
   font-weight: 600;
 }
 
 .login-modal .checkbox-label input {
-  width: 22px;
-  height: 22px;
-  transform: scale(1.2);
+  width: 20px;
+  height: 20px;
+  transform: scale(1.08);
 }
 
 .toast {

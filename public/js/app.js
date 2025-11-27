@@ -19,6 +19,8 @@ const appState = {
   settings: null
 };
 
+let activeViewKey = null;
+
 function updateUiScale() {
   const baseWidth = 1920;
   const baseHeight = 1080;
@@ -67,12 +69,17 @@ async function checkLicense() {
 }
 
 function renderView(viewKey) {
+  const previousView = activeViewKey ? views[activeViewKey] : null;
+  if (previousView?.destroy) {
+    previousView.destroy();
+  }
   const view = views[viewKey];
   if (!view) {
     console.warn('View not found', viewKey);
     return;
   }
   appState.currentView = viewKey;
+  activeViewKey = viewKey;
   content.innerHTML = '';
   view.render(content);
   const activeButton = menu.querySelector(`button[data-view="${viewKey}"]`);

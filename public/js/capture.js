@@ -53,12 +53,20 @@ export function createCaptureView(appState) {
     localStorage.setItem(CAMERA_SETTINGS_KEY, JSON.stringify(settings));
   }
 
+  function stopCamera() {
+    if (currentStream) {
+      currentStream.getTracks().forEach((track) => track.stop());
+      currentStream = null;
+    }
+    if (videoEl) {
+      videoEl.srcObject = null;
+    }
+  }
+
   async function startCamera(deviceId, explicitSettings) {
     const settings = explicitSettings || getCameraSettings();
 
-    if (currentStream) {
-      currentStream.getTracks().forEach((track) => track.stop());
-    }
+    stopCamera();
     try {
       const videoConstraints = deviceId ? { deviceId: { exact: deviceId } } : {};
       if (settings.width) videoConstraints.width = { ideal: Number(settings.width) };
@@ -512,6 +520,13 @@ export function createCaptureView(appState) {
         }
       };
       window.addEventListener('keydown', keyHandler);
+    },
+    destroy() {
+      stopCamera();
+      if (keyHandler) {
+        window.removeEventListener('keydown', keyHandler);
+        keyHandler = null;
+      }
     }
   };
 }
