@@ -1,4 +1,4 @@
-import { collectHardwareInfo, generateLicenseKey, generateMachineKey } from '../src/hardware-id.js';
+import { collectHardwareInfo, generateLicenseKey, generateMachineKey } from '../src/utils/hardware-id.js';
 
 function log(title, value) {
   console.log(`${title}: ${value || '(không đọc được)'}`);
