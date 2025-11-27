@@ -2,6 +2,7 @@
   font-family: 'Segoe UI', 'Roboto', sans-serif;
   color: #1f2a37;
   background-color: #eef2f7;
+  --ui-scale: 1;
 }
 
 * {
@@ -24,6 +25,14 @@ body {
   min-height: 100vh;
   background: #eef2f7;
   color: #1f2a37;
+  display: flex;
+  justify-content: center;
+}
+
+.app-shell {
+  width: calc(100% / var(--ui-scale));
+  transform: scale(var(--ui-scale));
+  transform-origin: top center;
 }
 
 .topbar {
@@ -117,8 +126,19 @@ body {
   padding-bottom: 8px;
 }
 
+.wide-card {
+  width: min(100vw, 2000px);
+  margin: 0 auto;
+}
+
+.capture-view.wide-card,
+.exam-search-view.wide-card {
+  width: min(100vw, 2000px);
+  margin: 0 auto;
+}
+
 .exam-view {
-  width: min(88vw, 1360px);
+  width: min(100vw, 2000px);
   margin: 0 auto;
 }
 
@@ -128,6 +148,12 @@ body {
   grid-template-columns: 1.65fr 0.95fr;
   gap: 16px;
   align-items: start;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 @media (max-width: 1180px) {
@@ -158,8 +184,51 @@ textarea {
   min-height: 90px;
 }
 
+.intro-steps {
+  padding-left: 18px;
+  color: #0f172a;
+}
+
+.intro-steps li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
 .form-row {
   margin-bottom: 12px;
+}
+
+.data-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button-like {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: #0f5ba7;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.button-like:hover {
+  background: #0c4a84;
+}
+
+button.danger {
+  background: #c62828;
+  color: #fff;
+}
+
+.hint {
+  color: #475569;
+  font-size: 13px;
 }
 
 .inline-fields {
@@ -180,21 +249,54 @@ textarea {
   max-width: 220px;
 }
 
-.patient-columns {
+.patient-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(140px, 180px) 1fr minmax(110px, 140px) minmax(140px, 180px);
+  gap: 12px 16px;
+  align-items: end;
 }
 
-@media (max-width: 1024px) {
-  .patient-columns {
-    grid-template-columns: 1fr;
+.patient-grid .field label {
+  margin-bottom: 6px;
+}
+
+.patient-grid .compact input,
+.patient-grid .compact select {
+  min-width: 0;
+}
+
+.patient-grid .full-name {
+  min-width: 240px;
+}
+
+.patient-grid .address {
+  grid-column: 1 / span 3;
+}
+
+.patient-grid .phone {
+  grid-column: 4;
+}
+
+.patient-grid .reason {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1200px) {
+  .patient-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+
+  .patient-grid .address,
+  .patient-grid .phone,
+  .patient-grid .reason {
+    grid-column: 1 / -1;
   }
 }
 
-.patient-col .form-row:last-child {
-  margin-bottom: 0;
+@media (max-width: 640px) {
+  .patient-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .patient-card,
@@ -209,6 +311,12 @@ textarea {
   flex-wrap: wrap;
 }
 
+.toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .toolbar button {
   border: none;
   border-radius: 6px;
@@ -217,6 +325,24 @@ textarea {
   cursor: pointer;
   background: #0f5ba7;
   color: #fff;
+}
+
+.save-status {
+  font-weight: 700;
+  color: #166534;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #22c55e;
+  background: #ecfdf3;
+  padding: 6px 10px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.save-status.visible {
+  opacity: 1;
 }
 
 .table-wrapper {
@@ -235,14 +361,55 @@ textarea {
   text-align: left;
 }
 
+.data-table tbody tr.selected {
+  font-weight: 700;
+  background: #eef2ff;
+}
+
 .toolbar button.secondary {
   background: #6b7280;
 }
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(216px, 1fr));
   gap: 14px;
+}
+
+.exam-view .image-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.exam-search-view .image-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.exam-search-view #exam-detail .detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px 16px;
+  margin: 10px 0 12px;
+}
+
+.exam-search-view #exam-detail .detail-block {
+  margin-bottom: 10px;
+}
+
+.exam-search-view #exam-detail .detail-label {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.exam-search-view #exam-detail .detail-text {
+  margin: 0;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px;
+  white-space: pre-wrap;
+  font-size: 15px;
+  border: 1px solid #e2e8f0;
 }
 
 .image-slot {
@@ -255,7 +422,12 @@ textarea {
   justify-content: center;
   flex-direction: column;
   color: #64748b;
-  font-size: 14px;
+  font-size: 17px;
+}
+
+.exam-view .image-slot,
+.exam-search-view .image-slot {
+  font-size: 20px;
 }
 
 .image-slot img {
@@ -293,10 +465,31 @@ textarea {
   top: 12px;
 }
 
+.capture-controls .action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.capture-controls #capture-photo {
+  font-size: 1.4rem;
+  padding: 14px 22px;
+  font-weight: 700;
+  min-width: 160px;
+}
+
 .capture-gallery {
   height: auto;
   max-height: none;
   overflow-y: visible;
+}
+
+.capture-gallery .gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 
@@ -313,9 +506,9 @@ textarea {
 }
 
 .capture-preview video {
-  width: 80%;
+  width: 100%;
   height: auto;
-  max-height: 80%;
+  max-height: 100%;
   object-fit: contain;
   aspect-ratio: 4 / 3;
   background: transparent;
@@ -404,6 +597,46 @@ textarea {
   padding: 24px;
   width: min(480px, 100%);
   box-shadow: 0 24px 60px rgb(15 91 167 / 0.35);
+}
+
+.login-modal .modal-card {
+  width: clamp(320px, 70vw, 880px);
+  padding: clamp(28px, 4vw, 52px);
+  font-size: clamp(1.1em, 1vw + 1.1em, 1.9em);
+}
+
+.login-modal label,
+.login-modal input,
+.login-modal button {
+  font-size: clamp(1.05em, 0.6vw + 1em, 1.44em);
+}
+
+.login-modal input {
+  padding: clamp(12px, 1.2vw + 8px, 16px);
+}
+
+.login-modal .toolbar button {
+  padding: clamp(12px, 1vw + 10px, 18px) clamp(18px, 1.5vw + 12px, 26px);
+}
+
+.login-modal .version-text {
+  margin: 6px 0 12px;
+  color: #0f5ba7;
+  font-weight: 600;
+}
+
+.login-modal .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(1.2em, 0.8vw + 1.05em, 1.6em);
+  font-weight: 600;
+}
+
+.login-modal .checkbox-label input {
+  width: 22px;
+  height: 22px;
+  transform: scale(1.2);
 }
 
 .toast {

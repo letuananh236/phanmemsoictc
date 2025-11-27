@@ -1,9 +1,7 @@
 import { initLogin } from './login.js';
 import { createExamFormView } from './exam-form.js';
 import { createCaptureView } from './capture.js';
-import { createPatientSearchView } from './search-patient.js';
 import { createExamSearchView } from './search-exam.js';
-import { createDailyListsView } from './daily-lists.js';
 import { createSettingsView } from './settings.js';
 import { createDoctorsView } from './doctors.js';
 import { createResultTemplatesView } from './result-templates.js';
@@ -21,12 +19,23 @@ const appState = {
   settings: null
 };
 
+function updateUiScale() {
+  const baseWidth = 1920;
+  const baseHeight = 1080;
+  const scale = Math.max(
+    0.75,
+    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.35)
+  );
+  document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
+}
+
+window.addEventListener('resize', updateUiScale);
+updateUiScale();
+
 const views = {
   exam: createExamFormView(appState),
   capture: createCaptureView(appState),
-  'search-patient': createPatientSearchView(appState),
   'search-exam': createExamSearchView(appState),
-  'daily-lists': createDailyListsView(appState),
   settings: createSettingsView(appState),
   doctors: createDoctorsView(appState),
   'result-templates': createResultTemplatesView(appState),
@@ -48,9 +57,13 @@ async function checkLicense() {
   const data = await storage.getLicense();
   appState.license = data.license;
   if (!data.valid) {
+    setMenuEnabled(false);
     showToast('Bản quyền hết hạn - hãy kích hoạt để tiếp tục');
     renderView('license');
+    return false;
   }
+  setMenuEnabled(true);
+  return true;
 }
 
 function renderView(viewKey) {
@@ -93,10 +106,6 @@ window.addEventListener('keydown', (event) => {
     event.preventDefault();
     renderView('capture');
   }
-  if (event.ctrlKey && (event.key === 'p' || event.key === 'P')) {
-    event.preventDefault();
-    renderView('search-patient');
-  }
   if (event.ctrlKey && (event.key === 'e' || event.key === 'E')) {
     event.preventDefault();
     renderView('search-exam');
@@ -112,11 +121,18 @@ document.addEventListener('navigate', (event) => {
 initLogin({
   onSuccess: async (user) => {
     appState.user = user;
+    const valid = await checkLicense();
+    if (!valid) return;
     await loadSettings();
-    await checkLicense();
-    setMenuEnabled(true);
     renderView('exam');
   }
+});
+
+document.addEventListener('license:activated', async () => {
+  const valid = await checkLicense();
+  if (!valid) return;
+  await loadSettings();
+  renderView('exam');
 });
 
 setMenuEnabled(false);

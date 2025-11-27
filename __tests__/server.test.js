@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { createServer } from '../src/server.js';
+import { createServer } from '../src/app.js';
 
 async function startServer() {
   const server = createServer();
