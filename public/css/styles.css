@@ -535,6 +535,8 @@ button.danger {
   background: #0f5ba7;
   color: #fff;
   border: none;
+  display: block;
+  margin: 0 auto;
 }
 
 .capture-controls #capture-photo:hover {

@@ -577,7 +577,7 @@ export function createCaptureView(appState) {
               </div>
               <div class="form-row button-row">
                 <button type="button" id="start-camera">Lưu camera</button>
-                <button type="button" id="open-camera-settings">Cấu hình camera</button>
+                <button type="button" id="open-camera-settings">Cấu hình</button>
               </div>
               <div class="form-row">
                 <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
