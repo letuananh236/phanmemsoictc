@@ -251,6 +251,10 @@ button.danger {
   flex: 1 1 240px;
 }
 
+.inline-fields.triple .field {
+  flex: 1 1 180px;
+}
+
 .inline-fields .short-field {
   flex: 0 0 220px;
 }

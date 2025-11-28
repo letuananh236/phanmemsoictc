@@ -2,7 +2,14 @@ import { storage, showToast } from './storage.js';
 
 const PREFERRED_CAMERA_KEY = 'preferredCameraId';
 const CAMERA_SETTINGS_KEY = 'cameraSettings';
-const DEFAULT_CAMERA_SETTINGS = { width: 1280, height: 720, frameRate: 30 };
+const DEFAULT_CAMERA_SETTINGS = {
+  width: 1280,
+  height: 720,
+  frameRate: 30,
+  brightness: null,
+  contrast: null,
+  saturation: null
+};
 
 export function createCaptureView(appState) {
   let container;
@@ -63,15 +70,48 @@ export function createCaptureView(appState) {
     }
   }
 
+  function buildVideoConstraints(deviceId, settings) {
+    const videoConstraints = deviceId ? { deviceId: { exact: deviceId } } : {};
+    if (settings.width) videoConstraints.width = { ideal: Number(settings.width) };
+    if (settings.height) videoConstraints.height = { ideal: Number(settings.height) };
+    if (settings.frameRate) videoConstraints.frameRate = { ideal: Number(settings.frameRate) };
+
+    const advanced = {};
+    ['brightness', 'contrast', 'saturation'].forEach((key) => {
+      const value = settings[key];
+      if (value !== null && value !== undefined && value !== '') {
+        advanced[key] = Number(value);
+      }
+    });
+    if (Object.keys(advanced).length) {
+      videoConstraints.advanced = [advanced];
+    }
+    return videoConstraints;
+  }
+
+  async function applyTrackControls(track, settings) {
+    if (!track?.applyConstraints) return;
+    const advanced = {};
+    ['brightness', 'contrast', 'saturation'].forEach((key) => {
+      const value = settings[key];
+      if (value !== null && value !== undefined && value !== '') {
+        advanced[key] = Number(value);
+      }
+    });
+    if (!Object.keys(advanced).length) return;
+    try {
+      await track.applyConstraints({ advanced: [advanced] });
+    } catch (error) {
+      console.warn('Unable to apply camera controls', error);
+    }
+  }
+
   async function startCamera(deviceId, explicitSettings) {
-    const settings = explicitSettings || getCameraSettings();
+    const settings = { ...getCameraSettings(), ...explicitSettings };
 
     stopCamera();
     try {
-      const videoConstraints = deviceId ? { deviceId: { exact: deviceId } } : {};
-      if (settings.width) videoConstraints.width = { ideal: Number(settings.width) };
-      if (settings.height) videoConstraints.height = { ideal: Number(settings.height) };
-      if (settings.frameRate) videoConstraints.frameRate = { ideal: Number(settings.frameRate) };
+      const videoConstraints = buildVideoConstraints(deviceId, settings);
 
       currentStream = await navigator.mediaDevices.getUserMedia({
         video: Object.keys(videoConstraints).length > 0 ? videoConstraints : true,
@@ -79,6 +119,9 @@ export function createCaptureView(appState) {
       });
       videoEl.srcObject = currentStream;
       await videoEl.play();
+
+      const [track] = currentStream.getVideoTracks();
+      await applyTrackControls(track, settings);
     } catch (error) {
       console.error('Unable to start camera', error);
       showToast('Không mở được camera đã chọn');
@@ -254,6 +297,12 @@ export function createCaptureView(appState) {
     const currentWidth = activeSettings.width || settings.width;
     const currentHeight = activeSettings.height || settings.height;
     const currentFrameRate = activeSettings.frameRate || settings.frameRate;
+    const currentBrightness =
+      settings.brightness ?? activeSettings.brightness ?? capabilities.brightness?.min ?? '';
+    const currentContrast =
+      settings.contrast ?? activeSettings.contrast ?? capabilities.contrast?.min ?? '';
+    const currentSaturation =
+      settings.saturation ?? activeSettings.saturation ?? capabilities.saturation?.min ?? '';
 
     modal.innerHTML = `
       <div class="modal-card">
@@ -282,6 +331,20 @@ export function createCaptureView(appState) {
             <label for="camera-framerate">Tốc độ khung hình (fps)</label>
             <input type="number" id="camera-framerate" name="frameRate" min="1" value="${currentFrameRate}" />
           </div>
+          <div class="form-row inline-fields triple">
+            <div class="field">
+              <label for="camera-brightness">Độ sáng</label>
+              <input type="number" id="camera-brightness" name="brightness" value="${currentBrightness}" />
+            </div>
+            <div class="field">
+              <label for="camera-contrast">Độ tương phản</label>
+              <input type="number" id="camera-contrast" name="contrast" value="${currentContrast}" />
+            </div>
+            <div class="field">
+              <label for="camera-saturation">Độ bão hòa</label>
+              <input type="number" id="camera-saturation" name="saturation" value="${currentSaturation}" />
+            </div>
+          </div>
           <div class="form-row">
             <h4>Thông tin khả năng camera</h4>
             <ul class="capabilities-list">
@@ -290,6 +353,7 @@ export function createCaptureView(appState) {
           </div>
           <div class="toolbar">
             <button type="submit">Lưu và áp dụng</button>
+            <button type="button" class="secondary" id="camera-settings-reset">Khôi phục mặc định</button>
             <button type="button" class="secondary" id="camera-settings-cancel">Hủy</button>
           </div>
         </form>
@@ -322,13 +386,45 @@ export function createCaptureView(appState) {
 
     presetSelect.addEventListener('change', () => syncSettingsFromPreset(form, presets));
 
+    const defaultValues = {
+      width: DEFAULT_CAMERA_SETTINGS.width,
+      height: DEFAULT_CAMERA_SETTINGS.height,
+      frameRate: DEFAULT_CAMERA_SETTINGS.frameRate,
+      brightness: DEFAULT_CAMERA_SETTINGS.brightness,
+      contrast: DEFAULT_CAMERA_SETTINGS.contrast,
+      saturation: DEFAULT_CAMERA_SETTINGS.saturation
+    };
+
+    const resetToDefaults = () => {
+      presetSelect.value = '';
+      form.width.value = defaultValues.width;
+      form.height.value = defaultValues.height;
+      form.frameRate.value = defaultValues.frameRate;
+      form.brightness.value = defaultValues.brightness ?? '';
+      form.contrast.value = defaultValues.contrast ?? '';
+      form.saturation.value = defaultValues.saturation ?? '';
+    };
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const width = Number(form.width.value) || DEFAULT_CAMERA_SETTINGS.width;
       const height = Number(form.height.value) || DEFAULT_CAMERA_SETTINGS.height;
       const frameRate = Number(form.frameRate.value) || DEFAULT_CAMERA_SETTINGS.frameRate;
 
-      const newSettings = { width, height, frameRate };
+      const parseControl = (value) => {
+        if (value === '' || value === null || value === undefined) return null;
+        const numberValue = Number(value);
+        return Number.isFinite(numberValue) ? numberValue : null;
+      };
+
+      const newSettings = {
+        width,
+        height,
+        frameRate,
+        brightness: parseControl(form.brightness.value),
+        contrast: parseControl(form.contrast.value),
+        saturation: parseControl(form.saturation.value)
+      };
       saveCameraSettings(newSettings);
       closeModal();
       const deviceId = selectEl.value;
@@ -337,6 +433,7 @@ export function createCaptureView(appState) {
     });
 
     modal.querySelector('#camera-settings-cancel').addEventListener('click', closeModal);
+    modal.querySelector('#camera-settings-reset').addEventListener('click', resetToDefaults);
 
     document.body.appendChild(modal);
   }
