@@ -39,43 +39,43 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet {
             width: 100%;
             max-width: 210mm;
-            min-height: 297mm;
             margin: 0 auto;
             background: #fff;
-            padding: 1.4cm 1.6cm;
+            padding: 1cm 1.2cm;
             box-shadow: 0 18px 45px rgb(0 0 0 / 0.16);
-            font-size: 17px;
+            font-size: 16px;
+            box-sizing: border-box;
           }
-          header { display: grid; grid-template-columns: 92px 1fr; gap: 16px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #1f2937; margin-bottom: 14px; }
-          .print-logo { width: 84px; height: 84px; object-fit: contain; border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px; }
-          .header-text { display: flex; flex-direction: column; gap: 4px; }
+          header { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
+          .print-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px; }
+          .header-text { display: flex; flex-direction: column; gap: 3px; }
           .header-text .hospital-name, .header-text .department-name { text-transform: uppercase; font-weight: 700; }
-          .header-text .hospital-name { font-size: 21px; }
-          .header-text .department-name { font-size: 18px; }
+          .header-text .hospital-name { font-size: 20px; }
+          .header-text .department-name { font-size: 17px; }
           .title {
             text-align: center;
             color: #b91c1c;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             text-transform: uppercase;
-            margin: 6px 0 18px;
+            margin: 6px 0 14px;
             letter-spacing: 0.2px;
           }
-          .info-lines { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; font-size: 15px; }
-          .info-line { display: flex; flex-wrap: wrap; gap: 16px; align-items: baseline; }
-          .info-line .label { font-weight: 700; margin-right: 6px; white-space: nowrap; }
-          .section { margin: 12px 0 14px; }
-          .section-heading { font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+          .info-lines { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 14px; }
+          .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
+          .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
+          .section { margin: 10px 0 12px; }
+          .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
           .section-heading .roman { margin-right: 6px; }
-          .text-content { white-space: pre-wrap; min-height: 32px; padding-left: 4px; }
-          .print-images { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+          .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
+          .print-images { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
-          .print-image.placeholder { border-style: dashed; color: #94a3b8; font-style: italic; font-size: 13px; }
-          .signature-block { margin-top: 26px; text-align: right; line-height: 1.8; }
-            .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 10px; }
-          .signature-block .doctor-name { margin-top: 40px; font-weight: 700; }
-          .print-note { margin-top: 28px; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
+          .print-image.placeholder { border-style: dashed; color: #94a3b8; font-style: italic; font-size: 12px; }
+          .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; }
+            .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 8px; }
+          .signature-block .doctor-name { margin-top: 32px; font-weight: 700; }
+          .print-note { margin-top: 20px; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
               background: #fff;
