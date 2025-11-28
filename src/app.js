@@ -1,8 +1,9 @@
 import http from 'http';
-import { handleRequest } from './routes.js';
+import { createApp } from './routes.js';
 
 function createServer() {
-  return http.createServer(handleRequest);
+  const app = createApp();
+  return http.createServer(app);
 }
 
 if (process.argv[1] && process.argv[1].includes('app.js')) {
