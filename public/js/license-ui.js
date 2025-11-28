@@ -35,6 +35,7 @@ export function createLicenseView(appState) {
               </div>
               <div class="toolbar license-actions">
                 <button type="submit">Kích hoạt</button>
+                <button type="button" class="secondary" id="license-send">Gửi mã kích hoạt</button>
                 <button type="button" class="secondary" id="license-reset">Xóa kích hoạt</button>
               </div>
             </form>
@@ -56,6 +57,23 @@ export function createLicenseView(appState) {
           document.dispatchEvent(new CustomEvent('license:activated'));
         } catch (error) {
           showToast(error.message || 'Kích hoạt thất bại');
+        }
+      });
+
+      const sendBtn = wrapper.querySelector('#license-send');
+      sendBtn.addEventListener('click', async () => {
+        const formData = new FormData(form);
+        const licenseKey = (formData.get('licenseKey') || '').trim();
+        const machineId = appState.license?.machineId || wrapper.querySelector('#license-machine')?.textContent || '';
+        if (!licenseKey && !machineId) {
+          showToast('Chưa có thông tin mã máy hoặc key để gửi');
+          return;
+        }
+        try {
+          await storage.sendActivationRequest({ licenseKey, machineId });
+          showToast('Đã gửi mã kích hoạt');
+        } catch (error) {
+          showToast(error.message || 'Không thể gửi mã kích hoạt');
         }
       });
 

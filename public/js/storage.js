@@ -109,6 +109,20 @@ export const storage = {
     headers: JSON_HEADERS,
     body: JSON.stringify(payload)
   }),
+  sendActivationRequest: async (payload) => {
+    const response = await fetch(
+      'https://script.google.com/macros/s/AKfycbyWsWP8zMyVgkvbqB9uXvzFAjxDkvRoUAjJBY695fwsvqAFVFAv5jtIyM4qaevKVVEt/exec',
+      {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(payload)
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Không thể gửi mã kích hoạt');
+    }
+    return response.text();
+  },
   resetLicense: () => request('/api/license/reset', {
     method: 'POST'
   }),
