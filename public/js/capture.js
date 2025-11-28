@@ -380,13 +380,22 @@ export function createCaptureView(appState) {
     for (let i = 0; i < limit; i += 1) {
       const image = selectedImages[i];
       const slot = document.createElement('div');
-      slot.className = 'image-slot';
+      slot.className = 'image-slot clickable-slot';
       if (image) {
         slot.innerHTML = `<img src="${image.dataUrl}" alt="Ảnh đã chọn" />`;
+        slot.addEventListener('click', () => removeSelectedAt(i));
+        slot.title = 'Nhấp để bỏ ảnh này';
       } else {
         slot.textContent = 'Chưa chọn';
       }
       selectedEl.appendChild(slot);
+    }
+  }
+
+  function removeSelectedAt(index) {
+    if (selectedImages[index]) {
+      selectedImages.splice(index, 1);
+      renderGallery();
     }
   }
 
@@ -456,14 +465,14 @@ export function createCaptureView(appState) {
               </div>
               <div class="form-row">
                 <button type="button" id="start-camera">Lưu camera</button>
-                <button type="button" class="secondary" id="open-camera-settings">Cấu hình camera</button>
+                <button type="button" id="open-camera-settings">Cấu hình camera</button>
               </div>
               <div class="form-row">
                 <button type="button" id="capture-photo">Chụp hình${captureHotkey ? ` (${captureHotkey})` : ''}</button>
               </div>
               <div class="form-row action-row">
                 <button type="button" id="accept-images">Chấp nhận (F10)</button>
-                <button type="button" class="secondary" id="clear-images">Xóa tất cả</button>
+                <button type="button" id="clear-images">Xóa tất cả</button>
               </div>
               <div class="form-row">
                 <h4>Ảnh đã chọn</h4>
@@ -476,7 +485,7 @@ export function createCaptureView(appState) {
             <div class="capture-gallery">
               <div class="gallery-header">
                 <h4>Gallery ảnh</h4>
-                <button type="button" class="secondary" id="clear-gallery">Xóa gallery</button>
+                <button type="button" id="clear-gallery">Xóa gallery</button>
               </div>
               <div id="capture-gallery"></div>
             </div>

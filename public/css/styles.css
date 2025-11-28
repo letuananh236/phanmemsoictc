@@ -476,6 +476,24 @@ button.danger {
   top: 12px;
 }
 
+.capture-controls button,
+.capture-gallery .gallery-header button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  background: #0f5ba7;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.capture-controls button:hover,
+.capture-gallery .gallery-header button:hover {
+  background: #0c4a84;
+}
+
 .capture-controls .action-row {
   display: flex;
   gap: 10px;
@@ -578,6 +596,10 @@ button.danger {
   align-items: center;
   justify-content: center;
   border-width: 1px;
+}
+
+.capture-view .selected-grid .image-slot.clickable-slot {
+  cursor: pointer;
 }
 
 .capture-view .selected-grid .image-slot img {
