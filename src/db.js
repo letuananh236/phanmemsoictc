@@ -134,6 +134,17 @@ function initDatabase() {
   seedList('users', (defaultData.users || []).map((user) => ({ id: user.username, ...user })));
 }
 
+function closeDatabase() {
+  if (db) {
+    db.close();
+    db = null;
+  }
+}
+
+function reloadDatabase() {
+  initDatabase();
+}
+
 async function ensureInfrastructure() {
   await fsPromises.mkdir(databaseDir, { recursive: true });
   await fsPromises.mkdir(imagesDir, { recursive: true });
@@ -205,6 +216,8 @@ function getDatabasePath() {
 }
 
 export {
+  closeDatabase,
+  reloadDatabase,
   deleteRecord,
   ensureInfrastructure,
   getDatabasePath,

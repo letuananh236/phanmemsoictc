@@ -2,7 +2,7 @@ import path from 'path';
 import fsPromises from 'fs/promises';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { getPaths, getTempDir } from '../db.js';
+import { closeDatabase, getPaths, getTempDir, reloadDatabase } from '../db.js';
 import { resetCoreData } from './exam.model.js';
 import { ensureLicense } from './license.model.js';
 
@@ -65,9 +65,11 @@ async function extractZipBuffer(buffer) {
   if (!dbStats) {
     throw new Error('invalid_backup');
   }
+  closeDatabase();
   await fsPromises.rm(databaseDir, { recursive: true, force: true });
   await copyDirectory(extractedDb, databaseDir);
   await fsPromises.rm(tempDir, { recursive: true, force: true });
+  reloadDatabase();
 }
 
 async function clearAllData() {
