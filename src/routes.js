@@ -283,7 +283,7 @@ function createApp() {
       else if (detectedType === 'lifetime') expireDate.setFullYear(expireDate.getFullYear() + 99);
       else expireDate.setFullYear(expireDate.getFullYear() + 1);
 
-      const saved = await ensureLicense({
+      const saved = await ensureLicense(getDefaultData().license, {
         licenseKey: normalizedKey,
         machineId,
         licenseType: detectedType || body?.licenseType || 'yearly',

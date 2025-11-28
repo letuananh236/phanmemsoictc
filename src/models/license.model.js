@@ -46,30 +46,57 @@ function isLicenseValid(license) {
 }
 
 async function ensureLicense(defaults = {}, override = null) {
-  const base = override || getStoredLicense();
-  const machineId = generateMachineKey();
+  const stored = getStoredLicense() || {};
+  const machineId = override?.machineId || stored.machineId || defaults.machineId || generateMachineKey();
   const now = new Date();
-  const startDate = ensureDateString(base?.startDate, now.toISOString().slice(0, 10));
+
+  const startDate = ensureDateString(
+    override?.startDate || stored.startDate || defaults.startDate,
+    now.toISOString().slice(0, 10)
+  );
+
   const expireDate = (() => {
-    const source = base?.expireDate || base?.expireAt;
+    const source =
+      override?.expireDate ||
+      override?.expireAt ||
+      stored.expireDate ||
+      stored.expireAt ||
+      defaults.expireDate ||
+      defaults.expireAt;
     const normalized = ensureDateString(source, null);
     if (normalized) return normalized;
     const fallback = new Date(startDate);
     fallback.setDate(fallback.getDate() + 30);
     return fallback.toISOString().slice(0, 10);
   })();
-  const detectedType = detectLicenseTypeFromKey(base?.licenseKey, machineId);
+
+  const rawKey = override?.licenseKey || stored.licenseKey || defaults.licenseKey || '';
+  const normalizedKey = normalizeLicenseKey(rawKey);
+  const detectedType = detectLicenseTypeFromKey(normalizedKey, machineId);
   const normalizedType =
-    detectedType || normalizeLicenseType(base?.licenseType || defaults?.licenseType || 'trial');
-  const normalizedKey = normalizeLicenseKey(base?.licenseKey || '');
+    detectedType ||
+    normalizeLicenseType(override?.licenseType || stored.licenseType || defaults.licenseType || 'trial');
+
   const normalized = {
+    ...defaults,
+    ...stored,
+    ...(override || {}),
     machineId,
     licenseType: normalizedType,
     licenseKey: normalizedKey,
     startDate,
-    expireDate,
-    status: base?.status || defaults?.status || 'invalid'
+    expireDate
   };
+
+  const expire = new Date(expireDate);
+  const coreValid =
+    normalizedKey &&
+    detectedType &&
+    normalized.machineId === machineId &&
+    !Number.isNaN(expire.getTime()) &&
+    expire >= now;
+  normalized.status = coreValid ? 'valid' : normalized.status || 'invalid';
+
   const valid = isLicenseValid(normalized);
   normalized.status = valid ? 'valid' : normalized.status;
   saveStoredLicense(normalized);
