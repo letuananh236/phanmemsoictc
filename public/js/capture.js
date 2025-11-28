@@ -383,7 +383,7 @@ export function createCaptureView(appState) {
       slot.className = 'image-slot clickable-slot';
       if (image) {
         slot.innerHTML = `<img src="${image.dataUrl}" alt="Ảnh đã chọn" />`;
-        slot.addEventListener('click', () => removeSelectedAt(i));
+        slot.addEventListener('click', () => removeSelectedImage(image));
         slot.title = 'Nhấp để bỏ ảnh này';
       } else {
         slot.textContent = 'Chưa chọn';
@@ -392,9 +392,10 @@ export function createCaptureView(appState) {
     }
   }
 
-  function removeSelectedAt(index) {
-    if (selectedImages[index]) {
-      selectedImages.splice(index, 1);
+  function removeSelectedImage(image) {
+    const initialLength = selectedImages.length;
+    selectedImages = selectedImages.filter((img) => img !== image);
+    if (selectedImages.length !== initialLength) {
       renderGallery();
     }
   }

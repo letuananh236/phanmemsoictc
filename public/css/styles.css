@@ -478,20 +478,22 @@ button.danger {
 
 .capture-controls button,
 .capture-gallery .gallery-header button {
-  border: none;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 12px 18px;
-  font-weight: 700;
-  font-size: 16px;
-  background: #0f5ba7;
-  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 15px;
+  background: #f1f5f9;
+  color: #0f172a;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .capture-controls button:hover,
 .capture-gallery .gallery-header button:hover {
-  background: #0c4a84;
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .capture-controls .action-row {
@@ -501,10 +503,17 @@ button.danger {
 }
 
 .capture-controls #capture-photo {
-  font-size: 1.4rem;
-  padding: 14px 22px;
+  font-size: 1.3rem;
+  padding: 12px 20px;
   font-weight: 700;
   min-width: 160px;
+  background: #0f5ba7;
+  color: #fff;
+  border: none;
+}
+
+.capture-controls #capture-photo:hover {
+  background: #0c4a84;
 }
 
 .capture-gallery {
