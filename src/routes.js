@@ -179,11 +179,6 @@ function createApp() {
       res.status(updated ? 200 : 404).json(updated || { error: 'not_found' });
     })
     .delete((req, res) => {
-      const settings = getSettings();
-      if (!settings.allowDeleteData) {
-        res.status(403).json({ error: 'delete_disabled' });
-        return;
-      }
       removePatient(req.params.id, true);
       res.json({ success: true });
     });
@@ -209,11 +204,6 @@ function createApp() {
       res.status(updated ? 200 : 404).json(updated || { error: 'not_found' });
     })
     .delete((req, res) => {
-      const settings = getSettings();
-      if (!settings.allowDeleteData) {
-        res.status(403).json({ error: 'delete_disabled' });
-        return;
-      }
       removeExam(req.params.id, true);
       res.json({ success: true });
     });
@@ -243,11 +233,6 @@ function createApp() {
       res.status(updated ? 200 : 404).json(updated || { error: 'not_found' });
     })
     .delete((req, res) => {
-      const settings = getSettings();
-      if (!settings.allowDeleteData) {
-        res.status(403).json({ error: 'delete_disabled' });
-        return;
-      }
       removeDoctor(req.params.id, true);
       res.json({ success: true });
     });
@@ -356,11 +341,6 @@ function createApp() {
   });
 
   app.post('/api/data/clear', async (req, res) => {
-    const settings = getSettings();
-    if (!settings.allowDeleteData) {
-      res.status(403).json({ error: 'delete_disabled' });
-      return;
-    }
     try {
       await clearAllData();
       res.json({ success: true });

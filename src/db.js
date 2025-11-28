@@ -47,8 +47,7 @@ const defaultData = {
     defaultDescription: 'Âm đạo:\nCổ tử cung:\nSau bôi Axit acetic:\nSau bôi Lugol:\n',
     defaultResult: '',
     defaultConclusion: '',
-    defaultDoctorAdvice: '',
-    allowDeleteData: true
+    defaultDoctorAdvice: ''
   },
   patients: [],
   exams: [],

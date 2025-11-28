@@ -61,10 +61,6 @@ export function createSettingsView(appState) {
               <label>Lời dặn mặc định</label>
               <textarea name="defaultDoctorAdvice"></textarea>
             </div>
-            <div class="form-row">
-              <label>Cho phép xóa dữ liệu</label>
-              <input type="checkbox" name="allowDeleteData" />
-            </div>
           </div>
           <div class="form-row" style="grid-column: 1 / -1;">
             <button type="submit">Lưu cấu hình</button>
@@ -149,7 +145,7 @@ export function createSettingsView(appState) {
         event.preventDefault();
         const formData = new FormData(form);
         const payload = { ...appState.settings, ...Object.fromEntries(formData.entries()) };
-        payload.allowDeleteData = form.allowDeleteData.checked;
+        delete payload.allowDeleteData;
         payload.defaultImageCount = Number.parseInt(payload.defaultImageCount, 10);
         const saved = await storage.saveSettings(payload);
         appState.settings = saved;
@@ -249,10 +245,7 @@ export function createSettingsView(appState) {
           showToast('Đã xóa toàn bộ dữ liệu và đặt lại bộ đếm');
         } catch (error) {
           console.error('Clear data failed', error);
-          const message = error?.message?.includes('delete_disabled')
-            ? 'Vui lòng bật "Cho phép xóa dữ liệu" trước khi xóa'
-            : 'Không thể xóa dữ liệu';
-          showToast(message);
+          showToast('Không thể xóa dữ liệu');
         }
       });
     }
