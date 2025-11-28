@@ -196,7 +196,7 @@ textarea {
 }
 
 .form-row {
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 
 .data-actions {
@@ -450,7 +450,7 @@ button.danger {
 
 .capture-layout {
   display: grid;
-  grid-template-columns: 290px 2.1fr 290px;
+  grid-template-columns: clamp(230px, 25vw, 300px) minmax(520px, 1fr) clamp(220px, 24vw, 280px);
   gap: 16px;
   align-items: start;
 }
@@ -471,7 +471,7 @@ button.danger {
   box-shadow: 0 3px 12px rgb(15 91 167 / 0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
   position: sticky;
   top: 12px;
 }
@@ -500,6 +500,13 @@ button.danger {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.capture-controls .button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .capture-controls #capture-photo {

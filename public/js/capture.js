@@ -464,7 +464,7 @@ export function createCaptureView(appState) {
                 <label>Chọn camera</label>
                 <select id="camera-select"></select>
               </div>
-              <div class="form-row">
+              <div class="form-row button-row">
                 <button type="button" id="start-camera">Lưu camera</button>
                 <button type="button" id="open-camera-settings">Cấu hình camera</button>
               </div>
