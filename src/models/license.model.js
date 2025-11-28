@@ -51,7 +51,9 @@ async function ensureLicense(defaults = {}, override = null) {
   const now = new Date();
   const startDate = ensureDateString(base?.startDate, now.toISOString().slice(0, 10));
   const expireDate = (() => {
-    if (base?.expireDate && !Number.isNaN(new Date(base.expireDate))) return base.expireDate;
+    const source = base?.expireDate || base?.expireAt;
+    const normalized = ensureDateString(source, null);
+    if (normalized) return normalized;
     const fallback = new Date(startDate);
     fallback.setDate(fallback.getDate() + 30);
     return fallback.toISOString().slice(0, 10);
@@ -66,10 +68,10 @@ async function ensureLicense(defaults = {}, override = null) {
     licenseKey: normalizedKey,
     startDate,
     expireDate,
-    status: base?.status || 'invalid'
+    status: base?.status || defaults?.status || 'invalid'
   };
   const valid = isLicenseValid(normalized);
-  normalized.status = valid ? 'valid' : 'invalid';
+  normalized.status = valid ? 'valid' : normalized.status;
   saveStoredLicense(normalized);
   return normalized;
 }

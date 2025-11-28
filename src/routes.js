@@ -271,23 +271,34 @@ function createApp() {
     res.json({ license: enriched, valid });
   });
 
-  app.post(['/api/license', '/api/license/activate'], (req, res) => {
-    const body = req.body || {};
-    const machineId = generateMachineKey();
-    const detectedType = detectLicenseTypeFromKey(body?.licenseKey, machineId);
-    const normalizedKey = normalizeLicenseKey(body?.licenseKey || '');
-    const expire = new Date();
-    if (detectedType === 'thirty_day') expire.setDate(expire.getDate() + 30);
-    else if (detectedType === 'lifetime') expire.setFullYear(expire.getFullYear() + 99);
-    else expire.setFullYear(expire.getFullYear() + 1);
-    const saved = ensureLicense({
-      licenseKey: normalizedKey,
-      machineId,
-      licenseType: detectedType || body?.licenseType || 'yearly',
-      expireAt: expire.toISOString()
-    });
-    const valid = isLicenseValid(saved);
-    res.json({ license: { ...saved, machineKey: machineId, daysRemaining: calculateDaysRemaining(saved) }, valid });
+  app.post(['/api/license', '/api/license/activate'], async (req, res) => {
+    try {
+      const body = req.body || {};
+      const machineId = generateMachineKey();
+      const normalizedKey = normalizeLicenseKey(body?.licenseKey || '');
+      const detectedType = detectLicenseTypeFromKey(normalizedKey, machineId);
+      const startDate = new Date();
+      const expireDate = new Date(startDate);
+      if (detectedType === 'thirty_day') expireDate.setDate(expireDate.getDate() + 30);
+      else if (detectedType === 'lifetime') expireDate.setFullYear(expireDate.getFullYear() + 99);
+      else expireDate.setFullYear(expireDate.getFullYear() + 1);
+
+      const saved = await ensureLicense({
+        licenseKey: normalizedKey,
+        machineId,
+        licenseType: detectedType || body?.licenseType || 'yearly',
+        startDate: startDate.toISOString().slice(0, 10),
+        expireDate: expireDate.toISOString().slice(0, 10),
+        status: 'valid'
+      });
+      const valid = isLicenseValid(saved);
+      res.json({
+        license: { ...saved, machineKey: machineId, daysRemaining: calculateDaysRemaining(saved) },
+        valid
+      });
+    } catch (error) {
+      res.status(400).json({ error: 'invalid_license' });
+    }
   });
 
   app.post('/api/license/reset', (req, res) => {
