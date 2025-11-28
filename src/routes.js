@@ -12,6 +12,7 @@ import {
   listTemplates,
   removeDoctor,
   removeExam,
+  syncSequenceCounters,
   updateDoctor,
   updateExam
 } from './models/exam.model.js';
@@ -30,7 +31,10 @@ import { clearAllData, createZipBuffer, extractZipBuffer } from './models/backup
 import { generateMachineKey } from './utils/hardware-id.js';
 
 const viewCache = new Map();
-const bootstrapPromise = ensureInfrastructure().then(() => ensureLicense(getDefaultData().license));
+const bootstrapPromise = ensureInfrastructure().then(async () => {
+  await ensureLicense(getDefaultData().license);
+  await syncSequenceCounters();
+});
 
 function renderView(viewName) {
   const cacheKey = `view:${viewName}`;
@@ -333,6 +337,7 @@ function createApp() {
     const buffer = req.body;
     try {
       await extractZipBuffer(buffer);
+      await syncSequenceCounters();
       res.json({ success: true });
     } catch (error) {
       console.error(error);

@@ -26,7 +26,7 @@ function updateUiScale() {
   const baseHeight = 768;
   const scale = Math.max(
     0.85,
-    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.5)
+    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.2)
   );
   document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
 }

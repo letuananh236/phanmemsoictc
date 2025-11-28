@@ -96,6 +96,39 @@ function resetCoreData() {
   });
 }
 
+function extractNumberFromId(id, prefix) {
+  if (!id) return 0;
+  const withoutPrefix = prefix && id.startsWith(prefix) ? id.slice(prefix.length) : id;
+  const match = withoutPrefix.match(/(\d+)/);
+  return match ? Number.parseInt(match[1], 10) : 0;
+}
+
+function syncSequenceCounters() {
+  const settings = getSettings();
+  const patients = listRecords('patients');
+  const exams = listRecords('exams');
+
+  const maxPatient = patients.reduce(
+    (max, patient) => Math.max(max, extractNumberFromId(patient.id, settings.patientCodePrefix)),
+    0
+  );
+  const maxExam = exams.reduce(
+    (max, exam) => Math.max(max, extractNumberFromId(exam.id || exam.examNumber, settings.examCodePrefix)),
+    0
+  );
+
+  const desiredPatientNext = Math.max(settings.nextPatientNumber || 1, maxPatient + 1);
+  const desiredExamNext = Math.max(settings.nextExamNumber || 1, maxExam + 1);
+
+  if (desiredPatientNext !== settings.nextPatientNumber || desiredExamNext !== settings.nextExamNumber) {
+    saveSettings({
+      ...settings,
+      nextPatientNumber: desiredPatientNext,
+      nextExamNumber: desiredExamNext
+    });
+  }
+}
+
 export {
   createExam,
   formatCode,
@@ -108,5 +141,6 @@ export {
   removeDoctor,
   removeExam,
   resetCoreData,
+  syncSequenceCounters,
   updateExam
 };
