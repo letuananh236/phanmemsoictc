@@ -467,11 +467,12 @@ button.danger {
 .capture-controls {
   background: #fff;
   border-radius: 12px;
-  padding: 14px;
+  padding: 12px;
   box-shadow: 0 3px 12px rgb(15 91 167 / 0.1);
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 8px;
+  align-items: center;
   position: sticky;
   top: 12px;
 }
@@ -480,7 +481,7 @@ button.danger {
 .capture-gallery .gallery-header button {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   font-weight: 600;
   font-size: 15px;
   background: #f1f5f9;
@@ -498,22 +499,30 @@ button.danger {
 
 .capture-controls .action-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .capture-controls .button-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.capture-controls .form-row {
+  width: 100%;
+  margin-bottom: 8px;
 }
 
 .capture-controls #capture-photo {
   font-size: 1.3rem;
-  padding: 12px 20px;
+  padding: 12px 22px;
   font-weight: 700;
-  min-width: 160px;
+  min-width: 190px;
   background: #0f5ba7;
   color: #fff;
   border: none;
