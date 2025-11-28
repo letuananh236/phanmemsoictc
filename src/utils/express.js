@@ -139,14 +139,43 @@ function express() {
     return app;
   };
 
+  const composeHandlers = (handlers) => (req, res) => {
+    let routeIdx = 0;
+    const routeNext = (err) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end('Internal Server Error');
+        return;
+      }
+      const current = handlers[routeIdx];
+      routeIdx += 1;
+      if (!current) return;
+      try {
+        if (current.length >= 3) {
+          current(req, res, routeNext);
+          return;
+        }
+        const result = current(req, res);
+        if (result && typeof result.then === 'function') {
+          result.catch(routeNext);
+        }
+      } catch (error) {
+        routeNext(error);
+      }
+    };
+    routeNext();
+  };
+
   const addRoute = (method, pathValue, handler) => {
     stack.push({ method, path: pathValue || '/', handler, type: 'route' });
   };
 
   ['get', 'post', 'put', 'delete'].forEach((method) => {
-    app[method] = (pathValue, handler) => {
+    app[method] = (pathValue, ...handlers) => {
+      if (!handlers.length) return app;
       const paths = Array.isArray(pathValue) ? pathValue : [pathValue];
-      paths.forEach((p) => addRoute(method.toUpperCase(), p, handler));
+      const composed = composeHandlers(handlers);
+      paths.forEach((p) => addRoute(method.toUpperCase(), p, composed));
       return app;
     };
   });
