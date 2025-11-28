@@ -22,11 +22,11 @@ const appState = {
 let activeViewKey = null;
 
 function updateUiScale() {
-  const baseWidth = 1920;
-  const baseHeight = 1080;
+  const baseWidth = 1366;
+  const baseHeight = 768;
   const scale = Math.max(
-    0.75,
-    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.35)
+    0.85,
+    Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1.5)
   );
   document.documentElement.style.setProperty('--ui-scale', scale.toFixed(3));
 }

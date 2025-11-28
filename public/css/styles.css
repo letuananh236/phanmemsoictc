@@ -33,6 +33,7 @@ body {
   width: calc(100% / var(--ui-scale));
   transform: scale(var(--ui-scale));
   transform-origin: top center;
+  min-height: 100vh;
 }
 
 .topbar {
@@ -205,40 +206,34 @@ textarea {
   flex-wrap: wrap;
 }
 
-.button-like {
+.button-like,
+.settings-view button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
-  background: #0f5ba7;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.button-like:hover {
-  background: #0c4a84;
-}
-
-.settings-view button[type='submit'] {
-  background: #0f5ba7;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
   padding: 12px 18px;
-  font-size: 18px;
-  font-weight: 700;
+  background: #0f5ba7;
+  color: #fff;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  line-height: 1.2;
 }
 
-.settings-view button[type='submit']:hover {
+.button-like:hover,
+.settings-view button:hover {
   background: #0c4a84;
 }
 
 button.danger {
   background: #c62828;
   color: #fff;
+}
+
+.settings-view button.danger:hover {
+  background: #a61c1c;
 }
 
 .hint {
