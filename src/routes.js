@@ -30,6 +30,9 @@ import { saveImageFromDataUrl, saveLogoFile } from './models/image.model.js';
 import { clearAllData, createZipBuffer, extractZipBuffer } from './models/backup.model.js';
 import { generateMachineKey } from './utils/hardware-id.js';
 
+const ACTIVATION_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbyWsWP8zMyVgkvbqB9uXvzFAjxDkvRoUAjJBY695fwsvqAFVFAv5jtIyM4qaevKVVEt/exec';
+
 const viewCache = new Map();
 const bootstrapPromise = ensureInfrastructure().then(async () => {
   await ensureLicense(getDefaultData().license);
@@ -101,7 +104,7 @@ function createApp() {
     });
   });
 
-  const licenseExemptPaths = ['/license', '/license/activate', '/license/reset', '/login', '/meta'];
+  const licenseExemptPaths = ['/license', '/license/activate', '/license/reset', '/license/send', '/login', '/meta'];
   app.use('/api', async (req, res, next) => {
     try {
       const license = await ensureLicense(getDefaultData().license);
@@ -258,6 +261,27 @@ function createApp() {
     };
     const valid = isLicenseValid(enriched);
     res.json({ license: enriched, valid });
+  });
+
+  app.post('/api/license/send', async (req, res) => {
+    const { licenseKey = '', machineId } = req.body || {};
+    const payload = { licenseKey, machineId: machineId || generateMachineKey() };
+    try {
+      const response = await fetch(ACTIVATION_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        res.status(502).json({ error: 'Không thể gửi mã kích hoạt', detail });
+        return;
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Activation send failed', error);
+      res.status(500).json({ error: 'Không thể gửi mã kích hoạt' });
+    }
   });
 
   app.post(['/api/license', '/api/license/activate'], async (req, res) => {
