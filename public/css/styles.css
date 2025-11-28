@@ -511,14 +511,15 @@ button.danger {
 .capture-controls .button-row {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   width: 100%;
 }
 
 .capture-controls .button-row button {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .capture-controls .form-row {
