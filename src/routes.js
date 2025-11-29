@@ -31,7 +31,7 @@ import { clearAllData, createZipBuffer, extractZipBuffer } from './models/backup
 import { generateMachineKey } from './utils/hardware-id.js';
 
 const ACTIVATION_ENDPOINT =
-  'https://script.google.com/macros/s/AKfycbzSgXZ5Hr_UXt4JqQyIvO-Jl80nyDPnlBvYNK-JVHWTUMJXIj-z9hVCQ6b5zjzQ1ZaD/exec';
+  'https://script.google.com/macros/s/AKfycbxEO5SiDFrNmd806nQNW_-9A7WbVVBgiw0lTNpkBBTcNc9wFZXuMeSYYfHB0rfHw4pKBw/exec';
 const ACTIVATION_SECRET = 'NEW_SECRET_456';
 
 const viewCache = new Map();
@@ -265,14 +265,11 @@ function createApp() {
   });
 
   app.post('/api/license/send', async (req, res) => {
-    const { licenseKey = '', machineId } = req.body || {};
+    const { machineId } = req.body || {};
     const machineKey = machineId || generateMachineKey();
     const payload = {
       key: ACTIVATION_SECRET,
-      licenseKey,
       machineId: machineKey,
-      machineKey,
-      machine: machineKey,
       source: 'app'
     };
     const form = new URLSearchParams(payload);

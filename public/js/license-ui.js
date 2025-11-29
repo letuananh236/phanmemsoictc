@@ -62,15 +62,14 @@ export function createLicenseView(appState) {
 
       const sendBtn = wrapper.querySelector('#license-send');
       sendBtn.addEventListener('click', async () => {
-        const formData = new FormData(form);
-        const licenseKey = (formData.get('licenseKey') || '').trim();
-        const machineId = appState.license?.machineId || wrapper.querySelector('#license-machine')?.textContent || '';
-        if (!licenseKey && !machineId) {
-          showToast('Chưa có thông tin mã máy hoặc key để gửi');
+        const machineId =
+          appState.license?.machineId || wrapper.querySelector('#license-machine')?.textContent || '';
+        if (!machineId) {
+          showToast('Chưa có thông tin mã máy để gửi');
           return;
         }
         try {
-          await storage.sendActivationRequest({ licenseKey, machineId });
+          await storage.sendActivationRequest({ machineId });
           showToast('Đã gửi mã kích hoạt');
         } catch (error) {
           showToast(error.message || 'Không thể gửi mã kích hoạt');
