@@ -266,10 +266,13 @@ function createApp() {
 
   app.post('/api/license/send', async (req, res) => {
     const { licenseKey = '', machineId } = req.body || {};
+    const machineKey = machineId || generateMachineKey();
     const payload = {
       key: ACTIVATION_SECRET,
       licenseKey,
-      machineId: machineId || generateMachineKey(),
+      machineId: machineKey,
+      machineKey,
+      machine: machineKey,
       source: 'app'
     };
     const form = new URLSearchParams(payload);
