@@ -82,3 +82,20 @@ test('kích hoạt key bản quyền hợp lệ trả về trạng thái còn h�
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('license hết hạn hoặc chưa kích hoạt không hiển thị ngày hết hạn sai', async () => {
+  const { server, port } = await startServer();
+  try {
+    await fetch(`http://localhost:${port}/api/license/reset`, { method: 'POST' });
+
+    const response = await fetch(`http://localhost:${port}/api/license`);
+    const body = await response.json();
+
+    assert.equal(body.valid, false);
+    assert.equal(body.license.status, 'invalid');
+    assert.equal(body.license.expireDate, null);
+    assert.equal(body.license.daysRemaining, 0);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});

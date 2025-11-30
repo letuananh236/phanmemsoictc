@@ -69,6 +69,9 @@ async function ensureLicense(defaults = {}, override = null) {
   const machineId = override?.machineId || stored.machineId || defaults.machineId || generateMachineKey();
   const now = new Date();
 
+  const rawKey = override?.licenseKey || stored.licenseKey || defaults.licenseKey || '';
+  const normalizedKey = normalizeLicenseKey(rawKey);
+
   const startDate = ensureDateString(
     override?.startDate || stored.startDate || defaults.startDate,
     now.toISOString().slice(0, 10)
@@ -84,13 +87,12 @@ async function ensureLicense(defaults = {}, override = null) {
       defaults.expireAt;
     const normalized = ensureDateString(source, null);
     if (normalized) return normalized;
+    if (!normalizedKey) return null;
     const fallback = new Date(startDate);
     fallback.setDate(fallback.getDate() + 30);
     return fallback.toISOString().slice(0, 10);
   })();
 
-  const rawKey = override?.licenseKey || stored.licenseKey || defaults.licenseKey || '';
-  const normalizedKey = normalizeLicenseKey(rawKey);
   const detectedType = detectLicenseTypeFromKey(normalizedKey, machineId);
   const normalizedType =
     detectedType ||
@@ -107,16 +109,20 @@ async function ensureLicense(defaults = {}, override = null) {
     expireDate
   };
 
-  const expire = new Date(expireDate);
+  const expire = normalized.expireDate ? new Date(normalized.expireDate) : null;
   const coreValid =
     normalizedKey &&
     detectedType &&
     normalized.machineId === machineId &&
+    expire &&
     !Number.isNaN(expire.getTime()) &&
     expire >= now;
   normalized.status = coreValid ? 'valid' : normalized.status || 'invalid';
 
   const valid = isLicenseValid(normalized);
+  if (!valid && (!normalizedKey || !detectedType || normalized.machineId !== machineId)) {
+    normalized.expireDate = expire ? normalized.expireDate : null;
+  }
   normalized.status = valid ? 'valid' : normalized.status;
   saveStoredLicense(normalized);
   return normalized;
@@ -132,7 +138,7 @@ function resetLicense() {
     licenseType: 'trial',
     licenseKey: '',
     startDate: now.toISOString().slice(0, 10),
-    expireDate: expire.toISOString().slice(0, 10),
+    expireDate: null,
     status: 'invalid'
   };
   saveStoredLicense(cleared);
