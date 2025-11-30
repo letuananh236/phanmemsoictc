@@ -16,7 +16,7 @@ cd phanmemsoictc
 npm install
 npm start
 ```
-Mở `http://localhost:3000`, đăng nhập, nhập mã bản quyền nếu được yêu cầu (tạo bằng `node scripts/generate-license-key.js`).
+Mở `http://localhost:3000`, đăng nhập và nhập mã bản quyền nếu được yêu cầu.
 
 ## Sao lưu & khôi phục
 - `GET /api/backup`: tải ZIP chứa toàn bộ thư mục `database/` (SQLite + ảnh + logo).

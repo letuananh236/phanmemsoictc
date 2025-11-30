@@ -1,5 +1,14 @@
+import crypto from 'crypto';
 import { getLicense as getStoredLicense, saveLicense as saveStoredLicense } from '../db.js';
-import { generateLicenseKey, generateMachineKey } from '../utils/hardware-id.js';
+import { generateMachineKey } from '../utils/hardware-id.js';
+
+const LICENSE_SEEDS = {
+  yearly: 'SOICTC_LICENSE_V1',
+  lifetime: 'SOICTC_LICENSE_V1_LIFETIME',
+  thirty_day: 'SOICTC_LICENSE_V1_30DAY',
+  trial: 'SOICTC_LICENSE_V1_TRIAL',
+  default: 'SOICTC_LICENSE_V1'
+};
 
 function normalizeLicenseKey(key) {
   return (key || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
@@ -13,12 +22,20 @@ function normalizeLicenseType(type) {
   return 'yearly';
 }
 
+function deriveLicenseKey(machineKey, licenseType = 'yearly') {
+  const normalizedMachine = normalizeLicenseKey(machineKey);
+  const normalizedType = normalizeLicenseType(licenseType || 'yearly');
+  const seed = LICENSE_SEEDS[normalizedType] || LICENSE_SEEDS.default;
+  const hash = crypto.createHmac('sha256', seed).update(normalizedMachine).digest('hex').toUpperCase();
+  return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}`;
+}
+
 function detectLicenseTypeFromKey(key, machineId) {
   if (!key) return null;
   const normalized = normalizeLicenseKey(key);
   const types = ['thirty_day', 'yearly', 'lifetime'];
   return (
-    types.find((type) => normalizeLicenseKey(generateLicenseKey(machineId, type)) === normalized) || null
+    types.find((type) => normalizeLicenseKey(deriveLicenseKey(machineId, type)) === normalized) || null
   );
 }
 
@@ -26,6 +43,8 @@ function calculateDaysRemaining(license) {
   const expire = license?.expireDate ? new Date(license.expireDate) : null;
   if (!expire || Number.isNaN(expire)) return 0;
   const diffMs = expire.getTime() - Date.now();
+  if (diffMs <= 0) return 0;
+  if (license?.status !== 'valid') return 0;
   return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 }
 
