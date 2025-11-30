@@ -44,6 +44,27 @@ const views = {
   license: createLicenseView(appState)
 };
 
+let loginInitialized = false;
+function showLoginModal() {
+  const modal = document.getElementById('login-modal');
+  if (loginInitialized) {
+    modal?.classList.remove('hidden');
+    return;
+  }
+  loginInitialized = true;
+  initLogin({
+    onSuccess: async (user) => {
+      appState.user = user;
+      setAuthUser(user);
+      applyUserPermissions(user);
+      const valid = await checkLicense();
+      if (!valid) return;
+      await loadSettings();
+      renderView('exam');
+    }
+  });
+}
+
 function setMenuEnabled(enabled) {
   menu.querySelectorAll('button').forEach((btn) => {
     btn.disabled = !enabled && btn.dataset.view !== 'license';
@@ -82,7 +103,7 @@ async function checkLicense() {
 
 function renderView(viewKey) {
   const admin = isAdmin(appState.user);
-  const adminOnlyViews = ['settings', 'doctors', 'license'];
+  const adminOnlyViews = ['settings', 'doctors'];
   if (!admin && adminOnlyViews.includes(viewKey)) {
     showToast('Chức năng chỉ dành cho tài khoản quản trị');
     return;
@@ -143,24 +164,28 @@ document.addEventListener('navigate', (event) => {
   }
 });
 
-initLogin({
-  onSuccess: async (user) => {
-    appState.user = user;
-    setAuthUser(user);
-    applyUserPermissions(user);
-    const valid = await checkLicense();
-    if (!valid) return;
-    await loadSettings();
-    renderView('exam');
-  }
-});
-
 document.addEventListener('license:activated', async () => {
   const valid = await checkLicense();
   if (!valid) return;
   await loadSettings();
-  renderView('exam');
+  showLoginModal();
 });
 
-setMenuEnabled(false);
-renderView('license');
+async function bootstrap() {
+  setMenuEnabled(false);
+  try {
+    const data = await storage.getLicense();
+    appState.license = data.license;
+    if (!data.valid) {
+      renderView('license');
+      return;
+    }
+    setMenuEnabled(true);
+    showLoginModal();
+  } catch (error) {
+    console.error('Không thể tải thông tin bản quyền', error);
+    showLoginModal();
+  }
+}
+
+bootstrap();

@@ -44,7 +44,8 @@ export function createLicenseView(appState) {
       `;
       target.appendChild(wrapper);
 
-      const isAdmin = appState.user?.role === 'admin' || appState.user?.username === 'admin';
+      const isAdmin =
+        !appState.user || appState.user?.role === 'admin' || appState.user?.username === 'admin';
       const form = wrapper.querySelector('#license-form');
       form.addEventListener('submit', async (event) => {
         event.preventDefault();

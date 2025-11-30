@@ -83,6 +83,10 @@ function createApp() {
     return req.user?.role === 'admin' || req.user?.username === 'admin';
   }
 
+  function canManageLicense(req) {
+    return !req.user?.username || isAdmin(req);
+  }
+
   function requireAdmin(req, res) {
     if (!isAdmin(req)) {
       res.status(403).json({ error: 'forbidden' });
@@ -290,7 +294,10 @@ function createApp() {
   });
 
   app.post('/api/license/send', async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    if (!canManageLicense(req)) {
+      res.status(403).json({ error: 'forbidden' });
+      return;
+    }
     const { machineId } = req.body || {};
     const machineKey = machineId || generateMachineKey();
     const payload = {
@@ -318,7 +325,10 @@ function createApp() {
   });
 
   app.post(['/api/license', '/api/license/activate'], async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    if (!canManageLicense(req)) {
+      res.status(403).json({ error: 'forbidden' });
+      return;
+    }
     try {
       const body = req.body || {};
       const machineId = generateMachineKey();
@@ -349,7 +359,10 @@ function createApp() {
   });
 
   app.post('/api/license/reset', (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    if (!canManageLicense(req)) {
+      res.status(403).json({ error: 'forbidden' });
+      return;
+    }
     const cleared = resetLicense();
     res.json({ license: { ...cleared, daysRemaining: calculateDaysRemaining(cleared) }, valid: false });
   });
