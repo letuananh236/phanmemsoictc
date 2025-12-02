@@ -219,7 +219,7 @@ export function createExamFormView(appState) {
   async function handleSave(form) {
     if (!form.reportValidity()) {
       updateSaveStatus('Vui lòng nhập đầy đủ các trường bắt buộc');
-      return;
+      return null;
     }
 
     const { patient, exam } = getFormValues(form);
@@ -247,11 +247,20 @@ export function createExamFormView(appState) {
     form.examNumber.value = savedExam.examNumber || savedExam.id;
     await refreshSettings();
     updateSaveStatus('Đã lưu phiếu khám');
+
+    return { patient: savedPatient, exam: savedExam };
   }
 
-  function handlePrint(form) {
-    const { patient, exam } = getFormValues(form);
+  function handlePrint(form, dataOverride) {
+    const { patient, exam } = dataOverride || getFormValues(form);
     openPrintPreview({ patient, exam, settings: appState.settings, images: appState.selectedImages });
+  }
+
+  async function handleSaveAndPrint(form) {
+    const saved = await handleSave(form);
+    if (!saved) return;
+
+    handlePrint(form, saved);
   }
 
   async function handleNew(form) {
@@ -318,8 +327,7 @@ export function createExamFormView(appState) {
         container.innerHTML = `
           <div class="toolbar">
             <button type="button" data-action="new">Tạo PK mới</button>
-            <button type="button" data-action="save">Lưu</button>
-            <button type="button" data-action="print">In phiếu</button>
+            <button type="button" data-action="save-print">Lưu &amp; In phiếu</button>
             <div class="toolbar-group">
               <button type="button" class="secondary" data-action="capture">Lấy hình ảnh (F4)</button>
               <span class="save-status" id="exam-save-status" aria-live="polite"></span>
@@ -444,8 +452,7 @@ export function createExamFormView(appState) {
       });
 
       container.querySelector('[data-action="new"]').addEventListener('click', () => handleNew(form));
-      container.querySelector('[data-action="save"]').addEventListener('click', () => handleSave(form));
-      container.querySelector('[data-action="print"]').addEventListener('click', () => handlePrint(form));
+      container.querySelector('[data-action="save-print"]').addEventListener('click', () => handleSaveAndPrint(form));
       container.querySelector('[data-action="capture"]').addEventListener('click', () => {
         document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'capture' } }));
       });
