@@ -40,6 +40,7 @@ const defaultData = {
     website: '',
     email: '',
     logoFileName: 'logo-default.svg',
+    logoShape: 'square',
     patientCodePrefix: 'BN',
     examCodePrefix: 'BN',
     nextPatientNumber: 1,

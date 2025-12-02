@@ -35,6 +35,13 @@ export function createSettingsView(appState) {
               <input type="file" id="logo-file" accept="image/*" />
               <div id="logo-current" style="margin-top: 6px; color: #475569;"></div>
             </div>
+            <div class="form-row">
+              <label>Kiểu logo</label>
+              <select name="logoShape">
+                <option value="square">Vuông</option>
+                <option value="rectangle">Chữ nhật</option>
+              </select>
+            </div>
           </div>
           <div>
             <div class="form-row">

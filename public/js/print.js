@@ -3,6 +3,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
   const formattedDate = formatExamDate(exam?.date);
   const doctorName = exam?.doctorName || '';
   const reason = patient?.reason || '';
+  const logoShape = normalizeLogoShape(settings?.logoShape);
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) return;
@@ -11,6 +12,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
     patient,
     exam,
     settings,
+    logoShape,
     formattedDate,
     doctorName,
     reason,
@@ -46,8 +48,10 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             font-size: 16px;
             box-sizing: border-box;
           }
-          header { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
-          .print-logo { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px; }
+          header { display: grid; grid-template-columns: max-content 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
+          .print-logo { object-fit: contain; border: 1px solid #e5e7eb; padding: 6px; background: #fff; }
+          .print-logo.square { width: 80px; height: 80px; border-radius: 8px; }
+          .print-logo.rectangle { width: 140px; height: 70px; border-radius: 6px; }
           .header-text { display: flex; flex-direction: column; gap: 3px; }
           .header-text .hospital-name, .header-text .department-name { text-transform: uppercase; font-weight: 700; }
           .header-text .hospital-name { font-size: 20px; }
@@ -149,7 +153,12 @@ function normalizeExamCode(code = '') {
   return code.replace(/^HA/i, 'BN');
 }
 
-function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, reason, examImages }) {
+function normalizeLogoShape(shape) {
+  const value = (shape || '').toLowerCase();
+  return value === 'rectangle' ? 'rectangle' : 'square';
+}
+
+function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, doctorName, reason, examImages }) {
   const patientCode = normalizeExamCode(exam?.examNumber || exam?.id || patient?.id || '');
   const insuranceNumber = exam?.insuranceNumber || '';
   const diagnosis = exam?.diagnosis || exam?.result || '';
@@ -173,7 +182,7 @@ function renderPrintSheet({ patient, exam, settings, formattedDate, doctorName, 
   return `
     <div class="print-sheet">
       <header>
-        <img class="print-logo" src="/database/logo/${settings.logoFileName}" alt="Logo bệnh viện" />
+        <img class="print-logo ${logoShape}" src="/database/logo/${settings.logoFileName}" alt="Logo bệnh viện" />
         <div class="header-text">
           <div class="hospital-name">${settings.hospitalName || ''}</div>
           <div class="department-name">${settings.departmentName || ''}</div>
