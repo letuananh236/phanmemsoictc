@@ -3,7 +3,7 @@ import fsPromises from 'fs/promises';
 import { getPaths } from '../db.js';
 
 async function saveImageFromDataUrl({ examId, index, dataUrl }) {
-  const { imagesDir, rootDir } = getPaths();
+  const { imagesDir, rootDir, databaseDir } = getPaths();
   if (!dataUrl) {
     throw new Error('missing_data');
   }
@@ -19,7 +19,8 @@ async function saveImageFromDataUrl({ examId, index, dataUrl }) {
   const name = `${safeExam}_${String(index).padStart(2, '0')}.png`;
   const filePath = path.join(folder, name);
   await fsPromises.writeFile(filePath, buffer);
-  return path.relative(rootDir, filePath).replace(/\\/g, '/');
+  const relativeToDb = path.relative(databaseDir, filePath).replace(/\\/g, '/');
+  return `database/${relativeToDb}`;
 }
 
 async function saveLogoFile({ dataUrl, fileName }) {

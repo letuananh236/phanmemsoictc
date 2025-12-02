@@ -41,11 +41,12 @@ function listTemplates() {
 }
 
 function listExams() {
-  return listRecords('exams');
+  return listRecords('exams').map(normalizeExamImages);
 }
 
 function getExam(id) {
-  return getRecord('exams', id);
+  const exam = getRecord('exams', id);
+  return normalizeExamImages(exam);
 }
 
 function createExam(payload) {
@@ -127,6 +128,36 @@ function syncSequenceCounters() {
       nextExamNumber: desiredExamNext
     });
   }
+}
+
+function normalizeImagePath(pathValue) {
+  if (!pathValue) return pathValue;
+  const cleaned = String(pathValue).replace(/^\/+/, '').replace(/^\\+/, '').replace(/\\/g, '/');
+  const lower = cleaned.toLowerCase();
+  const dbIndex = lower.indexOf('database/images/');
+  if (dbIndex !== -1) {
+    return cleaned.slice(dbIndex);
+  }
+  const imgIndex = lower.indexOf('images/');
+  if (imgIndex !== -1) {
+    return `database/${cleaned.slice(imgIndex)}`;
+  }
+  return cleaned;
+}
+
+function normalizeExamImages(exam) {
+  if (!exam) return exam;
+  const images = (exam.images || []).map((image) => {
+    if (!image) return image;
+    if (typeof image === 'string') {
+      return normalizeImagePath(image);
+    }
+    if (image.path) {
+      return { ...image, path: normalizeImagePath(image.path) };
+    }
+    return image;
+  });
+  return { ...exam, images };
 }
 
 export {
