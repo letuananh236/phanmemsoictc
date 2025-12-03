@@ -26,7 +26,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
         <style>
           @page {
             size: A4 portrait;
-            margin: 1cm;
+            margin: 1cm 0.7cm 1cm 1cm;
           }
           :root {
             font-family: 'Times New Roman', 'Times', serif;
@@ -43,7 +43,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             max-width: 210mm;
             margin: 0 auto;
             background: #fff;
-            padding: 1cm 1.2cm;
+            padding: 1cm 0.84cm 1cm 1cm;
             box-shadow: 0 18px 45px rgb(0 0 0 / 0.16);
             font-size: 16px;
             box-sizing: border-box;
@@ -76,11 +76,19 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
-          .print-images { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+          .print-images {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 4px;
+            margin-top: 6px;
+            width: 104%;
+            margin-left: -2%;
+            margin-right: -2%;
+          }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
           .print-image.placeholder { border-style: dashed; color: #94a3b8; font-style: italic; font-size: 12px; }
-          .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; display: flex; flex-direction: column; align-items: flex-end; min-width: 260px; width: 100%; max-width: 340px; }
+          .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; display: flex; flex-direction: column; align-items: flex-end; min-width: 260px; width: 100%; max-width: 420px; margin-left: auto; }
             .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 8px; width: 100%; }
           .signature-block .doctor-name { margin-top: 32px; font-weight: 700; width: 100%; font-size: 16px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
