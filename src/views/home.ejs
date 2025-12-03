@@ -1,0 +1,29 @@
+    <div id="app-shell" class="app-shell">
+      <header class="topbar">
+        <div class="topbar-title">PHẦN MỀM SOI CỔ TỬ CUNG</div>
+        <span class="sr-only">Phiếu khám bệnh · BỆNH VIỆN XYZ</span>
+        <nav class="menu" id="app-menu">
+          <button data-view="exam" class="menu-btn">Khám bệnh (F3)</button>
+          <button data-view="capture" class="menu-btn">Lấy hình ảnh (F4)</button>
+          <button data-view="search-exam" class="menu-btn">Tìm phiếu khám (Ctrl+E)</button>
+          <div class="menu-group">
+            <button data-view="settings" class="menu-btn">Cấu hình</button>
+            <div class="menu-submenu">
+              <button data-view="doctors" data-parent="settings" class="menu-btn menu-sub">Bác sỹ</button>
+              <button data-view="result-templates" data-parent="settings" class="menu-btn menu-sub">Giới thiệu</button>
+              <button data-view="license" data-parent="settings" class="menu-btn menu-sub">Bản quyền</button>
+            </div>
+          </div>
+          <button data-action="logout" class="menu-btn danger">Thoát</button>
+        </nav>
+      </header>
+
+      <main id="app-content" class="content"></main>
+
+      <section id="login-modal" class="modal hidden" aria-label="Đăng nhập hệ thống"></section>
+      <section id="license-modal" class="modal hidden" aria-label="Thông tin bản quyền"></section>
+
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <!-- VIEW-TEMPLATES -->
