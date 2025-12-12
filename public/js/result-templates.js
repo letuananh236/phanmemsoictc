@@ -23,21 +23,24 @@ export function createResultTemplatesView() {
             <h4>B. Hướng dẫn sử dụng máy</h4>
             <div class="intro-device">
               <h5>A. Bàn điều khiển trên camera (Control Panel)</h5>
+              <p class="intro-note">Hướng dẫn sử dụng nhanh Digital Video Colposcope – COLpro 222DX-OZview và Digital Video Colposcope – COLpro777 Full HD.</p>
               <figure class="intro-figure">
                 <img src="/database/images/Picture1.png" alt="Sơ đồ nút bấm trên bàn điều khiển camera" />
                 <figcaption>Thứ tự phím trên thân máy (tương ứng ký hiệu A–M).</figcaption>
               </figure>
               <ul class="intro-legend">
-                <li><strong>A/B – Bật/Tắt:</strong> bật hoặc tắt camera cùng đèn LED.</li>
-                <li><strong>C – Trạng thái:</strong> xem trạng thái LED trên máy.</li>
-                <li><strong>D – Độ sáng:</strong> tăng/giảm độ sáng đèn LED (5 cấp), nên dùng thử rồi giữ mức phù hợp.</li>
-                <li><strong>E – Cân bằng trắng:</strong> cân chỉnh WB theo chế độ, ưu tiên dùng khi màu bị lệch.</li>
-                <li><strong>F – E-Zoom:</strong> phóng to/thu nhỏ hình ảnh (Zoom 1–5x).</li>
-                <li><strong>G – Đổi đầu lọc:</strong> chuyển bộ lọc màu/green filter để tăng tương phản.</li>
-                <li><strong>H/I – Lật hình/E-Flip:</strong> xoay/lật hình 180° khi cần đổi hướng.</li>
-                <li><strong>J/K – Đổi màu/Green Filter:</strong> chuyển nhanh 5 cấp tương phản màu & Gamma (N1–N5).</li>
-                <li><strong>L – Mirror:</strong> chế độ gương khi cần đảo trục quan sát.</li>
-                <li><strong>M – Phóng to:</strong> zoom in/out nhanh bằng phím cạnh trên.</li>
+                <li><strong>A – Đèn báo nguồn:</strong> hiển thị trạng thái nguồn.</li>
+                <li><strong>B – Công tắc BẬT/TẮT:</strong> nhấn một lần để bật camera và bộ chiếu sáng, nhấn lần nữa để tắt.</li>
+                <li><strong>D – Lấy nét Tự động/Thủ công:</strong> mặc định ở chế độ Tự động (LED C sáng); nhấn để chuyển sang Lấy nét Thủ công (LED C tắt).</li>
+                <li><strong>E – Cường độ chiếu sáng / Lấy nét Thủ công:</strong> khi LED sáng là chọn cường độ ánh sáng (I1–I5, I1 sáng nhất); khi LED tắt nhấn để lấy nét thủ công.</li>
+                <li><strong>F – Tạm dừng hoặc Đóng băng:</strong> đóng băng hình ảnh cần lưu trữ; nhấn lại để bỏ đóng băng.</li>
+                <li><strong>G – Bật Bộ lọc Xanh & Xanh Lam:</strong> bật Green Filter (4 cấp G1–G4), nhấn tiếp để dùng Blue Filter.</li>
+                <li><strong>H – Tắt Bộ lọc Xanh, chọn Tương phản màu & Gamma:</strong> nhấn để về ảnh Normal (N1), các lần tiếp theo chọn N1–N5 và bật/tắt Gamma.</li>
+                <li><strong>J – Phóng to (Zoom In):</strong> phóng to hình (Zoom 1–55x).</li>
+                <li><strong>I – Thu nhỏ (Zoom Out):</strong> thu nhỏ mức phóng.</li>
+                <li><strong>K – Hiển thị hẹn giờ (Timer):</strong> bật/tắt bộ đếm thời gian trên màn hình.</li>
+                <li><strong>L – E-Flip:</strong> xoay ngược hình ảnh (ký hiệu “E” hiển thị khi bật).</li>
+                <li><strong>M – Mirror Image:</strong> chế độ ảnh gương (ký hiệu “M” khi bật) để đổi hướng quan sát.</li>
               </ul>
             </div>
             <div class="intro-device">
@@ -47,14 +50,18 @@ export function createResultTemplatesView() {
                 <figcaption>Ký hiệu A–L tương ứng các nút trên remote.</figcaption>
               </figure>
               <ul class="intro-legend">
-                <li><strong>A – Power ON / B – Power OFF:</strong> bật/tắt camera và đèn LED.</li>
+                <li><strong>A – Power ON:</strong> bật thiết bị, khởi động camera và LED.</li>
+                <li><strong>B – Power OFF:</strong> tắt toàn bộ hệ thống.</li>
                 <li><strong>C – Auto Focus:</strong> lấy nét tự động.</li>
-                <li><strong>D – Manual Focus:</strong> chỉnh nét thủ công khi cần chính xác.</li>
-                <li><strong>E – E-Flip / F – Mirror:</strong> xoay ảnh 180° hoặc lật trái-phải.</li>
-                <li><strong>G – Pause/Freeze:</strong> đóng băng hình đang xem hoặc tiếp tục Live.</li>
-                <li><strong>H – Zoom In / I – Zoom Out:</strong> phóng to/thu nhỏ (tới ~55x).</li>
-                <li><strong>J/K – Green Filter OFF/ON:</strong> tắt/bật bộ lọc xanh và Gamma hỗ trợ độ tương phản.</li>
-                <li><strong>L – Center:</strong> đặt ảnh về vị trí trung tâm.</li>
+                <li><strong>D – Manual Focus:</strong> chỉnh nét thủ công khi Auto Focus không chính xác (dùng khi nhiều dịch hoặc ánh sáng yếu).</li>
+                <li><strong>E – E-Flip:</strong> xoay ảnh 180° khi cần lật dọc.</li>
+                <li><strong>F – Mirror Image:</strong> ảnh gương trái ↔ phải để đổi hướng hiển thị.</li>
+                <li><strong>G – Pause / Freeze:</strong> đóng băng khung hình để quan sát/chụp, nhấn lại để về Live.</li>
+                <li><strong>H – Zoom In:</strong> phóng lớn (tới 55x).</li>
+                <li><strong>L – Zoom Out:</strong> thu nhỏ để xem tổng quan.</li>
+                <li><strong>I – Green Filter Off / Gamma:</strong> khi đang dùng Green Filter, nhấn để về Normal; nhấn tiếp để bật/tắt Gamma (tăng chi tiết vùng tối).</li>
+                <li><strong>J – Green Filter ON:</strong> bật Green Filter (G1 → G4) để nổi bật mạch máu.</li>
+                <li><strong>K – Timer:</strong> hiển thị/tắt bộ đếm thời gian soi.</li>
               </ul>
             </div>
           </div>
