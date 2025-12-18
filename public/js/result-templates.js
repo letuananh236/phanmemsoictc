@@ -25,7 +25,7 @@ export function createResultTemplatesView() {
               <h5>A. Bàn điều khiển trên camera (Control Panel)</h5>
               <p class="intro-note">Hướng dẫn sử dụng nhanh Digital Video Colposcope – COLpro 222DX-OZview và Digital Video Colposcope – COLpro777 Full HD.</p>
               <figure class="intro-figure">
-                <img src="/database/images/Picture1.png" alt="Sơ đồ nút bấm trên bàn điều khiển camera" />
+                <img src="/database/logo/Picture1.png" alt="Sơ đồ nút bấm trên bàn điều khiển camera" />
                 <figcaption>Thứ tự phím trên thân máy (tương ứng ký hiệu A–M).</figcaption>
               </figure>
               <ul class="intro-legend">
@@ -46,7 +46,7 @@ export function createResultTemplatesView() {
             <div class="intro-device">
               <h5>B. Remote control</h5>
               <figure class="intro-figure">
-                <img src="/database/images/Picture2.png" alt="Remote điều khiển camera" />
+                <img src="/database/logo/Picture2.png" alt="Remote điều khiển camera" />
                 <figcaption>Ký hiệu A–L tương ứng các nút trên remote.</figcaption>
               </figure>
               <ul class="intro-legend">

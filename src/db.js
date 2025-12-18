@@ -87,10 +87,10 @@ async function ensureDefaultLogo() {
 }
 
 async function ensureDefaultIntroImages() {
-  await fsPromises.mkdir(imagesDir, { recursive: true });
+  await fsPromises.mkdir(logoDir, { recursive: true });
   await Promise.all(
     Object.entries(introImages).map(async ([fileName, base64]) => {
-      const target = path.join(imagesDir, fileName);
+      const target = path.join(logoDir, fileName);
       try {
         await fsPromises.access(target, fs.constants.F_OK);
         return;
@@ -99,6 +99,12 @@ async function ensureDefaultIntroImages() {
       }
       const buffer = Buffer.from(base64, 'base64');
       await fsPromises.writeFile(target, buffer);
+      const legacy = path.join(imagesDir, fileName);
+      try {
+        await fsPromises.unlink(legacy);
+      } catch {
+        /* ignore */
+      }
     })
   );
 }
