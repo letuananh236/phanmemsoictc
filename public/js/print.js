@@ -91,9 +91,9 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-images.layout-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            width: 100%;
-            margin-left: 0;
-            margin-right: 0;
+            width: 70%;
+            margin-left: auto;
+            margin-right: auto;
             gap: 8px;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
