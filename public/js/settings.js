@@ -53,6 +53,13 @@ export function createSettingsView(appState) {
               </select>
             </div>
             <div class="form-row">
+              <label>Bố trí ảnh phiếu in</label>
+              <select name="printImageLayout">
+                <option value="row">1 hàng (1x4)</option>
+                <option value="grid">2 hàng (2x2)</option>
+              </select>
+            </div>
+            <div class="form-row">
               <label>Phím chụp nhanh</label>
               <select name="captureHotkey">
                 ${Array.from({ length: 12 })

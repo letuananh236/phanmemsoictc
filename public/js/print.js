@@ -4,6 +4,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
   const doctorName = exam?.doctorName || '';
   const reason = patient?.reason || '';
   const logoShape = normalizeLogoShape(settings?.logoShape);
+  const printImageLayout = normalizePrintImageLayout(settings?.printImageLayout);
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) return;
@@ -17,6 +18,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
     doctorName,
     reason,
     examImages,
+    printImageLayout,
   });
 
   printWindow.document.write(`
@@ -78,12 +80,21 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
           .print-images {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 4px;
             margin-top: 6px;
+          }
+          .print-images.layout-row {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             width: 104%;
             margin-left: -2%;
             margin-right: -2%;
+          }
+          .print-images.layout-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            gap: 8px;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -170,7 +181,11 @@ function normalizeLogoShape(shape) {
   return value === 'rectangle' ? 'rectangle' : 'square';
 }
 
-function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, doctorName, reason, examImages }) {
+function normalizePrintImageLayout(layout) {
+  return layout === 'grid' ? 'layout-grid' : 'layout-row';
+}
+
+function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, doctorName, reason, examImages, printImageLayout }) {
   const patientCode = normalizeExamCode(exam?.examNumber || exam?.id || patient?.id || '');
   const insuranceNumber = exam?.insuranceNumber || '';
   const diagnosis = exam?.diagnosis || exam?.result || '';
@@ -224,7 +239,7 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
 
         <div class="section">
           <div class="section-heading"><span class="roman">I.</span>HÌNH ẢNH CHI TIẾT CỔ TỬ CUNG:</div>
-          <div class="print-images">${imageRow}</div>
+          <div class="print-images ${printImageLayout}">${imageRow}</div>
         </div>
 
         <div class="section">
