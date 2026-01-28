@@ -113,7 +113,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-sheet.layout-grid .print-grid-block {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+            grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
             gap: 14px;
             align-items: start;
             margin-top: 4px;
@@ -134,12 +134,14 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid .image-section {
             display: flex;
             flex-direction: column;
+            width: 100%;
           }
           .print-sheet.layout-grid .image-section .section-heading {
             align-self: flex-start;
           }
           .print-sheet.layout-grid .image-section .print-images {
-            max-width: 700px;
+            width: 100%;
+            max-width: 840px;
             margin-left: auto;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
