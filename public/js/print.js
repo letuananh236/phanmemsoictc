@@ -135,8 +135,11 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             display: flex;
             flex-direction: column;
           }
+          .print-sheet.layout-grid .image-section .section-heading {
+            align-self: flex-start;
+          }
           .print-sheet.layout-grid .image-section .print-images {
-            max-width: 360px;
+            max-width: 450px;
             margin-left: auto;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
