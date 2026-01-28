@@ -78,14 +78,18 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
           .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
           .section { margin: 10px 0 12px; }
-          .print-sheet.layout-grid .section { margin: 8px 0 10px; }
+          .print-sheet.layout-grid .section { margin: 6px 0 8px; }
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
+          .print-sheet.layout-grid .section-heading { margin-bottom: 4px; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
           .print-images {
             display: grid;
             gap: 4px;
             margin-top: 6px;
+          }
+          .print-grid-block {
+            display: block;
           }
           .print-images.layout-row {
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -95,10 +99,26 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-images.layout-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            width: 62%;
-            margin-left: auto;
-            margin-right: auto;
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
             gap: 6px;
+          }
+          .print-sheet.layout-grid .print-grid-block {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+            gap: 14px;
+            align-items: start;
+            margin-top: 4px;
+          }
+          .print-sheet.layout-grid .print-grid-block .section {
+            margin: 0;
+          }
+          .print-sheet.layout-grid .print-grid-block .image-section {
+            order: 2;
+          }
+          .print-sheet.layout-grid .print-grid-block .result-section {
+            order: 1;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -106,7 +126,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; display: flex; flex-direction: column; align-items: flex-end; min-width: 260px; width: 100%; max-width: 420px; margin-left: auto; }
           .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
-          .print-sheet.layout-grid .signature-block { margin-top: 14px; }
+          .print-sheet.layout-grid .signature-block { margin-top: 12px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
@@ -242,14 +262,16 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
           </div>
         </div>
 
-        <div class="section">
-          <div class="section-heading"><span class="roman">I.</span>HÌNH ẢNH CHI TIẾT CỔ TỬ CUNG:</div>
-          <div class="print-images ${printImageLayout}">${imageRow}</div>
-        </div>
+        <div class="print-grid-block">
+          <div class="section image-section">
+            <div class="section-heading"><span class="roman">I.</span>HÌNH ẢNH CHI TIẾT CỔ TỬ CUNG:</div>
+            <div class="print-images ${printImageLayout}">${imageRow}</div>
+          </div>
 
-        <div class="section">
-          <div class="section-heading"><span class="roman">II.</span>Kết quả soi tử cung:</div>
-          <div class="text-content">${diagnosis || ''}</div>
+          <div class="section result-section">
+            <div class="section-heading"><span class="roman">II.</span>Kết quả soi tử cung:</div>
+            <div class="text-content">${diagnosis || ''}</div>
+          </div>
         </div>
 
         <div class="section">
