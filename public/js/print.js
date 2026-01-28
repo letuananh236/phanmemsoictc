@@ -141,7 +141,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-sheet.layout-grid .image-section .print-images {
             width: 100%;
-            max-width: 840px;
+            max-width: 924px;
             margin-left: auto;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
