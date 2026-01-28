@@ -289,12 +289,12 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
 
         <div class="print-grid-block">
           <div class="section image-section">
-            <div class="section-heading"><span class="roman">I.</span>HÌNH ẢNH CHI TIẾT CỔ TỬ CUNG:</div>
+            <div class="section-heading"><span class="roman">II.</span>HÌNH ẢNH CHI TIẾT CỔ TỬ CUNG:</div>
             <div class="print-images ${printImageLayout}">${imageRow}</div>
           </div>
 
           <div class="section result-section">
-            <div class="section-heading"><span class="roman">II.</span>Kết quả soi tử cung:</div>
+            <div class="section-heading"><span class="roman">I.</span>Kết quả soi tử cung:</div>
             <div class="text-content">${diagnosis || ''}</div>
           </div>
         </div>
