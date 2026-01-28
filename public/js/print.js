@@ -53,6 +53,9 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             flex-direction: column;
             min-height: calc(297mm - 2cm);
           }
+          .print-sheet.layout-grid {
+            font-size: 15px;
+          }
           .print-body { flex: 1; display: flex; flex-direction: column; }
           header { display: grid; grid-template-columns: max-content 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
           .print-logo { object-fit: contain; border: 1px solid #e5e7eb; padding: 6px; background: #fff; }
@@ -75,6 +78,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
           .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
           .section { margin: 10px 0 12px; }
+          .print-sheet.layout-grid .section { margin: 8px 0 10px; }
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
@@ -91,17 +95,18 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-images.layout-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            width: 70%;
+            width: 62%;
             margin-left: auto;
             margin-right: auto;
-            gap: 8px;
+            gap: 6px;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
           .print-image img { width: 100%; height: 100%; object-fit: cover; }
           .print-image.placeholder { border-style: dashed; color: #94a3b8; font-style: italic; font-size: 12px; }
           .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; display: flex; flex-direction: column; align-items: flex-end; min-width: 260px; width: 100%; max-width: 420px; margin-left: auto; }
-            .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
+          .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
+          .print-sheet.layout-grid .signature-block { margin-top: 14px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
@@ -207,7 +212,7 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
     .join('');
 
   return `
-    <div class="print-sheet">
+    <div class="print-sheet ${printImageLayout}">
       <div class="print-body">
         <header>
           <img class="print-logo ${logoShape}" src="/database/logo/${settings.logoFileName}" alt="Logo bệnh viện" />
