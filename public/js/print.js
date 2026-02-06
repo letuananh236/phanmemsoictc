@@ -53,7 +53,8 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             flex-direction: column;
             min-height: calc(297mm - 2cm);
           }
-          .print-sheet.layout-grid {
+          .print-sheet.layout-grid,
+          .print-sheet.layout-grid-large {
             font-size: 14px;
             line-height: 1.45;
           }
@@ -75,21 +76,26 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             margin: 6px 0 14px;
             letter-spacing: 0.2px;
           }
-          .print-sheet.layout-grid .title {
+          .print-sheet.layout-grid .title,
+          .print-sheet.layout-grid-large .title {
             font-size: 20px;
             margin-bottom: 10px;
           }
           .info-lines { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 14px; }
-          .print-sheet.layout-grid .info-lines { gap: 4px; margin-bottom: 10px; }
+          .print-sheet.layout-grid .info-lines,
+          .print-sheet.layout-grid-large .info-lines { gap: 4px; margin-bottom: 10px; }
           .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
           .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
           .section { margin: 10px 0 12px; }
-          .print-sheet.layout-grid .section { margin: 6px 0 8px; }
+          .print-sheet.layout-grid .section,
+          .print-sheet.layout-grid-large .section { margin: 6px 0 8px; }
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
-          .print-sheet.layout-grid .section-heading { margin-bottom: 4px; }
+          .print-sheet.layout-grid .section-heading,
+          .print-sheet.layout-grid-large .section-heading { margin-bottom: 4px; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
-          .print-sheet.layout-grid .text-content { min-height: 22px; }
+          .print-sheet.layout-grid .text-content,
+          .print-sheet.layout-grid-large .text-content { min-height: 22px; }
           .print-images {
             display: grid;
             gap: 4px;
@@ -118,30 +124,57 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             align-items: start;
             margin-top: 4px;
           }
+          .print-sheet.layout-grid-large .print-grid-block {
+            display: grid;
+            grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.6fr);
+            gap: 12px;
+            align-items: start;
+            margin-top: 4px;
+          }
           .print-sheet.layout-grid .print-grid-block .section-heading {
             font-size: 14px;
           }
+          .print-sheet.layout-grid-large .print-grid-block .section-heading {
+            font-size: 14px;
+          }
           .print-sheet.layout-grid .print-grid-block .section {
+            margin: 0;
+          }
+          .print-sheet.layout-grid-large .print-grid-block .section {
             margin: 0;
           }
           .print-sheet.layout-grid .print-grid-block .image-section {
             order: 2;
             align-items: flex-end;
           }
+          .print-sheet.layout-grid-large .print-grid-block .image-section {
+            order: 2;
+            align-items: flex-end;
+          }
           .print-sheet.layout-grid .print-grid-block .result-section {
             order: 1;
           }
-          .print-sheet.layout-grid .image-section {
+          .print-sheet.layout-grid-large .print-grid-block .result-section {
+            order: 1;
+          }
+          .print-sheet.layout-grid .image-section,
+          .print-sheet.layout-grid-large .image-section {
             display: flex;
             flex-direction: column;
             width: 100%;
           }
-          .print-sheet.layout-grid .image-section .section-heading {
+          .print-sheet.layout-grid .image-section .section-heading,
+          .print-sheet.layout-grid-large .image-section .section-heading {
             align-self: flex-start;
           }
           .print-sheet.layout-grid .image-section .print-images {
             width: 100%;
             max-width: 924px;
+            margin-left: auto;
+          }
+          .print-sheet.layout-grid-large .image-section .print-images {
+            width: 100%;
+            max-width: 1040px;
             margin-left: auto;
           }
           .print-image { width: 100%; aspect-ratio: 4 / 3; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; }
@@ -150,8 +183,10 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block { margin-top: 18px; text-align: right; line-height: 1.7; display: flex; flex-direction: column; align-items: flex-end; min-width: 260px; width: 100%; max-width: 420px; margin-left: auto; }
           .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
-          .print-sheet.layout-grid .signature-block { margin-top: 8px; line-height: 1.5; }
-          .print-sheet.layout-grid .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
+          .print-sheet.layout-grid .signature-block,
+          .print-sheet.layout-grid-large .signature-block { margin-top: 8px; line-height: 1.5; }
+          .print-sheet.layout-grid .signature-block .doctor-name,
+          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
@@ -232,7 +267,9 @@ function normalizeLogoShape(shape) {
 }
 
 function normalizePrintImageLayout(layout) {
-  return layout === 'grid' ? 'layout-grid' : 'layout-row';
+  if (layout === 'grid') return 'layout-grid';
+  if (layout === 'grid-large') return 'layout-grid-large';
+  return 'layout-row';
 }
 
 function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, doctorName, reason, examImages, printImageLayout }) {

@@ -57,6 +57,7 @@ export function createSettingsView(appState) {
               <select name="printImageLayout">
                 <option value="row">1 hàng (1x4)</option>
                 <option value="grid">2 hàng (2x2)</option>
+                <option value="grid-large">2 hàng (2x2 - ảnh to)</option>
               </select>
             </div>
             <div class="form-row">
