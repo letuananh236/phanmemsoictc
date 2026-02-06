@@ -59,7 +59,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             line-height: 1.45;
           }
           .print-sheet.layout-grid-large {
-            line-height: 1.35;
+            line-height: 1.28;
           }
           .print-body { flex: 1; display: flex; flex-direction: column; }
           header { display: grid; grid-template-columns: max-content 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
@@ -86,19 +86,19 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .info-lines { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 14px; }
           .print-sheet.layout-grid .info-lines,
-          .print-sheet.layout-grid-large .info-lines { gap: 3px; margin-bottom: 6px; }
+          .print-sheet.layout-grid-large .info-lines { gap: 2px; margin-bottom: 4px; }
           .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
           .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
           .section { margin: 10px 0 12px; }
           .print-sheet.layout-grid .section,
-          .print-sheet.layout-grid-large .section { margin: 4px 0 6px; }
+          .print-sheet.layout-grid-large .section { margin: 3px 0 5px; }
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
           .print-sheet.layout-grid .section-heading,
           .print-sheet.layout-grid-large .section-heading { margin-bottom: 4px; }
           .section-heading .roman { margin-right: 6px; }
           .text-content { white-space: pre-wrap; min-height: 28px; padding-left: 2px; }
           .print-sheet.layout-grid .text-content,
-          .print-sheet.layout-grid-large .text-content { min-height: 18px; }
+          .print-sheet.layout-grid-large .text-content { min-height: 16px; }
           .print-images {
             display: grid;
             gap: 4px;
@@ -139,7 +139,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             grid-template-columns: minmax(0, 1fr);
             gap: 12px;
             align-items: start;
-            margin-top: 6px;
+            margin-top: 4px;
           }
           .print-sheet.layout-grid .print-grid-block .section-heading {
             font-size: 14px;
@@ -158,14 +158,14 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             align-items: flex-end;
           }
           .print-sheet.layout-grid-large .print-grid-block .image-section {
-            order: 2;
+            order: 1;
             align-items: stretch;
           }
           .print-sheet.layout-grid .print-grid-block .result-section {
             order: 1;
           }
           .print-sheet.layout-grid-large .print-grid-block .result-section {
-            order: 1;
+            order: 2;
           }
           .print-sheet.layout-grid .image-section,
           .print-sheet.layout-grid-large .image-section {
@@ -198,9 +198,9 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
           .print-sheet.layout-grid .signature-block { margin-top: 8px; line-height: 1.5; }
-          .print-sheet.layout-grid-large .signature-block { margin-top: 6px; line-height: 1.4; }
+          .print-sheet.layout-grid-large .signature-block { margin-top: 4px; line-height: 1.3; }
           .print-sheet.layout-grid .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
-          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 22px; font-size: 15px; }
+          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 18px; font-size: 14px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           @media print {
             body {
