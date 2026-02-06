@@ -86,12 +86,12 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .info-lines { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 14px; }
           .print-sheet.layout-grid .info-lines,
-          .print-sheet.layout-grid-large .info-lines { gap: 2px; margin-bottom: 4px; }
+          .print-sheet.layout-grid-large .info-lines { gap: 1px; margin-bottom: 3px; }
           .info-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
           .info-line .label { font-weight: 700; margin-right: 4px; white-space: nowrap; }
           .section { margin: 10px 0 12px; }
           .print-sheet.layout-grid .section,
-          .print-sheet.layout-grid-large .section { margin: 3px 0 5px; }
+          .print-sheet.layout-grid-large .section { margin: 2px 0 4px; }
           .section-heading { font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
           .print-sheet.layout-grid .section-heading,
           .print-sheet.layout-grid-large .section-heading { margin-bottom: 4px; }
@@ -125,7 +125,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             width: 100%;
             margin-left: 0;
             margin-right: 0;
-            gap: 10px;
+            gap: 6px;
           }
           .print-sheet.layout-grid .print-grid-block {
             display: grid;
@@ -137,7 +137,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid-large .print-grid-block {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
-            gap: 12px;
+            gap: 8px;
             align-items: start;
             margin-top: 4px;
           }
@@ -198,10 +198,11 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
           .print-sheet.layout-grid .signature-block { margin-top: 8px; line-height: 1.5; }
-          .print-sheet.layout-grid-large .signature-block { margin-top: 4px; line-height: 1.3; }
+          .print-sheet.layout-grid-large .signature-block { margin-top: 3px; line-height: 1.25; }
           .print-sheet.layout-grid .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
-          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 18px; font-size: 14px; }
+          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 16px; font-size: 14px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
+          .print-sheet.layout-grid-large .print-note { padding-top: 4px; }
           @media print {
             body {
               background: #fff;
