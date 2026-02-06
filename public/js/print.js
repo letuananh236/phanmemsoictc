@@ -63,6 +63,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           }
           .print-body { flex: 1; display: flex; flex-direction: column; }
           header { display: grid; grid-template-columns: max-content 1fr; gap: 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #1f2937; margin-bottom: 12px; }
+          .print-sheet.layout-grid-large header { margin-bottom: 8px; padding-bottom: 8px; }
           .print-logo { object-fit: contain; border: 1px solid #e5e7eb; padding: 6px; background: #fff; }
           .print-logo.square { width: 80px; height: 80px; border-radius: 8px; }
           .print-logo.rectangle { width: 140px; height: 70px; border-radius: 6px; }
@@ -82,7 +83,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid .title,
           .print-sheet.layout-grid-large .title {
             font-size: 20px;
-            margin-bottom: 10px;
+            margin: 2px 0 6px;
           }
           .info-lines { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-size: 14px; }
           .print-sheet.layout-grid .info-lines,
