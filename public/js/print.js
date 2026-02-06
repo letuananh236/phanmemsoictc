@@ -211,7 +211,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 12px; font-size: 14px; margin-bottom: 8px; }
           .print-sheet.layout-grid-large .section + .signature-block { margin-top: -4px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
-          .print-sheet.layout-grid-large .print-note { padding-top: 4px; }
+          .print-sheet.layout-grid-large .print-note { padding-top: 24px; }
           @media print {
             body {
               background: #fff;
