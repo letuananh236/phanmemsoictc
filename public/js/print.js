@@ -199,9 +199,10 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .signature-block .doctor-title { font-weight: 700; text-align: right; margin-top: 9.6px; width: 100%; }
           .signature-block .doctor-name { margin-top: 40px; font-weight: 700; width: 100%; font-size: 16px; }
           .print-sheet.layout-grid .signature-block { margin-top: 8px; line-height: 1.5; }
-          .print-sheet.layout-grid-large .signature-block { margin-top: 3px; line-height: 1.25; }
+          .print-sheet.layout-grid-large .signature-block { margin-top: 0; line-height: 1.2; }
           .print-sheet.layout-grid .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
-          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 16px; font-size: 14px; }
+          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 12px; font-size: 14px; }
+          .print-sheet.layout-grid-large .section + .signature-block { margin-top: -4px; }
           .print-note { margin-top: auto; border-top: 1px solid #111827; padding-top: 6px; font-style: italic; text-align: left; }
           .print-sheet.layout-grid-large .print-note { padding-top: 4px; }
           @media print {
