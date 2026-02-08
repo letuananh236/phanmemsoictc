@@ -35,7 +35,7 @@ export function createLicenseView(appState) {
               </div>
               <div class="toolbar license-actions">
                 <button type="submit">Kích hoạt</button>
-                <button type="button" class="secondary" id="license-send">Gửi mã kích hoạt</button>
+                <button type="button" class="danger" id="license-send">Gửi mã kích hoạt</button>
                 <button type="button" class="secondary" id="license-reset">Xóa kích hoạt</button>
               </div>
             </form>
@@ -67,23 +67,79 @@ export function createLicenseView(appState) {
       });
 
       const sendBtn = wrapper.querySelector('#license-send');
-      sendBtn.addEventListener('click', async () => {
+      let countdownTimerId = null;
+      let autoSendTimerId = null;
+      let sendingActivation = false;
+
+      const setSendLabel = (label) => {
+        sendBtn.textContent = label;
+      };
+
+      const clearSendTimers = () => {
+        if (countdownTimerId) {
+          clearInterval(countdownTimerId);
+          countdownTimerId = null;
+        }
+        if (autoSendTimerId) {
+          clearTimeout(autoSendTimerId);
+          autoSendTimerId = null;
+        }
+      };
+
+      const getMachineId = () =>
+        appState.license?.machineId || wrapper.querySelector('#license-machine')?.textContent || '';
+
+      const sendActivation = async ({ auto } = {}) => {
         if (!isAdmin) {
           showToast('Chỉ tài khoản quản trị mới gửi yêu cầu kích hoạt');
           return;
         }
-        const machineId =
-          appState.license?.machineId || wrapper.querySelector('#license-machine')?.textContent || '';
+        if (sendingActivation) return;
+        const machineId = getMachineId();
         if (!machineId) {
           showToast('Chưa có thông tin mã máy để gửi');
+          if (auto) setSendLabel('Gửi mã kích hoạt');
           return;
         }
+        sendingActivation = true;
         try {
           await storage.sendActivationRequest({ machineId });
           showToast('Đã gửi mã kích hoạt');
+          setSendLabel('Đã gửi mã kích hoạt');
         } catch (error) {
           showToast(error.message || 'Không thể gửi mã kích hoạt');
+          setSendLabel('Gửi mã kích hoạt');
+        } finally {
+          sendingActivation = false;
         }
+      };
+
+      const startAutoSendCountdown = () => {
+        if (!isAdmin) return;
+        clearSendTimers();
+        let remaining = 10;
+        setSendLabel(`Gửi mã kích hoạt (${remaining}s)`);
+        countdownTimerId = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearSendTimers();
+            setSendLabel('Đang gửi...');
+            sendActivation({ auto: true });
+            return;
+          }
+          setSendLabel(`Gửi mã kích hoạt (${remaining}s)`);
+        }, 1000);
+        autoSendTimerId = setTimeout(() => {
+          clearSendTimers();
+          setSendLabel('Đang gửi...');
+          sendActivation({ auto: true });
+        }, 10000);
+      };
+
+      sendBtn.addEventListener('click', async () => {
+        clearSendTimers();
+        setSendLabel('Đang gửi...');
+        await sendActivation({ auto: false });
       });
 
       const resetBtn = wrapper.querySelector('#license-reset');
@@ -110,7 +166,11 @@ export function createLicenseView(appState) {
         wrapper.classList.add('read-only');
       }
 
-      renderLicense(wrapper);
+      renderLicense(wrapper).then(() => {
+        if (isAdmin) {
+          startAutoSendCountdown();
+        }
+      });
     }
   };
 }
