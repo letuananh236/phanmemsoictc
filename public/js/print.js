@@ -208,7 +208,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid .signature-block { margin-top: 8px; line-height: 1.5; }
           .print-sheet.layout-grid-large .signature-block { margin-top: 0; line-height: 1.2; }
           .print-sheet.layout-grid .signature-block .doctor-name { margin-top: 28px; font-size: 15px; }
-          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 32px; font-size: 14px; margin-bottom: 8px; }
+          .print-sheet.layout-grid-large .signature-block .doctor-name { margin-top: 38px; font-size: 14px; margin-bottom: 1px; }
           .print-sheet.layout-grid-large .section + .signature-block { margin-top: -4px; }
           .print-note {
             margin-top: auto;
@@ -220,7 +220,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
             text-decoration-thickness: 1px;
             text-underline-offset: 3px;
           }
-          .print-sheet.layout-grid-large .print-note { padding-top: 24px; }
+          .print-sheet.layout-grid-large .print-note { padding-top: 1px; }
           @media print {
             body {
               background: #fff;
