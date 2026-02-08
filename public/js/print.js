@@ -212,7 +212,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid-large .section + .signature-block { margin-top: -4px; }
           .print-note {
             margin-top: auto;
-            border-top: 1px solid #111827;
+            border-top: none;
             padding-top: 6px;
             font-style: italic;
             text-align: left;
