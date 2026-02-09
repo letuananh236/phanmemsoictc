@@ -2,5 +2,14 @@ node_modules/
 package-lock.json
 .DS_Store
 dist/
-data/images/
-!data/images/.gitkeep
+build/icon.ico
+database/images/
+!database/images/.gitkeep
+database/logo/
+!database/logo/.gitkeep
+database/*.sqlite*
+database/*.db*
+database/*.sqlite-wal
+database/*.sqlite-shm
+database/*.db-wal
+database/*.db-shm
