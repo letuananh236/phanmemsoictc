@@ -186,6 +186,38 @@ export function createExamFormView(appState) {
     }
   }
 
+  function syncAssignedDoctorName(select, input) {
+    if (!select || !input) return;
+    const selectedName = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+    if (select.value) {
+      input.value = selectedName;
+    }
+    select.dataset.selectedName = input.value || selectedName;
+  }
+
+  function populateAssignedDoctors(select, input) {
+    if (!select) return;
+    const desiredName = input?.value || select.dataset.selectedName || '';
+    select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Chọn bác sỹ chỉ định';
+    select.appendChild(placeholder);
+
+    doctors.forEach((doctor) => {
+      const option = document.createElement('option');
+      option.value = doctor.id;
+      option.textContent = doctor.name;
+      select.appendChild(option);
+    });
+
+    const matched = doctors.find((doctor) => doctor.name === desiredName);
+    if (matched) {
+      select.value = matched.id;
+    }
+    syncAssignedDoctorName(select, input);
+  }
+
   function populateDoctors(select, hiddenInput, selectedId, fallbackName) {
     if (!select) return;
 
@@ -384,6 +416,9 @@ export function createExamFormView(appState) {
                   <div class="field assigned-doctor">
                     <label>Bác sỹ chỉ định</label>
                     <input name="patientAssignedDoctor" />
+                    <select name="patientAssignedDoctorSelect">
+                      <option value="">Chọn bác sỹ chỉ định</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -410,7 +445,7 @@ export function createExamFormView(appState) {
                   <textarea name="advice"></textarea>
                 </div>
                 <div class="form-row">
-                  <label>Bác sỹ khám</label>
+                  <label>Bác sĩ chuyên khoa</label>
                   <select name="doctorId"></select>
                 </div>
               </div>
@@ -430,6 +465,8 @@ export function createExamFormView(appState) {
       const form = container.querySelector('#exam-form');
       const doctorSelect = form.querySelector('select[name="doctorId"]');
       const doctorNameInput = form.querySelector('input[name="doctorName"]');
+      const assignedDoctorSelect = form.querySelector('select[name="patientAssignedDoctorSelect"]');
+      const assignedDoctorInput = form.querySelector('input[name="patientAssignedDoctor"]');
       if (pendingExamLoad) {
         loadExamIntoForm(form, pendingExamLoad.exam, pendingExamLoad.patient);
         pendingExamLoad = null;
@@ -449,9 +486,13 @@ export function createExamFormView(appState) {
           doctorSelect?.value || appState.examDraft?.exam?.doctorId,
           doctorNameInput?.value || appState.examDraft?.exam?.doctorName
         );
+        populateAssignedDoctors(assignedDoctorSelect, assignedDoctorInput);
       });
 
-      form.addEventListener('input', () => {
+      form.addEventListener('input', (event) => {
+        if (event.target === assignedDoctorInput) {
+          populateAssignedDoctors(assignedDoctorSelect, assignedDoctorInput);
+        }
         publishContext(form);
         persistDraft(form);
       });
@@ -459,6 +500,9 @@ export function createExamFormView(appState) {
       form.addEventListener('change', (event) => {
         if (event.target === doctorSelect) {
           syncDoctorName(doctorSelect, doctorNameInput);
+        }
+        if (event.target === assignedDoctorSelect) {
+          syncAssignedDoctorName(assignedDoctorSelect, assignedDoctorInput);
         }
         publishContext(form);
         persistDraft(form);

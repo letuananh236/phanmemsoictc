@@ -395,7 +395,7 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
 
           <div class="signature-block">
             <div>${formattedDate}</div>
-            <div class="doctor-title">Bác sỹ khám bệnh</div>
+            <div class="doctor-title">Bác sĩ chuyên khoa</div>
             <div class="doctor-name">${doctorName}</div>
           </div>
         </div>
