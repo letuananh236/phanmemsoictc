@@ -45,39 +45,6 @@ export function createLicenseView(appState) {
         <div class="license-photo-center">
           <button type="button" id="license-open-capture" class="secondary">CHỤP HÌNH</button>
         </div>
-
-        <div id="license-photo-panel" class="license-photo-panel hidden">
-          <h4>Cấu hình camera</h4>
-          <div class="grid-3">
-            <div class="form-row">
-              <label>Thiết bị camera</label>
-              <select id="license-camera-device"></select>
-            </div>
-            <div class="form-row">
-              <label>Độ phân giải</label>
-              <select id="license-camera-resolution">
-                <option value="640x480">640 x 480</option>
-                <option value="1280x720" selected>1280 x 720</option>
-                <option value="1920x1080">1920 x 1080</option>
-              </select>
-            </div>
-            <div class="form-row" style="align-self:end;">
-              <button type="button" class="secondary" id="license-camera-apply">Áp dụng camera</button>
-            </div>
-          </div>
-          <div class="form-row">
-            <label>Đường dẫn lưu (trong thư mục database/images)</label>
-            <input id="license-photo-path" placeholder="vd: user_uploads/anh_chup.png" />
-          </div>
-          <div class="capture-preview">
-            <video id="license-camera" autoplay playsinline muted></video>
-            <canvas id="license-photo-canvas" class="hidden"></canvas>
-          </div>
-          <div class="toolbar">
-            <button type="button" id="license-capture-save">Chụp & Lưu ảnh</button>
-            <button type="button" id="license-capture-stop" class="secondary">Dừng camera</button>
-          </div>
-        </div>
       `;
       target.appendChild(wrapper);
 
@@ -196,113 +163,9 @@ export function createLicenseView(appState) {
         }
       });
 
-      // Embedded camera capture panel
       const openCaptureBtn = wrapper.querySelector('#license-open-capture');
-      const capturePanel = wrapper.querySelector('#license-photo-panel');
-      const videoEl = wrapper.querySelector('#license-camera');
-      const canvasEl = wrapper.querySelector('#license-photo-canvas');
-      const saveCaptureBtn = wrapper.querySelector('#license-capture-save');
-      const stopCaptureBtn = wrapper.querySelector('#license-capture-stop');
-      const pathInput = wrapper.querySelector('#license-photo-path');
-      const cameraDeviceSelect = wrapper.querySelector('#license-camera-device');
-      const cameraResolutionSelect = wrapper.querySelector('#license-camera-resolution');
-      const applyCameraBtn = wrapper.querySelector('#license-camera-apply');
-      let cameraStream = null;
-
-      const listCameras = async () => {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-        cameraDeviceSelect.innerHTML = '';
-        videoDevices.forEach((device, index) => {
-          const option = document.createElement('option');
-          option.value = device.deviceId;
-          option.textContent = device.label || `Camera ${index + 1}`;
-          cameraDeviceSelect.appendChild(option);
-        });
-      };
-
-      const stopCamera = () => {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach((track) => track.stop());
-          cameraStream = null;
-        }
-        if (videoEl) {
-          videoEl.srcObject = null;
-        }
-      };
-
-      const startCamera = async () => {
-        stopCamera();
-        const [width, height] = String(cameraResolutionSelect.value || '1280x720').split('x').map(Number);
-        const selectedDevice = cameraDeviceSelect.value;
-        const videoConstraints = {
-          width: Number.isFinite(width) ? width : 1280,
-          height: Number.isFinite(height) ? height : 720
-        };
-        if (selectedDevice) {
-          videoConstraints.deviceId = { exact: selectedDevice };
-        } else {
-          videoConstraints.facingMode = 'environment';
-        }
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-          video: videoConstraints,
-          audio: false
-        });
-        videoEl.srcObject = cameraStream;
-      };
-
-      applyCameraBtn.addEventListener('click', async () => {
-        try {
-          await startCamera();
-          showToast('Đã áp dụng cấu hình camera');
-        } catch (error) {
-          showToast('Không thể áp dụng camera');
-        }
-      });
-
-      openCaptureBtn.addEventListener('click', async () => {
-        capturePanel.classList.toggle('hidden');
-        if (!capturePanel.classList.contains('hidden')) {
-          try {
-            await listCameras();
-            await startCamera();
-            showToast('Đã bật camera');
-          } catch (error) {
-            showToast('Không thể bật camera');
-          }
-        } else {
-          stopCamera();
-        }
-      });
-
-      stopCaptureBtn.addEventListener('click', () => {
-        stopCamera();
-        capturePanel.classList.add('hidden');
-      });
-
-      saveCaptureBtn.addEventListener('click', async () => {
-        if (!videoEl.videoWidth || !videoEl.videoHeight) {
-          showToast('Camera chưa sẵn sàng');
-          return;
-        }
-        const targetPath = pathInput.value.trim();
-        if (!targetPath) {
-          showToast('Vui lòng nhập đường dẫn lưu ảnh');
-          return;
-        }
-
-        canvasEl.width = videoEl.videoWidth;
-        canvasEl.height = videoEl.videoHeight;
-        const context = canvasEl.getContext('2d');
-        context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-        const dataUrl = canvasEl.toDataURL('image/png', 0.92);
-
-        try {
-          const result = await storage.uploadImageToPath(dataUrl, targetPath);
-          showToast(`Đã lưu ảnh: ${result.path}`);
-        } catch (error) {
-          showToast(error.message || 'Không lưu được ảnh');
-        }
+      openCaptureBtn.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'photo-capture' } }));
       });
 
       if (!isAdmin) {
@@ -310,12 +173,6 @@ export function createLicenseView(appState) {
           el.disabled = true;
         });
         openCaptureBtn.disabled = true;
-        saveCaptureBtn.disabled = true;
-        stopCaptureBtn.disabled = true;
-        pathInput.disabled = true;
-        cameraDeviceSelect.disabled = true;
-        cameraResolutionSelect.disabled = true;
-        applyCameraBtn.disabled = true;
         wrapper.classList.add('read-only');
       }
 

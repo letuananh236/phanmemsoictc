@@ -6,6 +6,7 @@ import { createSettingsView } from './settings.js';
 import { createDoctorsView } from './doctors.js';
 import { createResultTemplatesView } from './result-templates.js';
 import { createLicenseView } from './license-ui.js';
+import { createPhotoCaptureView } from './photo-capture.js';
 import { setAuthUser, storage, showToast } from './storage.js';
 
 const menu = document.getElementById('app-menu');
@@ -41,7 +42,8 @@ const views = {
   settings: createSettingsView(appState),
   doctors: createDoctorsView(appState),
   'result-templates': createResultTemplatesView(appState),
-  license: createLicenseView(appState)
+  license: createLicenseView(appState),
+  'photo-capture': createPhotoCaptureView(appState)
 };
 
 let loginInitialized = false;
