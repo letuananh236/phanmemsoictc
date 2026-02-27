@@ -193,7 +193,7 @@ export function openPrintPreview({ patient, exam, settings, images }) {
           .print-sheet.layout-grid-large .image-section .print-images {
             width: 80%;
             max-width: 80%;
-            margin-left: 0;
+            margin-left: auto;
             margin-right: auto;
           }
           .print-sheet.layout-grid-large .print-image {
@@ -396,7 +396,7 @@ function renderPrintSheet({ patient, exam, settings, logoShape, formattedDate, d
 
           <div class="signature-block">
             <div>${formattedDate}</div>
-            <div class="doctor-title">Bác sĩ chuyên khoa</div>
+            <div class="doctor-title">Bác sỹ chuyên khoa</div>
             <div class="doctor-name">${doctorName}</div>
           </div>
         </div>
