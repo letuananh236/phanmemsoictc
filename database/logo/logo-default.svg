@@ -1,0 +1,14 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2f80ed" />
+      <stop offset="100%" stop-color="#56ccf2" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="76" height="76" rx="12" fill="url(#grad)" stroke="#1b4f8c" stroke-width="4" />
+  <path d="M20 45 L30 30 L38 38 L50 22 L60 35 L68 25 L68 58 L20 58 Z" fill="rgba(255,255,255,0.9)" />
+  <circle cx="32" cy="32" r="6" fill="#1b4f8c" opacity="0.6" />
+  <text x="40" y="72" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#ffffff">
+    MED
+  </text>
+</svg>
